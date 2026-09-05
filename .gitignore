@@ -38,4 +38,9 @@ node_modules/
 .instructions
 .instruction-files/
 skills/
+.kilo/
+
+# User data exports & local test dumps
+mycase-expungement-data*.json
+!archive/test_data/mycase-expungement-data-2026-09-05.json
 

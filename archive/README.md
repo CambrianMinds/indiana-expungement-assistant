@@ -17,10 +17,20 @@ This directory contains archived components from the initial Indiana Expungement
 ### 3. `legacy_extension_monolith/`
 - **`sidepanel.js`**: Original 1,627-line monolithic script before it was refactored into modern, decoupled ES6 modules (`main.js`, `state.js`, `scanner.js`, `profile.js`, `generator.js`, `ui.js`, `utils.js`).
 
+### 4. `legacy_bookmarklet/`
+- **`bookmarklet.min.js`**: Former minified bookmarklet using the obsolete HTML parsing endpoint (`Accept: text/html`) that got redirected by the court portal.
+- **`extension_bookmarklet.js`**: Former redundant copy of the bookmarklet inside the `extension/` directory.
+
+### 5. `test_data/`
+- **`mycase-expungement-data-2026-09-05.json`**: Historical sanitized MyCase export payload used during the initial debugging and verification of the JSON API scraper.
+
+### 6. `plans/`
+- **`1788630726845-redesign-docs-app-ui.md`**: Historical design artifact for the standalone web app UI redesign.
+
 ## Why Were These Archived?
 1. **Client-Side Architecture**: PDF generation was transitioned to in-browser client-side generation using `pdf-lib` (`pdf-lib.min.js`). This eliminated the requirement for users to install Python, run a local server, and deal with local port/firewall issues.
 2. **ES6 Modularization**: The sidepanel UI logic was decomposed into focused ES modules with clear responsibilities, improving testability and maintainability.
-3. **Streamlined Repository**: Removing the 80MB Python virtual environment and dead code makes the extension faster to clone, build, and distribute.
+3. **Streamlined Repository**: Removing the 80MB Python virtual environment, obsolete bookmarklet copies, personal test data, and dead code keeps the repository lean, secure, and fast to clone, test, and distribute.
 
 ## Restoring or Referencing
 If needed, these files can be referenced for historical context, legal wording templates, or revived by installing dependencies listed in `legacy_backend/requirements.txt`.
