@@ -4,42 +4,98 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Indiana Expungement Assistant — Web App</title>
+  <title>Indiana Expungement Assistant — Web App (IC § 35-38-9)</title>
+
+  <!-- Color scheme declaration & Theme initialization script (prevents FOUC) -->
+  <meta name="color-scheme" content="light dark">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('theme');
+        var theme = saved || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-theme', theme);
+      } catch (e) { }
+    })();
+  </script>
+
+  <!-- Google Fonts: Editorial Serif (Newsreader) + Tech Mono (JetBrains Mono) + Plus Jakarta Sans -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+  <link
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
     rel="stylesheet">
-  <link rel="icon" type="image/png" sizes="32x32" href="../icons/icon32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="../icons/icon16.png">
+
+  <!-- Favicon & PWA Icons -->
+  <link rel="icon" type="image/x-icon" href="../assets/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="../assets/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="../assets/apple-touch-icon.png">
   <link rel="manifest" href="../manifest.webmanifest">
   <meta name="theme-color" content="#101c3d">
-  <link rel="stylesheet" href="sidepanel.css">
+
+  <!-- Core Civic Design System + Web App Stylesheet -->
+  <link rel="stylesheet" href="../style.css?v=8">
+  <link rel="stylesheet" href="sidepanel.css?v=8">
 </head>
 
 <body>
-  <!-- ═══ Header ═══ -->
-  <header class="app-header">
-    <div class="header-container">
-      <div class="header-brand">
-        <div class="header-crest">
-          <img src="../icons/icon32.png" alt="Indiana Expungement Assistant Crest" class="header-crest-img" width="28" height="28">
-        </div>
-        <div class="brand-info">
-          <h1 class="header-title">Indiana Expungement Assistant</h1>
-          <p class="header-subtitle"><span class="brand-project">a CambrianMinds Project</span> · Second Chance Pro Se Legal Portal · IC § 35-38-9</p>
-        </div>
+  <!-- Top Civic Notice Banner -->
+  <div class="civic-banner">
+    <div class="container civic-banner-inner">
+      <div class="civic-seal-text">
+        <span>🏛️</span>
+        <span>Indiana Public Interest Initiative · Pro Se Legal Self-Help Resource</span>
       </div>
-      <div class="header-actions">
-        <button class="guide-badge" id="btnUserGuide" title="Open Step-by-Step Instructions &amp; Guide">
-          <span class="badge-icon">📖</span> Guide
+      <div class="civic-statute-badge">
+        <span>Governed by Indiana Code § 35-38-9 (Second Chance Law)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Primary Navigation -->
+  <header class="navbar">
+    <div class="container navbar-inner">
+      <a href="../index.html" class="nav-brand" title="Return to Portal Landing Page">
+        <div class="nav-crest">
+          <img src="../assets/favicon-32x32.png" alt="Indiana Expungement Assistant Crest" class="nav-crest-img" width="28" height="28">
+        </div>
+        <div class="brand-text">
+          <span class="brand-title">Indiana Expungement Assistant</span>
+          <span class="brand-sub">a CambrianMinds Project · Web App</span>
+        </div>
+      </a>
+
+      <div class="nav-actions">
+        <a href="../index.html" class="nav-link" style="display:inline-flex;align-items:center;gap:0.35rem;">
+          <span>←</span> Portal Home
+        </a>
+        <button class="nav-github-btn" id="btnUserGuide" title="Open Step-by-Step Instructions &amp; Guide">
+          <span>📖</span> Guide
         </button>
-        <button class="disclaimer-badge" id="btnLegalNotice" title="View Legal Disclaimer & One-Shot Warning">
-          <span class="badge-icon">⚖️</span> Legal Notice
+        <button class="nav-github-btn" id="btnLegalNotice" title="View Legal Disclaimer &amp; One-Shot Warning">
+          <span>⚖️</span> Legal Notice
         </button>
         <div class="header-status" id="backendStatus" role="button" tabindex="0" title="In-Browser PDF Generator is active and ready">
           <span class="status-dot online"></span>
           <span class="status-label">Engine Ready</span>
         </div>
+        <!-- Theme Toggle Button -->
+        <button id="themeToggle" class="theme-toggle" aria-label="Toggle dark/light color mode" title="Toggle dark/light color mode">
+          <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="4" />
+            <path d="M12 2v2" />
+            <path d="M12 20v2" />
+            <path d="m4.93 4.93 1.41 1.41" />
+            <path d="m17.66 17.66 1.41 1.41" />
+            <path d="M2 12h2" />
+            <path d="M20 12h2" />
+            <path d="m6.34 17.66-1.41 1.41" />
+            <path d="m19.07 4.93-1.41 1.41" />
+          </svg>
+          <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+          </svg>
+        </button>
       </div>
     </div>
   </header>
@@ -49,39 +105,23 @@
 
     <!-- ── Tab Navigation ── -->
     <nav class="tab-nav">
-      <div class="tab-nav-container">
+      <div class="container tab-nav-container">
         <button class="tab-btn active" data-tab="scan" id="tabBtnImport">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-            <polyline points="17 8 12 3 7 8" />
-            <line x1="12" y1="3" x2="12" y2="15" />
-          </svg>
-          1. Import Records
+          <span class="tab-step">01</span>
+          <span class="tab-text">Import Records</span>
         </button>
         <button class="tab-btn" data-tab="results" id="tabBtnResults">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-            <polyline points="14 2 14 8 20 8" />
-            <line x1="16" y1="13" x2="8" y2="13" />
-            <line x1="16" y1="17" x2="8" y2="17" />
-          </svg>
-          2. Results &amp; Eligibility
+          <span class="tab-step">02</span>
+          <span class="tab-text">Results &amp; Eligibility</span>
           <span class="tab-badge" id="resultsBadge" style="display:none">0</span>
         </button>
         <button class="tab-btn" data-tab="profile" id="tabBtnProfile">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-            <circle cx="12" cy="7" r="4" />
-          </svg>
-          3. Petitioner Profile
+          <span class="tab-step">03</span>
+          <span class="tab-text">Petitioner Profile</span>
         </button>
         <button class="tab-btn" data-tab="generate" id="tabBtnGenerate">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="6 9 6 2 18 2 18 9" />
-            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
-            <rect x="6" y="14" width="12" height="8" />
-          </svg>
-          4. Generate Pleadings
+          <span class="tab-step">04</span>
+          <span class="tab-text">Generate Pleadings</span>
         </button>
       </div>
     </nav>
@@ -719,7 +759,7 @@
   <script src="pdf-lib.min.js"></script>
   <script src="eligibility.js"></script>
   <script src="content.js"></script>
-  <script type="module" src="main.js"></script>
+  <script type="module" src="main.js?v=8"></script>
 </body>
 
 </html>

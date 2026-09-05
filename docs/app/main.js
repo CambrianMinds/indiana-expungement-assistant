@@ -15,10 +15,41 @@ function setupGuideListeners() {
   document.getElementById('btnOpenGuideBanner')?.addEventListener('click', openGuide);
 }
 
+// Setup theme toggle listener (synchronizes with main landing page)
+function setupThemeToggle() {
+  const toggleBtn = document.getElementById('themeToggle');
+  if (!toggleBtn) return;
+
+  function getActiveTheme() {
+    return document.documentElement.getAttribute('data-theme') ||
+      (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  }
+
+  function setTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+    toggleBtn.setAttribute('aria-label', `Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`);
+    toggleBtn.title = `Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`;
+  }
+
+  toggleBtn.addEventListener('click', () => {
+    const current = getActiveTheme();
+    const next = current === 'dark' ? 'light' : 'dark';
+    setTheme(next);
+  });
+
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+    if (!localStorage.getItem('theme')) {
+      document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+    }
+  });
+}
+
 // ─── Initialization ────────────────────────────────────────────────
 async function init() {
-  // Bind guide actions
+  // Bind guide and theme actions
   setupGuideListeners();
+  setupThemeToggle();
 
   // Load saved state & bind formatters
   setupInputFormatting();
