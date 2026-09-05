@@ -5,15 +5,15 @@ import { checkPageStatus, updateBatchPanelUI, renderResults } from './scanner.js
 import { updateChecklist } from './ui.js';
 
 
-export const GITHUB_GUIDE_URL = 'https://github.com/CambrianMinds/indiana-expungement-assistant#how-to-use-the-extension';
+export const SITE_GUIDE_URL = 'https://cambrianminds.github.io/indiana-expungement-assistant/#instructions';
 
-// Auto-open GitHub guide tab on first launch / first open of the extension
+// Auto-open site guide tab on first launch / first open of the extension
 async function checkWelcomeGuide() {
   try {
     const data = await chrome?.storage?.local?.get('hasSeenWelcomeGuide');
     if (!data?.hasSeenWelcomeGuide) {
       await chrome?.storage?.local?.set({ hasSeenWelcomeGuide: true });
-      chrome?.tabs?.create?.({ url: GITHUB_GUIDE_URL });
+      chrome?.tabs?.create?.({ url: SITE_GUIDE_URL });
     }
   } catch (err) {
     console.debug('[Guide Auto-Open]', err);
@@ -23,7 +23,7 @@ async function checkWelcomeGuide() {
 // Setup guide button click listeners
 function setupGuideListeners() {
   const openGuide = () => {
-    chrome?.tabs?.create?.({ url: GITHUB_GUIDE_URL });
+    chrome?.tabs?.create?.({ url: SITE_GUIDE_URL });
   };
   document.getElementById('btnUserGuide')?.addEventListener('click', openGuide);
   document.getElementById('btnOpenGuideBanner')?.addEventListener('click', openGuide);

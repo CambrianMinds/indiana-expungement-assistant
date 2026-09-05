@@ -91,11 +91,11 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   }
 });
 
-// ─── First Install: Open GitHub Guide ──────────────────────────────────
+// ─── First Install: Open Site Guide ────────────────────────────────────
 chrome.runtime.onInstalled.addListener((details) => {
   if (details.reason === 'install') {
     chrome.tabs.create({
-      url: 'https://github.com/CambrianMinds/indiana-expungement-assistant#how-to-use-the-extension'
+      url: 'https://cambrianminds.github.io/indiana-expungement-assistant/#instructions'
     });
     chrome.storage.local.set({ hasSeenWelcomeGuide: true });
   }

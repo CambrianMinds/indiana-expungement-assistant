@@ -510,6 +510,16 @@ function initGuideTabs() {
       if (targetPane) targetPane.classList.add('active');
     });
   });
+
+  // Handle direct hash navigation to instructions or usage
+  function checkHash() {
+    if (window.location.hash === '#instructions' || window.location.hash === '#tab-usage' || window.location.hash === '#usage') {
+      const usageBtn = document.querySelector('.guide-tab-btn[data-tab="tab-usage"]');
+      if (usageBtn) usageBtn.click();
+    }
+  }
+  checkHash();
+  window.addEventListener('hashchange', checkHash);
 }
 
 /* ==========================================================================
