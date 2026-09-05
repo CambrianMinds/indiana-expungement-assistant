@@ -5,7 +5,6 @@
 
 document.addEventListener('DOMContentLoaded', () => {
   initThemeToggle();
-  initHeroMockup();
   initEligibilityCalculator();
   initDatePresets();
   initAuditChecklist();
@@ -49,47 +48,6 @@ function initThemeToggle() {
   });
 }
 
-/* ==========================================================================
-   2. Hero Sidepanel Interactive Mockup
-   ========================================================================== */
-function initHeroMockup() {
-  const tabs = document.querySelectorAll('.mockup-tab');
-  const panels = document.querySelectorAll('.mockup-panel');
-  const actionBtn = document.getElementById('mockupBtnGenerate');
-  const toast = document.getElementById('mockupToast');
-
-  tabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-      const target = tab.getAttribute('data-mockup-tab');
-      tabs.forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-
-      panels.forEach(p => {
-        if (p.id === `mockup-panel-${target}`) {
-          p.style.display = 'flex';
-        } else {
-          p.style.display = 'none';
-        }
-      });
-    });
-  });
-
-  if (actionBtn && toast) {
-    actionBtn.addEventListener('click', () => {
-      actionBtn.disabled = true;
-      actionBtn.textContent = 'Compiling PDF Forms...';
-      setTimeout(() => {
-        toast.style.display = 'block';
-        actionBtn.textContent = '✓ Packet Ready';
-        setTimeout(() => {
-          toast.style.display = 'none';
-          actionBtn.disabled = false;
-          actionBtn.textContent = '⚡ Generate Court Packet';
-        }, 3500);
-      }, 700);
-    });
-  }
-}
 
 /* ==========================================================================
    3. Statutory Eligibility Assessment (IC § 35-38-9)
