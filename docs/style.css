@@ -170,10 +170,10 @@ body {
 }
 
 .brand-sub {
-  font-size: 0.65rem;
-  font-weight: 600;
+  font-size: 0.62rem;
+  font-weight: 500;
   color: var(--color-gold-600);
-  text-transform: none;
+  text-transform: none !important;
   letter-spacing: 0.02em;
 }
 
@@ -389,7 +389,7 @@ body {
 
 .section-header {
   text-align: center;
-  max-width: 880px;
+  max-width: 960px;
   margin: 0 auto 3.25rem;
 }
 
@@ -415,6 +415,16 @@ body {
 
 .nowrap {
   white-space: nowrap;
+}
+
+.nowrap-title {
+  white-space: nowrap;
+}
+
+@media (max-width: 980px) {
+  .nowrap-title {
+    white-space: normal;
+  }
 }
 
 .section-lead {
