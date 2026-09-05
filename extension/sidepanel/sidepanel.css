@@ -223,6 +223,7 @@ body {
   color: #cbd5e1;
   cursor: pointer;
   transition: all var(--transition);
+  -webkit-user-select: none;
   user-select: none;
 }
 
@@ -1518,8 +1519,8 @@ body {
   position: fixed;
   inset: 0;
   background: rgba(10, 17, 40, 0.45);
-  backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1530,8 +1531,8 @@ body {
 
 .modal-dialog {
   background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.5);
   border-radius: var(--radius-lg);
   max-width: 380px;
@@ -1854,6 +1855,7 @@ body {
   display: flex;
   align-items: center;
   gap: 7px;
+  -webkit-user-select: none;
   user-select: none;
 }
 

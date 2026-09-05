@@ -11,7 +11,7 @@
 
 ---
 
-> ### 🛑 CRITICAL LEGAL WARNING: INDIANA'S LIFETIME ONE-SHOT RULE
+> ## 🛑 CRITICAL LEGAL WARNING: INDIANA'S LIFETIME ONE-SHOT RULE
 >
 > **INDIANA CODE § 35-38-9-9(i) STRICT STATUTORY LIMITATION:**
 > Under Indiana law, **a person may petition for expungement of criminal conviction records ONLY ONCE IN THEIR ENTIRE LIFETIME.**
@@ -22,7 +22,7 @@
 
 ---
 
-> ### ⚖️ PUBLIC INTEREST MISSION & LEGAL SAFEGUARDS
+> ## ⚖️ PUBLIC INTEREST MISSION & LEGAL SAFEGUARDS
 >
 > **The Public Accessibility Initiative:**
 > Indiana's Second Chance Law (IC § 35-38-9) is one of the most transformative civil rights reforms in state history. It offers individuals who have paid their societal debt and maintained clean records an opportunity to remove old criminal records that hinder employment, housing, and civic participation.
@@ -53,7 +53,7 @@ Your personal information (Social Security Number, Date of Birth, Driver's Licen
 
 ## System Architecture
 
-```
+```text
 ┌────────────────────────────────────────────────────────────────────────┐
 │                        GOOGLE CHROME BROWSER                           │
 │                                                                        │
@@ -207,13 +207,13 @@ npm install
 
 # Run the statutory test suite
 npm test
-```
+```text
 
 ---
 
 ## Project Structure
 
-```
+```text
 indiana-expungement-assistant/
 ├── extension/                     # Chrome Extension (Manifest V3)
 │   ├── manifest.json              # MV3 configuration with required permissions
