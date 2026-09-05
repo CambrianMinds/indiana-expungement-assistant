@@ -90,3 +90,13 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     updateBadge(tabId, '', '#3b82f6');
   }
 });
+
+// ─── First Install: Open GitHub Guide ──────────────────────────────────
+chrome.runtime.onInstalled.addListener((details) => {
+  if (details.reason === 'install') {
+    chrome.tabs.create({
+      url: 'https://github.com/CambrianMinds/indiana-expungement-assistant#how-to-use-the-extension'
+    });
+    chrome.storage.local.set({ hasSeenWelcomeGuide: true });
+  }
+});

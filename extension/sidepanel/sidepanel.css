@@ -178,7 +178,8 @@ body {
   flex-shrink: 0;
 }
 
-/* Notice Badge */
+/* Guide & Notice Badges */
+.guide-badge,
 .disclaimer-badge {
   background-color: rgba(255, 255, 255, 0.1);
   color: #e2e8f0;
@@ -193,14 +194,17 @@ body {
   gap: 3px;
   transition: all var(--transition);
   font-family: var(--font-sans);
+  text-decoration: none;
 }
 
+.guide-badge:hover,
 .disclaimer-badge:hover {
   background-color: rgba(255, 255, 255, 0.2);
   color: #ffffff;
   border-color: #ffffff;
 }
 
+.guide-badge .badge-icon,
 .disclaimer-badge .badge-icon {
   font-size: 0.75rem;
 }
@@ -356,6 +360,73 @@ body {
 }
 
 /* ── Scan Tab ─────────────────────────────────────────────────────────── */
+/* Guide Banner */
+.guide-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  background: linear-gradient(135deg, #eff6ff, #dbeafe);
+  border: 1px solid #bfdbfe;
+  border-radius: var(--radius-sm);
+  margin-bottom: 12px;
+  box-shadow: var(--shadow-xs);
+}
+
+.guide-banner-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.guide-banner-icon {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.guide-banner-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.guide-banner-text strong {
+  font-size: 0.72rem;
+  color: var(--color-blue-900);
+  line-height: 1.25;
+}
+
+.guide-banner-text span {
+  font-size: 0.64rem;
+  color: var(--color-blue-700);
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.btn-guide-link {
+  background: #ffffff;
+  border: 1px solid #93c5fd;
+  border-radius: var(--radius-pill);
+  padding: 3px 8px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--color-blue-700);
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all var(--transition);
+}
+
+.btn-guide-link:hover {
+  background: var(--color-blue-600);
+  color: #ffffff;
+  border-color: var(--color-blue-600);
+}
+
 .scan-hero {
   text-align: center;
   padding: 16px 12px 14px;
