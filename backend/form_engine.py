@@ -67,7 +67,7 @@ INDIANA_COUNTIES = {
 
 
 def get_county_name(court_code: str) -> str:
-    """Extract county name from court code like '35D01' → 'Huntington'."""
+    """Extract county name from court code like '49D01' → 'Marion'."""
     import re
     m = re.match(r'^(\d+)', court_code or '')
     if m:
@@ -267,7 +267,15 @@ def _ctx(payload: dict):
         'dob': raw_pet.get('dob') or '_______ / _______ / ______________',
         'ssn': raw_pet.get('ssn') or 'XXX - XX - ________________',
         'driverLicense': raw_pet.get('driverLicense') or '________________________________________',
-        'currentAddress': raw_pet.get('currentAddress') or '____________________________________________________________________',
+        'currentAddress': (
+            raw_pet.get('currentAddress') or
+            (', '.join(filter(None, [
+                raw_pet.get('streetAddress', '').strip(),
+                raw_pet.get('city', '').strip(),
+                f"{raw_pet.get('state', 'IN').strip()} {raw_pet.get('zipCode', '').strip()}".strip()
+            ])) or None) or
+            '____________________________________________________________________'
+        ),
         'phone': raw_pet.get('phone') or '______________________________',
         'email': raw_pet.get('email') or '______________________________',
         'addresses': raw_pet.get('addresses') or []

@@ -40,6 +40,10 @@ class Petitioner(BaseModel):
     dob: Optional[str] = None
     ssn: Optional[str] = None
     driverLicense: Optional[str] = None
+    streetAddress: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
+    zipCode: Optional[str] = None
     currentAddress: Optional[str] = None
     phone: Optional[str] = None
     email: Optional[str] = None

@@ -187,36 +187,142 @@
           stored locally in your browser only.</p>
       </div>
 
-      <form class="profile-form" id="profileForm">
+      <form class="profile-form" id="profileForm" novalidate>
         <div class="form-group">
-          <label for="fullName">Full Legal Name</label>
-          <input type="text" id="fullName" placeholder="e.g. Margaret Thatcher" autocomplete="name">
+          <div class="label-row">
+            <label for="fullName">Full Legal Name <span class="req-star">*</span></label>
+            <span class="field-hint">First &amp; Last</span>
+          </div>
+          <input type="text" id="fullName" placeholder="e.g. Jane Doe" autocomplete="name" required>
+          <span class="field-error" id="err-fullName"></span>
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label for="dob">Date of Birth</label>
-            <input type="date" id="dob">
+            <div class="label-row">
+              <label for="dob">Date of Birth <span class="req-star">*</span></label>
+              <span class="field-hint">Age ≥ 18</span>
+            </div>
+            <input type="date" id="dob" required>
+            <span class="field-error" id="err-dob"></span>
           </div>
           <div class="form-group">
-            <label for="ssn">SSN (Last 4 for display)</label>
-            <input type="password" id="ssn" placeholder="XXX-XX-XXXX" maxlength="11">
+            <div class="label-row">
+              <label for="ssn">SSN <span class="req-star">*</span></label>
+              <button type="button" class="btn-toggle-mask" id="btnToggleSSN" title="Show/hide SSN">👁</button>
+            </div>
+            <input type="password" id="ssn" placeholder="XXX-XX-XXXX" maxlength="11" autocomplete="off" required>
+            <span class="field-error" id="err-ssn"></span>
           </div>
         </div>
         <div class="form-group">
-          <label for="driverLicense">Indiana Driver's License #</label>
-          <input type="text" id="driverLicense" placeholder="e.g. 1234-56-7890">
+          <div class="label-row">
+            <label for="driverLicense">Indiana Driver's License #</label>
+            <span class="field-hint">XXXX-XX-XXXX (10 digits)</span>
+          </div>
+          <input type="text" id="driverLicense" placeholder="e.g. 1234-56-7890" maxlength="12">
+          <span class="field-error" id="err-driverLicense"></span>
         </div>
         <div class="form-group">
-          <label for="currentAddress">Current Physical Address</label>
-          <input type="text" id="currentAddress" placeholder="Street, City, State ZIP">
+          <div class="label-row">
+            <label for="streetAddress">Street Address <span class="req-star">*</span></label>
+            <span class="field-hint">House #, Street, Apt/Suite</span>
+          </div>
+          <input type="text" id="streetAddress" placeholder="e.g. 100 N Senate Ave, Apt 4B" autocomplete="street-address" required>
+          <span class="field-error" id="err-streetAddress"></span>
         </div>
-        <div class="form-group">
-          <label for="phone">Phone Number</label>
-          <input type="tel" id="phone" placeholder="(xxx) xxx-xxxx">
+        <div class="form-row form-row-city-state-zip">
+          <div class="form-group">
+            <div class="label-row">
+              <label for="city">City <span class="req-star">*</span></label>
+            </div>
+            <input type="text" id="city" placeholder="Indianapolis" autocomplete="address-level2" required>
+            <span class="field-error" id="err-city"></span>
+          </div>
+          <div class="form-group">
+            <div class="label-row">
+              <label for="state">State <span class="req-star">*</span></label>
+            </div>
+            <select id="state" autocomplete="address-level1" required>
+              <option value="IN" selected>IN</option>
+              <option value="IL">IL</option>
+              <option value="KY">KY</option>
+              <option value="MI">MI</option>
+              <option value="OH">OH</option>
+              <option disabled>───</option>
+              <option value="AL">AL</option>
+              <option value="AK">AK</option>
+              <option value="AZ">AZ</option>
+              <option value="AR">AR</option>
+              <option value="CA">CA</option>
+              <option value="CO">CO</option>
+              <option value="CT">CT</option>
+              <option value="DE">DE</option>
+              <option value="FL">FL</option>
+              <option value="GA">GA</option>
+              <option value="HI">HI</option>
+              <option value="ID">ID</option>
+              <option value="IA">IA</option>
+              <option value="KS">KS</option>
+              <option value="LA">LA</option>
+              <option value="ME">ME</option>
+              <option value="MD">MD</option>
+              <option value="MA">MA</option>
+              <option value="MN">MN</option>
+              <option value="MS">MS</option>
+              <option value="MO">MO</option>
+              <option value="MT">MT</option>
+              <option value="NE">NE</option>
+              <option value="NV">NV</option>
+              <option value="NH">NH</option>
+              <option value="NJ">NJ</option>
+              <option value="NM">NM</option>
+              <option value="NY">NY</option>
+              <option value="NC">NC</option>
+              <option value="ND">ND</option>
+              <option value="OK">OK</option>
+              <option value="OR">OR</option>
+              <option value="PA">PA</option>
+              <option value="RI">RI</option>
+              <option value="SC">SC</option>
+              <option value="SD">SD</option>
+              <option value="TN">TN</option>
+              <option value="TX">TX</option>
+              <option value="UT">UT</option>
+              <option value="VT">VT</option>
+              <option value="VA">VA</option>
+              <option value="WA">WA</option>
+              <option value="WV">WV</option>
+              <option value="WI">WI</option>
+              <option value="WY">WY</option>
+              <option value="DC">DC</option>
+            </select>
+            <span class="field-error" id="err-state"></span>
+          </div>
+          <div class="form-group">
+            <div class="label-row">
+              <label for="zipCode">ZIP <span class="req-star">*</span></label>
+              <span class="field-hint">5 digits</span>
+            </div>
+            <input type="text" id="zipCode" placeholder="46204" maxlength="10" autocomplete="postal-code" required>
+            <span class="field-error" id="err-zipCode"></span>
+          </div>
         </div>
-        <div class="form-group">
-          <label for="email">Email Address</label>
-          <input type="email" id="email" placeholder="name@example.com">
+        <div class="form-row">
+          <div class="form-group">
+            <div class="label-row">
+              <label for="phone">Phone Number</label>
+              <span class="field-hint">(XXX) XXX-XXXX</span>
+            </div>
+            <input type="tel" id="phone" placeholder="(317) 555-0100" maxlength="14">
+            <span class="field-error" id="err-phone"></span>
+          </div>
+          <div class="form-group">
+            <div class="label-row">
+              <label for="email">Email Address</label>
+            </div>
+            <input type="email" id="email" placeholder="name@example.com">
+            <span class="field-error" id="err-email"></span>
+          </div>
         </div>
 
         <div class="form-section-header">

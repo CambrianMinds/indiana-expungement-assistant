@@ -90,7 +90,7 @@ const IndianaExpungement = (() => {
   /**
    * Extract the 2-letter case type code from a case number or case type string.
    * Examples:
-   *   "35D01-0612-FD-00298" → "FD"
+   *   "49D01-1605-FD-000123" → "FD"
    *   "FD - Class D Felony" → "FD"
    *   "CM - Criminal Misdemeanor" → "CM"
    */
@@ -115,7 +115,7 @@ const IndianaExpungement = (() => {
 
   /**
    * Extract the county court code from a case number.
-   * "35D01-0612-FD-00298" → "35D01"
+   * "49D01-1605-FD-000123" → "49D01"
    */
   function extractCourtCode(caseNumber) {
     if (!caseNumber) return null;
@@ -125,7 +125,7 @@ const IndianaExpungement = (() => {
 
   /**
    * Extract the county FIPS code from a court code.
-   * "35D01" → "35" (Huntington County)
+   * "49D01" → "49" (Marion County)
    */
   function extractCountyCode(courtCode) {
     if (!courtCode) return null;

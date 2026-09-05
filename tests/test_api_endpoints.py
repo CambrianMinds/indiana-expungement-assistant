@@ -25,9 +25,9 @@ async def run_tests():
     # 2. Test rejection when one-shot rule is NOT acknowledged
     req_unacknowledged = GenerateRequest(
         petitioner=Petitioner(fullName="John Doe"),
-        county="Huntington",
-        court="Huntington Superior Court",
-        courtCode="35D01",
+        county="Marion",
+        court="Marion Superior Court",
+        courtCode="49D01",
         cases=[],
         acknowledgedOneShot=False,
         acknowledgedNotLawyer=True,
@@ -76,6 +76,43 @@ async def run_tests():
     response = await generate_expungement(req_valid)
     assert response.media_type == "application/zip"
     print("[OK] Successfully generated packet response with all acknowledgments verified")
+
+    # 3. Test structured address fields (streetAddress, city, state, zipCode)
+    req_structured_addr = GenerateRequest(
+        petitioner=Petitioner(
+            fullName="Jane Doe",
+            dob="1985-06-15",
+            ssn="000-00-0000",
+            streetAddress="100 North Senate Avenue, Suite 200",
+            city="Indianapolis",
+            state="IN",
+            zipCode="46204",
+            phone="(317) 555-0199",
+            email="petitioner@example.com"
+        ),
+        county="Marion",
+        court="Marion Superior Court",
+        courtCode="49D01",
+        cases=[
+            CaseRecord(
+                caseNumber="49D01-1605-CM-000555",
+                type="CM - Class A Misdemeanor",
+                statute="IC § 35-38-9-2",
+                charges="Operating While Intoxicated",
+                filed="2016-05-15",
+                dispositionDate="2016-10-20",
+                court="Marion Superior Court",
+                grantType="mandatory"
+            )
+        ],
+        acknowledgedOneShot=True,
+        acknowledgedNotLawyer=True,
+        acknowledgedAllCases=True,
+        acknowledgedProSeLiability=True
+    )
+    resp_structured = await generate_expungement(req_structured_addr)
+    assert resp_structured.media_type == "application/zip"
+    print("[OK] Successfully generated packet with structured address fields (street, city, state, zip)")
     print("=" * 60)
     print("  ALL API & LEGAL GUARDRAIL TESTS PASSED")
     print("=" * 60)
