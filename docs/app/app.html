@@ -44,7 +44,7 @@
     <div class="container civic-banner-inner">
       <div class="civic-seal-text">
         <span>🏛️</span>
-        <span>Indiana Public Interest Initiative · Pro Se Legal Self-Help Resource</span>
+        <span>Indiana Legal Aid Self-Help Resource · Pro Se Document Preparation</span>
       </div>
       <div class="civic-statute-badge">
         <span>Governed by Indiana Code § 35-38-9 (Second Chance Law)</span>
@@ -61,7 +61,7 @@
         </div>
         <div class="brand-text">
           <span class="brand-title">Indiana Expungement Assistant</span>
-          <span class="brand-sub">a CambrianMinds Project · Web App</span>
+          <span class="brand-sub">Free Pro Se Document Generator</span>
         </div>
       </a>
 
@@ -93,7 +93,7 @@
             <path d="m19.07 4.93-1.41 1.41" />
           </svg>
           <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+            <path d="M12 3a6 6 0 0 0 9 9 9 0 1 1-9-9Z" />
           </svg>
         </button>
       </div>
@@ -132,15 +132,12 @@
       <div class="warning-callout">
         <div class="callout-icon">⚠️</div>
         <div class="callout-content">
-          <h4>CRITICAL: INDIANA'S LIFETIME ONE-SHOT RULE</h4>
-          <p>Under <b>IC § 35-38-9-9(i)</b>, you can only file for conviction expungement <b>ONCE IN YOUR ENTIRE
-              LIFE</b>. Any conviction you do not include can <b>NEVER</b> be expunged later. Make sure you search
-            MyCase for <b>all aliases, maiden names, and prior names across all 92 Indiana counties</b> before preparing
-            your petition.</p>
+          <h4>CRITICAL: INDIANA'S LIFETIME ONE-SHOT RULE (IC § 35-38-9-9(i))</h4>
+          <p>Indiana law allows you to expunge criminal convictions <b>only once in your lifetime</b>. Any conviction omitted now can <b>never be expunged later</b>. Search MyCase under <b>all past names and aliases across all 92 Indiana counties</b> before preparing your petition.</p>
         </div>
       </div>
 
-      <!-- Multi-Page Batch & Source Accumulation Banner -->
+      <!-- Batch & Source Accumulation Banner -->
       <div class="batch-panel" id="batchPanel" style="display:none">
         <div class="batch-header">
           <div class="batch-title-row">
@@ -154,7 +151,7 @@
             Reset All Records
           </button>
         </div>
-        <p class="batch-desc">Cases from different MyCase files (maiden names, married names, aliases, multi-county searches) are merged here automatically.</p>
+        <p class="batch-desc">Records from different MyCase files (prior names, married names, or other counties) are merged here automatically.</p>
         <div class="batch-search-tags" id="batchSearchTags"></div>
       </div>
 
@@ -170,8 +167,8 @@
               </svg>
             </div>
             <h2 class="dropzone-title">Upload Indiana MyCase Records</h2>
-            <p class="dropzone-subtitle">Drag and drop saved MyCase <b>HTML</b> or <b>JSON</b> files here, or choose files from your computer</p>
-            <p class="dropzone-hint">Supports batch multi-file upload (e.g. multiple counties, maiden &amp; married name searches)</p>
+            <p class="dropzone-subtitle">Drag and drop your saved MyCase <b>HTML</b> or <b>JSON</b> files here, or select files from your device</p>
+            <p class="dropzone-hint">You can upload multiple files at once to combine records across different counties or name searches</p>
 
             <div class="dropzone-actions">
               <button type="button" class="btn btn-primary btn-lg" id="btnSelectFiles">
@@ -197,9 +194,9 @@
         <div class="paste-container" id="pasteContainer" style="display: none;">
           <div class="paste-header">
             <h4>Paste MyCase Page Source or JSON</h4>
-            <p>Paste the raw HTML source of your MyCase search results page or export JSON below:</p>
+            <p>Paste the HTML page source (Ctrl+U / Cmd+Option+U on MyCase) or exported JSON text below:</p>
           </div>
-          <textarea id="pasteInput" class="paste-textarea" placeholder="Paste HTML source (Ctrl+U on MyCase) or JSON text here..."></textarea>
+          <textarea id="pasteInput" class="paste-textarea" placeholder="Paste HTML source or JSON text here..."></textarea>
           <div class="paste-actions">
             <button type="button" class="btn btn-primary btn-sm" id="btnProcessPaste">Import Pasted Data</button>
           </div>
@@ -208,7 +205,7 @@
         <div class="import-options-row">
           <label class="checkbox-label scan-merge-label">
             <input type="checkbox" id="chkMergeCases" checked>
-            <span><b>Accumulate &amp; Merge</b> across multiple file uploads (preserves cases from all counties &amp; aliases)</span>
+            <span><b>Merge multiple uploads:</b> Keep and combine cases from all files (recommended when searching multiple counties or name variations)</span>
           </label>
         </div>
 
@@ -223,22 +220,22 @@
         <div class="step-card">
           <div class="step-num">1</div>
           <div class="step-content">
-            <h4>Search public.courts.in.gov</h4>
-            <p>Go to <a href="https://public.courts.in.gov/mycase" target="_blank" rel="noopener">Indiana MyCase</a> and search for your name, maiden names, prior names, and aliases across all 92 counties.</p>
+            <h4>1. Search MyCase</h4>
+            <p>Visit <a href="https://public.courts.in.gov/mycase" target="_blank" rel="noopener">public.courts.in.gov/mycase</a> and search all 92 counties for your current name and any former names or aliases.</p>
           </div>
         </div>
         <div class="step-card">
           <div class="step-num">2</div>
           <div class="step-content">
-            <h4>Save as HTML or Export JSON</h4>
-            <p>Either press <b>Ctrl+S</b> (Cmd+S) in your browser to save the page as HTML, or use our 1-Click Bookmarklet below to download a clean JSON bundle.</p>
+            <h4>2. Save Your Search Results</h4>
+            <p>Press <b>Ctrl+S</b> (Cmd+S) in your browser to save the search results page as an HTML file, or use the bookmarklet shortcut below.</p>
           </div>
         </div>
         <div class="step-card">
           <div class="step-num">3</div>
           <div class="step-content">
-            <h4>Drop Files Here &amp; Generate</h4>
-            <p>Upload your file(s) above. The assistant evaluates statutory eligibility under IC § 35-38-9 and generates your complete court pleading packet.</p>
+            <h4>3. Upload &amp; Review</h4>
+            <p>Upload your saved files above. The tool checks your eligibility under Indiana law and creates your court-ready petition packet.</p>
           </div>
         </div>
       </div>
@@ -248,12 +245,12 @@
         <div class="bookmarklet-header">
           <span class="bookmarklet-title">
             <span>⚡</span>
-            <span>1-Click Bookmarklet Exporter (Optional Shortcut)</span>
+            <span>Optional Shortcut: 1-Click Bookmarklet</span>
           </span>
-          <span class="badge-pill">No Install Required</span>
+          <span class="badge-pill">No Installation Needed</span>
         </div>
         <p class="bookmarklet-desc">
-          Drag this button to your browser bookmarks bar. When on <b>public.courts.in.gov/mycase</b>, click it to automatically extract and deep-scrape your records to a <code>.json</code> file, then drop it into this web app!
+          Drag this button to your browser bookmarks bar. While viewing your search results on <b>public.courts.in.gov/mycase</b>, click the bookmark to download your records as a JSON file, then drop that file here.
         </p>
         <div class="bookmarklet-actions">
           <a class="bookmarklet-drag-btn" id="appBookmarkletLink" href="javascript:(function(){const s=document.createElement('script');s.src='https://cambrianminds.github.io/indiana-expungement-assistant/bookmarklet.js?v='+Date.now();document.body.appendChild(s);})();" draggable="true" title="Drag this button to your bookmarks bar">
@@ -339,8 +336,8 @@
 
         <!-- Case List -->
         <div class="case-list-header">
-          <h3>Imported Case Records &amp; Statutory Analysis</h3>
-          <p>Click any case to expand full charges, statutory references, and waiting period details.</p>
+          <h3>Your Case Records &amp; Eligibility</h3>
+          <p>Select any case to view charges, statutory criteria, and waiting periods.</p>
         </div>
         <div class="case-list" id="caseList"></div>
       </div>
@@ -349,8 +346,8 @@
     <!-- ═══ Tab 3: Petitioner Profile ═══ -->
     <section class="tab-panel" id="tab-profile">
       <div class="profile-header">
-        <h3>Petitioner Legal Information</h3>
-        <p class="profile-desc">This information is required for the Confidential Information Sheet (ACR Form) and verified pleadings. Stored 100% locally in your browser.</p>
+        <h3>Petitioner Information</h3>
+        <p class="profile-desc">Required for your verified court petition and confidential case information sheet (Form ACR). All information is stored only in your browser.</p>
       </div>
 
       <form class="profile-form" id="profileForm" novalidate>
@@ -460,8 +457,8 @@
         </div>
 
         <div class="form-section-header">
-          <h4>Address History (10+ Years)</h4>
-          <p>Required by IC § 35-38-9-8(b)(3). List all residential addresses from earliest offense date to present.</p>
+          <h4>Residential Address History</h4>
+          <p>Indiana Code § 35-38-9-8(b)(3) requires listing all addresses where you have lived from the date of your earliest offense to the present.</p>
         </div>
         <div id="addressHistory" class="address-list">
           <!-- Dynamically populated -->
@@ -471,7 +468,7 @@
             <line x1="12" y1="5" x2="12" y2="19" />
             <line x1="5" y1="12" x2="19" y2="12" />
           </svg>
-          Add Previous Residence
+          Add Another Address
         </button>
 
         <div class="form-actions">
@@ -481,7 +478,7 @@
               <polyline points="17 21 17 13 7 13 7 21" />
               <polyline points="7 3 7 8 15 8" />
             </svg>
-            Save Profile &amp; Update Pleadings
+            Save Profile
           </button>
         </div>
       </form>
@@ -494,20 +491,17 @@
         <div class="one-shot-header">
           <span class="one-shot-icon">🛑</span>
           <div>
-            <h4>ONE-SHOT LIFETIME EXPUNGEMENT WARNING</h4>
-            <span class="statute-tag">Indiana Code § 35-38-9-9(i)</span>
+            <h4>LIFETIME ONE-SHOT EXPUNGEMENT WARNING</h4>
+            <span class="statute-tag">IC § 35-38-9-9(i)</span>
           </div>
         </div>
         <p class="one-shot-text">
-          <b>Indiana law permits you to file for conviction expungement ONLY ONCE IN YOUR ENTIRE LIFE.</b>
+          <b>Indiana law allows you to expunge criminal convictions only once in your lifetime.</b>
         </p>
         <ul class="one-shot-bullets">
-          <li><b>Failure to include any conviction is PERMANENT and IRREVERSIBLE:</b> If you omit any conviction in this
-            county or another county, you will <b>NEVER</b> be permitted to expunge it for the rest of your life.</li>
-          <li><b>Multiple Counties (365-Day Window):</b> Under <b>IC § 35-38-9-9(d)</b>, if you have cases in multiple
-            Indiana counties, all petitions must be filed within <b>365 days</b>. Filing today starts that lifetime clock.</li>
-          <li><b>Check All Names &amp; Counties:</b> You must verify that you searched MyCase for all legal names,
-            maiden names, previous names, and aliases across all 92 Indiana counties.</li>
+          <li><b>Omitting any conviction is permanent:</b> Any conviction omitted from your petition can <b>never</b> be expunged later.</li>
+          <li><b>365-Day Multi-County Window (IC § 35-38-9-9(d)):</b> If you have cases in multiple Indiana counties, all petitions must be filed within <b>365 days</b>. Filing your first petition starts this window.</li>
+          <li><b>Verify All Names &amp; Counties:</b> Confirm you searched MyCase across all 92 counties under your current legal name, maiden names, prior names, and aliases.</li>
         </ul>
       </div>
 
@@ -518,16 +512,15 @@
           <div class="creator-disclaimer-box">
             <div class="disclaimer-title-row">
               <span class="disclaimer-scale-icon">⚖️</span>
-              <h5>Independent Self-Help Tool · NOT Legal Advice</h5>
+              <h5>Self-Help Document Assistant · Not Legal Advice</h5>
             </div>
             <p class="disclaimer-p">
-              <b>Mission:</b> Expunging your criminal record and reclaiming your second chance under Indiana law should be an <b>accessible, transparent process for ordinary working people</b>.
+              Indiana's Second Chance Law exists. The $3,000 gate in front of it doesn't have to.
+              I built this tool because that filter is a structural choice, not an inevitability. You shouldn't have to buy
+              your way back into a system you already paid for.
             </p>
             <p class="disclaimer-p">
-              <b>Important Legal Notice:</b>
-              <br>• <b>I am NOT an attorney.</b> This is a pro se document generator.
-              <br>• Does NOT provide legal advice, representation, or counsel.
-              <br>• You are filing <b>pro se</b> (representing yourself).
+              <b>Important Notice:</b> The developer is <b>not an attorney</b> and does not provide legal representation or counsel. You are filing <b>pro se</b> (representing yourself) and are responsible for reviewing and verifying your court documents before filing.
             </p>
           </div>
 
@@ -545,28 +538,28 @@
               <input type="checkbox" id="ackOneShot" class="ack-checkbox">
               <span class="ack-label">
                 <b>Lifetime One-Shot Rule (IC § 35-38-9-9(i)):</b> I understand Indiana allows conviction expungement
-                <u>only once in my entire life</u>. Any conviction I fail to include can <u>NEVER</u> be expunged later.
+                <u>only once in my life</u>. Any conviction omitted now can <u>never</u> be expunged later.
               </span>
             </label>
 
             <label class="ack-item">
               <input type="checkbox" id="ackAllCounties" class="ack-checkbox">
               <span class="ack-label">
-                <b>All Charges &amp; Aliases Included:</b> I have searched MyCase for all names/aliases across all Indiana counties and verified that all eligible cases are accounted for.
+                <b>All Convictions &amp; Aliases Included:</b> I have searched MyCase across all 92 counties under all current and past names, and confirmed all eligible cases are accounted for.
               </span>
             </label>
 
             <label class="ack-item">
               <input type="checkbox" id="ackNotLawyer" class="ack-checkbox">
               <span class="ack-label">
-                <b>Not a Lawyer / Not Legal Advice:</b> I understand the creator is an <u>independent individual, NOT an attorney</u>, and this software is a self-help document tool, not legal counsel.
+                <b>Not an Attorney / Not Legal Advice:</b> I understand the author is <u>not an attorney</u> and this software is a self-help document formatter, not legal counsel or representation.
               </span>
             </label>
 
             <label class="ack-item">
               <input type="checkbox" id="ackProSe" class="ack-checkbox">
               <span class="ack-label">
-                <b>Pro Se Responsibility &amp; Liability Release:</b> I accept full responsibility for verifying, signing, and filing my documents, and release the tool creator from all liability.
+                <b>Pro Se Responsibility &amp; Release:</b> I accept sole responsibility for reviewing, signing, and filing my court paperwork, and release the tool creator from liability.
               </span>
             </label>
           </div>
@@ -574,30 +567,30 @@
           <div class="generate-checklist">
             <div class="checklist-item" id="checkProfile">
               <span class="check-icon">○</span>
-              <span>Petitioner profile filled</span>
+              <span>Petitioner profile completed</span>
             </div>
             <div class="checklist-item" id="checkCases">
               <span class="check-icon">○</span>
-              <span>Cases imported &amp; reviewed</span>
+              <span>Eligible cases imported &amp; reviewed</span>
             </div>
             <div class="checklist-item" id="checkBackendReady">
               <span class="check-icon">○</span>
-              <span>In-browser PDF engine ready</span>
+              <span>In-browser PDF generator ready</span>
             </div>
             <div class="checklist-item" id="checkAcknowledgments">
               <span class="check-icon">○</span>
-              <span>All 4 legal disclaimers acknowledged</span>
+              <span>All 4 legal acknowledgments confirmed</span>
             </div>
           </div>
 
           <div class="generate-options">
             <label class="checkbox-label">
               <input type="checkbox" id="includeFeeWaiver" checked>
-              Include Fee Waiver Request (Form 08)
+              <span>Include Fee Waiver Request (Form 08)</span>
             </label>
-            <label class="checkbox-label" title="Required by IC § 35-38-9-8(b). Contains SSN, DOB, and 10-year address history.">
+            <label class="checkbox-label" title="Required by IC § 35-38-9-8(b). Contains SSN, DOB, and residential address history.">
               <input type="checkbox" id="includeAddressSupplement" checked disabled>
-              Include Confidential Info &amp; Address Supplement (Form 03 - REQUIRED)
+              <span>Include Confidential Information &amp; Address Supplement (Form 03 — Required)</span>
             </label>
           </div>
 
@@ -622,12 +615,12 @@
             <div class="service-dir-header">
               <span class="service-dir-icon">📍</span>
               <div>
-                <h5>Filing &amp; Service Address Directory</h5>
-                <p>Verified statutory addresses for submitting and serving your expungement paperwork under IC § 35-38-9-8(e).</p>
+                <h5>Filing &amp; Service Addresses</h5>
+                <p>Official clerk, prosecutor, and agency addresses required for serving your petition under IC § 35-38-9-8(e).</p>
               </div>
             </div>
             <div class="service-dir-county-row">
-              <label for="selectDirectoryCounty">Select County For Service Addresses:</label>
+              <label for="selectDirectoryCounty">Select County:</label>
               <select id="selectDirectoryCounty" class="county-select-dropdown"></select>
             </div>
             <div class="service-dir-list" id="serviceDirBody">
@@ -689,9 +682,9 @@
           <!-- Dynamically populated with case numbers -->
         </div>
         <div class="modal-callout-danger">
-          <b>INDIANA CODE § 35-38-9-9(i) STRICT LIFETIME LIMIT:</b>
-          <br>You can petition to expunge convictions <u>ONLY ONCE IN YOUR LIFE</u>. Any conviction not included now can
-          <u>NEVER BE EXPUNGED FOR THE REST OF YOUR LIFE</u>.
+          <b>Indiana Code § 35-38-9-9(i) Lifetime Limit:</b>
+          <br>You can petition to expunge convictions <u>only once in your lifetime</u>. Any conviction not included now can
+          <u>never be expunged later</u>.
         </div>
         <p class="modal-checklist-intro">Before generating, confirm you have searched MyCase for:</p>
         <ul class="modal-list">
@@ -701,7 +694,7 @@
           <li>✓ Any open or pending warrants/cases</li>
         </ul>
         <p class="modal-subtext">
-          <b>Disclaimer:</b> The creator of this software is an independent individual, NOT an attorney. This is NOT legal advice. You are filing pro se.
+          <b>Disclaimer:</b> The creator of this software is not an attorney. This is not legal advice. You are filing pro se.
         </p>
       </div>
       <div class="modal-footer">
@@ -721,13 +714,17 @@
       <div class="modal-body modal-scrollable">
         <h4>Why This Project Exists</h4>
         <p>
-          I am an <b>independent individual</b> who believes that the criminal record expungement process under
-          Indiana's Second Chance Law (IC § 35-38-9) should be <b>an accessible, straightforward process for ordinary people</b>.
+          Indiana's Second Chance Law looks great on paper, but the vocabulary we use around it is doing enormous,
+          unhelpful work. The state feels <em>empathy</em> for people with records, so it wrote a statute. But
+          empathy is just a feeling; actual care is resource allocation. Right now, the state's empathy is locked
+          behind a gate with up to a $3,000 admission fee, operated by private attorneys. It is an economic filter
+          that locks out the exact people who need a clean slate the most.
         </p>
         <p>
-          Today, the system is unnecessarily complicated and intimidating, and many people who have earned a clean slate
-          cannot afford thousands of dollars for private attorneys. This tool was built to level the playing field by
-          providing automated pro se document preparation.
+          I built this tool because that filter is a structural choice, not an inevitability. You shouldn't have to
+          buy your way back into a system you already paid for. This software is not legal counsel. It is not
+          absolution. It is the raw infrastructure required to do the work yourself &mdash; the same work an attorney
+          charges thousands to format on your behalf. The law belongs to you. This is just the machinery to use it.
         </p>
 
         <h4>Crucial One-Shot Rule Warning (IC § 35-38-9-9(i))</h4>
