@@ -1,19 +1,18 @@
 /**
- * Indiana Expungement Assistant - Web Showcase & Interactive Portal
+ * Indiana Expungement Assistant - Public Legal Aid & Second Chance Portal
  * Client-Side Interactive Logic
  */
 
 document.addEventListener('DOMContentLoaded', () => {
   initEligibilityCalculator();
-  initOneShotChecklist();
-  initQuickstartTabs();
+  initAuditChecklist();
+  initGuideTabs();
   initCopyButtons();
   initMobileNav();
-  initPleadingCards();
 });
 
 /* ==========================================================================
-   1. Statutory Eligibility Calculator (IC § 35-38-9)
+   1. Statutory Eligibility Assessment (IC § 35-38-9)
    ========================================================================== */
 
 const STATUTORY_TIERS = {
@@ -21,7 +20,7 @@ const STATUTORY_TIERS = {
     statute: 'IC § 35-38-9-1',
     name: 'Non-Convictions, Dismissals & Arrests',
     waitingYears: 1,
-    grantType: 'Mandatory',
+    grantType: 'Mandatory (Court Shall Grant)',
     isConviction: false,
     courtAction: 'The court SHALL grant expungement if no charges are pending.',
     details: 'Covers dropped charges, acquittals, or arrests where no charges were filed within 1 year or charges were dismissed. Completely mandatory grant with no filing fees in most circumstances.'
@@ -30,7 +29,7 @@ const STATUTORY_TIERS = {
     statute: 'IC § 35-38-9-2',
     name: 'Misdemeanors & Reduced Felonies',
     waitingYears: 5,
-    grantType: 'Mandatory',
+    grantType: 'Mandatory (Court Shall Grant)',
     isConviction: true,
     courtAction: 'The court SHALL grant expungement if statutory criteria are met.',
     details: 'Covers Class A, B, C misdemeanors and Class D/Level 6 felonies reduced to misdemeanors. Requires 5 years from date of conviction, all fines/restitution paid, and no new convictions.'
@@ -39,7 +38,7 @@ const STATUTORY_TIERS = {
     statute: 'IC § 35-38-9-3',
     name: 'Class D / Level 6 Felonies',
     waitingYears: 8,
-    grantType: 'Mandatory',
+    grantType: 'Mandatory (Court Shall Grant)',
     isConviction: true,
     courtAction: 'The court SHALL grant expungement if statutory criteria are met.',
     details: 'Covers Level 6 and Class D felonies that did not result in bodily injury. Requires 8 years from date of conviction (or 3 years from completion of sentence). Mandatory grant upon statutory proof.'
@@ -48,7 +47,7 @@ const STATUTORY_TIERS = {
     statute: 'IC § 35-38-9-4',
     name: 'Major Felonies (Non-Violent Levels 1-5)',
     waitingYears: 8,
-    grantType: 'Discretionary',
+    grantType: 'Discretionary (Judicial Review)',
     isConviction: true,
     courtAction: 'The court MAY grant expungement in its judicial discretion.',
     details: 'Covers higher-level felonies (Class A, B, C or Levels 1-5) that did not result in serious bodily injury. Requires 8 years from conviction (or 3 years from sentence completion). Judge has discretion to grant or deny; court hearing is typically held.'
@@ -57,7 +56,7 @@ const STATUTORY_TIERS = {
     statute: 'IC § 35-38-9-5',
     name: 'Serious Violent Felonies',
     waitingYears: 10,
-    grantType: 'Prosecutor Consent Required',
+    grantType: 'Prosecutor Written Consent Required',
     isConviction: true,
     courtAction: 'CANNOT be granted without written consent from the Prosecuting Attorney.',
     details: 'Covers offenses involving serious bodily injury, elected officials in official capacity, or major sexual offenses not excluded under § 35-38-9-5(b). Requires 10 years and explicit written prosecutor consent.'
@@ -71,7 +70,7 @@ function initEligibilityCalculator() {
   const checkPending = document.getElementById('calcCheckPending');
   const checkConvictions = document.getElementById('calcCheckConvictions');
 
-  // Set default date to 6 years ago for immediate demonstration
+  // Set default date to 6 years ago for immediate illustration
   if (dateInput && !dateInput.value) {
     const d = new Date();
     d.setFullYear(d.getFullYear() - 6);
@@ -85,7 +84,7 @@ function initEligibilityCalculator() {
     const tier = STATUTORY_TIERS[tierKey];
 
     // Highlight active option card
-    document.querySelectorAll('.tier-option').forEach(card => {
+    document.querySelectorAll('.tier-item').forEach(card => {
       const radio = card.querySelector('input[type="radio"]');
       if (radio && radio.checked) {
         card.classList.add('active');
@@ -95,9 +94,9 @@ function initEligibilityCalculator() {
     });
 
     const dateVal = dateInput.value;
-    const finesPaid = checkFines.checked;
-    const noPending = checkPending.checked;
-    const noNewConvictions = checkConvictions.checked;
+    const finesPaid = checkFines ? checkFines.checked : true;
+    const noPending = checkPending ? checkPending.checked : true;
+    const noNewConvictions = checkConvictions ? checkConvictions.checked : true;
 
     let yearsElapsed = 0;
     let daysRemaining = 0;
@@ -127,40 +126,40 @@ function initEligibilityCalculator() {
 
     statCitation.textContent = tier.statute;
     waitingPeriodVal.textContent = `${tier.waitingYears} Year${tier.waitingYears > 1 ? 's' : ''}`;
-    elapsedVal.textContent = dateVal ? `${yearsElapsed.toFixed(1)} Years elapsed` : 'Please enter date';
+    elapsedVal.textContent = dateVal ? `${yearsElapsed.toFixed(1)} Years elapsed` : 'Enter date';
     courtStandardVal.textContent = tier.grantType;
 
     if (!isTimeMet) {
-      statusBadge.className = 'result-badge result-badge-warning';
-      statusBadge.innerHTML = '⏳ Waiting Period Incomplete';
-      headline.textContent = `Eligible in ~${daysRemaining} days`;
-      explanation.innerHTML = `Under <b>${tier.statute}</b>, you must wait at least <b>${tier.waitingYears} years</b>. Based on your date, you have completed <b>${yearsElapsed.toFixed(1)}</b> of the required <b>${tier.waitingYears}</b> years. (Unless the County Prosecutor gives written consent to file early under IC § 35-38-9-9(b)).`;
+      statusBadge.className = 'status-badge status-badge-warning';
+      statusBadge.innerHTML = '⏳ Waiting Period In Progress';
+      headline.textContent = `Eligible in Approximately ${daysRemaining} Days`;
+      explanation.innerHTML = `Under <b>${tier.statute}</b>, you must wait at least <b>${tier.waitingYears} years</b>. Based on the date provided, you have completed <b>${yearsElapsed.toFixed(1)}</b> of the required <b>${tier.waitingYears}</b> years. (Note: The County Prosecutor may give written consent to file early under IC § 35-38-9-9(b)).`;
     } else if (!finesPaid || !noPending || !noNewConvictions) {
-      statusBadge.className = 'result-badge result-badge-danger';
-      statusBadge.innerHTML = '⚠️ Statutory Prerequisite Missing';
+      statusBadge.className = 'status-badge status-badge-danger';
+      statusBadge.innerHTML = '⚠️ Statutory Prerequisite Required';
       headline.textContent = 'Pre-Filing Requirements Incomplete';
       let missing = [];
-      if (!finesPaid) missing.push('All fines, fees, and court costs must be paid in full');
+      if (!finesPaid) missing.push('All court costs, fines, and restitution must be paid in full');
       if (!noPending) missing.push('No pending criminal charges in any jurisdiction');
-      if (!noNewConvictions) missing.push(`No criminal convictions within the statutory waiting window`);
-      explanation.innerHTML = `Even though your waiting period of ${tier.waitingYears} years has passed, Indiana law strictly requires:<br>• ${missing.join('<br>• ')}`;
+      if (!noNewConvictions) missing.push(`No criminal convictions within the ${tier.waitingYears}-year statutory waiting window`);
+      explanation.innerHTML = `Although the waiting period has elapsed, Indiana law requires that all statutory conditions be met prior to filing:<br>• ${missing.join('<br>• ')}`;
     } else {
-      // Eligible!
-      if (tier.grantType === 'Mandatory') {
-        statusBadge.className = 'result-badge result-badge-success';
-        statusBadge.innerHTML = '✓ Fully Eligible (Mandatory Grant)';
+      // Fully Eligible
+      if (tier.grantType.includes('Mandatory')) {
+        statusBadge.className = 'status-badge status-badge-success';
+        statusBadge.innerHTML = '✓ Statutorily Eligible (Mandatory Grant)';
         headline.textContent = 'Court Required By Law To Grant';
-        explanation.innerHTML = `Under <b>${tier.statute}</b>, if you meet all statutory conditions, the Indiana court <b>SHALL</b> grant the expungement. The judge has no discretion to deny your petition.`;
-      } else if (tier.grantType === 'Discretionary') {
-        statusBadge.className = 'result-badge result-badge-warning';
-        statusBadge.innerHTML = '⚖️ Eligible (Discretionary Review)';
-        headline.textContent = 'Court Has Discretion To Grant';
-        explanation.innerHTML = `Under <b>${tier.statute}</b>, you meet the statutory eligibility requirements to file, but the court <b>MAY</b> grant or deny in its judicial discretion after considering your rehabilitation, community ties, and prosecutor objections.`;
+        explanation.innerHTML = `Under <b>${tier.statute}</b>, if you satisfy all statutory prerequisites, the Indiana court <b>SHALL</b> grant the expungement. By law, the court does not have discretion to deny a compliant petition.`;
+      } else if (tier.grantType.includes('Discretionary')) {
+        statusBadge.className = 'status-badge status-badge-warning';
+        statusBadge.innerHTML = '⚖️ Statutorily Eligible (Judicial Review)';
+        headline.textContent = 'Court Exercises Judicial Discretion';
+        explanation.innerHTML = `Under <b>${tier.statute}</b>, you meet the statutory eligibility threshold to petition the court. The judge <b>MAY</b> grant expungement after evaluating evidence of rehabilitation, character, and prosecutor input.`;
       } else {
-        statusBadge.className = 'result-badge result-badge-warning';
-        statusBadge.innerHTML = '📜 Prosecutor Consent Required';
-        headline.textContent = 'Written Prosecutor Consent Mandatory';
-        explanation.innerHTML = `Under <b>${tier.statute}</b>, serious violent offenses require explicit written approval from the Prosecuting Attorney before any court can consider the petition.`;
+        statusBadge.className = 'status-badge status-badge-warning';
+        statusBadge.innerHTML = '📜 Prosecutor Written Consent Required';
+        headline.textContent = 'Prosecutor Approval Required Before Filing';
+        explanation.innerHTML = `Under <b>${tier.statute}</b>, serious violent felony expungements strictly require the written consent of the Prosecuting Attorney before the court can grant relief.`;
       }
     }
   }
@@ -175,17 +174,17 @@ function initEligibilityCalculator() {
 }
 
 /* ==========================================================================
-   2. One-Shot Interactive Checklist
+   2. Record Audit Checklist
    ========================================================================== */
 
-function initOneShotChecklist() {
-  const checkboxes = document.querySelectorAll('.prep-item input[type="checkbox"]');
+function initAuditChecklist() {
+  const checkboxes = document.querySelectorAll('.audit-item input[type="checkbox"]');
   const progressText = document.getElementById('prepProgressText');
 
   function updateProgress() {
     let checkedCount = 0;
     checkboxes.forEach(cb => {
-      const parent = cb.closest('.prep-item');
+      const parent = cb.closest('.audit-item');
       if (cb.checked) {
         checkedCount++;
         parent.classList.add('completed');
@@ -204,12 +203,12 @@ function initOneShotChecklist() {
 }
 
 /* ==========================================================================
-   3. Quickstart Tabs
+   3. User Guide Tabs
    ========================================================================== */
 
-function initQuickstartTabs() {
-  const tabBtns = document.querySelectorAll('.qs-tab-btn');
-  const tabPanes = document.querySelectorAll('.qs-tab-pane');
+function initGuideTabs() {
+  const tabBtns = document.querySelectorAll('.guide-tab-btn');
+  const tabPanes = document.querySelectorAll('.guide-pane');
 
   tabBtns.forEach(btn => {
     btn.addEventListener('click', () => {
@@ -226,11 +225,11 @@ function initQuickstartTabs() {
 }
 
 /* ==========================================================================
-   4. Copy-to-Clipboard Buttons
+   4. Copy Buttons
    ========================================================================== */
 
 function initCopyButtons() {
-  const copyBtns = document.querySelectorAll('.btn-copy');
+  const copyBtns = document.querySelectorAll('.btn-snippet-copy');
   copyBtns.forEach(btn => {
     btn.addEventListener('click', () => {
       const pre = btn.parentElement.querySelector('pre');
@@ -239,11 +238,11 @@ function initCopyButtons() {
 
       navigator.clipboard.writeText(text).then(() => {
         const originalText = btn.textContent;
-        btn.textContent = '✓ Copied!';
-        btn.style.color = '#10b981';
+        btn.textContent = '✓ Copied';
+        btn.style.backgroundColor = 'rgba(5, 150, 105, 0.5)';
         setTimeout(() => {
           btn.textContent = originalText;
-          btn.style.color = '';
+          btn.style.backgroundColor = '';
         }, 2000);
       });
     });
@@ -269,14 +268,14 @@ function initMobileNav() {
         navLinks.style.top = '100%';
         navLinks.style.left = '0';
         navLinks.style.right = '0';
-        navLinks.style.background = 'rgba(7, 11, 20, 0.98)';
+        navLinks.style.backgroundColor = '#ffffff';
         navLinks.style.padding = '1.5rem';
-        navLinks.style.borderBottom = '1px solid rgba(255, 255, 255, 0.1)';
+        navLinks.style.borderBottom = '1px solid #e2e8f0';
+        navLinks.style.boxShadow = '0 4px 12px rgba(15, 23, 42, 0.08)';
         navLinks.style.gap = '1.25rem';
       }
     });
 
-    // Close when clicking any nav item
     navLinks.querySelectorAll('a').forEach(a => {
       a.addEventListener('click', () => {
         if (window.innerWidth <= 768) {
@@ -285,19 +284,4 @@ function initMobileNav() {
       });
     });
   }
-}
-
-/* ==========================================================================
-   6. Pleadings Interactive Info
-   ========================================================================== */
-
-function initPleadingCards() {
-  const cards = document.querySelectorAll('.pleading-card');
-  cards.forEach(card => {
-    card.addEventListener('click', () => {
-      const name = card.querySelector('.pleading-name').textContent;
-      const purpose = card.querySelector('.pleading-purpose').textContent;
-      console.log(`Pleading inspected: ${name} - ${purpose}`);
-    });
-  });
 }
