@@ -357,6 +357,16 @@
            if (htmlMatch) caseData.caseToken = htmlMatch[1];
         }
 
+        // Knockout row-level fallback
+        if (!caseData.caseToken && typeof ko !== 'undefined' && ko.dataFor) {
+           try {
+             const ctx = ko.dataFor(row);
+             if (ctx) {
+               caseData.caseToken = ctx.CaseToken || ctx.CaseID || (ctx.model && (ctx.model.CaseToken || ctx.model.CaseID)) || '';
+             }
+           } catch (e) {}
+        }
+
         if (caseData.case_number) {
           cases.push(caseData);
         }

@@ -25,7 +25,8 @@
         "https://mycase.in.gov/*"
       ],
       "js": ["eligibility.js", "content.js"],
-      "run_at": "document_idle"
+      "run_at": "document_idle",
+      "world": "MAIN"
     }
   ],
   "side_panel": {
