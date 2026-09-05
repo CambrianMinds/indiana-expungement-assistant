@@ -591,6 +591,402 @@ export const COUNTY_DATA = {
       zip: '47201',
       phone: '(812) 379-1650'
     }
+  },
+  'HUNTINGTON': {
+    name: 'Huntington',
+    countySeat: 'Huntington',
+    courtName: 'Huntington Circuit & Superior Courts',
+    courtCode: '35C01',
+    clerk: {
+      title: 'Huntington County Clerk of the Circuit Court',
+      address: '201 N. Jefferson St., Room 201',
+      city: 'Huntington',
+      state: 'IN',
+      zip: '46750',
+      phone: '(260) 358-4852',
+      efileCode: 'huntington:court'
+    },
+    prosecutor: {
+      title: 'Office of the Huntington County Prosecuting Attorney',
+      division: 'Criminal Division',
+      address: '201 N. Jefferson St., Room 402',
+      city: 'Huntington',
+      state: 'IN',
+      zip: '46750',
+      phone: '(260) 358-4846',
+      serviceNotes: 'Service via Odyssey IEFS or Certified Mail'
+    },
+    sheriff: {
+      title: "Huntington County Sheriff's Department",
+      address: '332 E. State St.',
+      city: 'Huntington',
+      state: 'IN',
+      zip: '46750',
+      phone: '(260) 356-8316'
+    }
+  },
+  'WELLS': {
+    name: 'Wells',
+    countySeat: 'Bluffton',
+    courtName: 'Wells Circuit & Superior Courts',
+    courtCode: '90C01',
+    clerk: {
+      title: 'Wells County Clerk of the Circuit Court',
+      address: '102 W. Market St., Suite 201',
+      city: 'Bluffton',
+      state: 'IN',
+      zip: '46714',
+      phone: '(260) 824-6478',
+      efileCode: 'wells:court'
+    },
+    prosecutor: {
+      title: 'Office of the Wells County Prosecuting Attorney',
+      division: 'Criminal Division',
+      address: '102 W. Market St., Suite 303',
+      city: 'Bluffton',
+      state: 'IN',
+      zip: '46714',
+      phone: '(260) 824-6415',
+      serviceNotes: 'Service via Odyssey IEFS or Certified Mail'
+    },
+    sheriff: {
+      title: "Wells County Sheriff's Office",
+      address: '1615 W. Western Ave.',
+      city: 'Bluffton',
+      state: 'IN',
+      zip: '46714',
+      phone: '(260) 824-3426'
+    }
+  },
+  'ADAMS': {
+    name: 'Adams',
+    countySeat: 'Decatur',
+    courtName: 'Adams Circuit & Superior Courts',
+    courtCode: '01C01',
+    clerk: {
+      title: 'Adams County Clerk of the Circuit Court',
+      address: '112 S. 2nd St., Suite A',
+      city: 'Decatur',
+      state: 'IN',
+      zip: '46733',
+      phone: '(260) 724-5300 ext. 2106',
+      efileCode: 'adams:court'
+    },
+    prosecutor: {
+      title: 'Office of the Adams County Prosecuting Attorney',
+      division: 'Criminal Division',
+      address: '112 S. 2nd St., Suite C',
+      city: 'Decatur',
+      state: 'IN',
+      zip: '46733',
+      phone: '(260) 724-5313',
+      serviceNotes: 'Service via Odyssey IEFS or Certified Mail'
+    },
+    sheriff: {
+      title: "Adams County Sheriff's Office",
+      address: '313 W. Jefferson St.',
+      city: 'Decatur',
+      state: 'IN',
+      zip: '46733',
+      phone: '(260) 724-5345'
+    }
+  },
+  'WHITLEY': {
+    name: 'Whitley',
+    countySeat: 'Columbia City',
+    courtName: 'Whitley Circuit & Superior Courts',
+    courtCode: '92C01',
+    clerk: {
+      title: 'Whitley County Clerk of the Circuit Court',
+      address: '101 W. Van Buren St., Room 24',
+      city: 'Columbia City',
+      state: 'IN',
+      zip: '46725',
+      phone: '(260) 248-3164',
+      efileCode: 'whitley:court'
+    },
+    prosecutor: {
+      title: 'Office of the Whitley County Prosecuting Attorney',
+      division: 'Criminal Division',
+      address: '101 W. Van Buren St., Suite 22',
+      city: 'Columbia City',
+      state: 'IN',
+      zip: '46725',
+      phone: '(260) 248-3126',
+      serviceNotes: 'Service via Odyssey IEFS or Certified Mail'
+    },
+    sheriff: {
+      title: "Whitley County Sheriff's Department",
+      address: '101 W. Market St.',
+      city: 'Columbia City',
+      state: 'IN',
+      zip: '46725',
+      phone: '(260) 244-6410'
+    }
+  },
+  'WABASH': {
+    name: 'Wabash',
+    countySeat: 'Wabash',
+    courtName: 'Wabash Circuit & Superior Courts',
+    courtCode: '85C01',
+    clerk: {
+      title: 'Wabash County Clerk of the Circuit Court',
+      address: '49 W. Hill St., Suite 207',
+      city: 'Wabash',
+      state: 'IN',
+      zip: '46992',
+      phone: '(260) 563-0661',
+      efileCode: 'wabash:court'
+    },
+    prosecutor: {
+      title: 'Office of the Wabash County Prosecuting Attorney',
+      division: 'Criminal Division',
+      address: '99 W. Main St.',
+      city: 'Wabash',
+      state: 'IN',
+      zip: '46992',
+      phone: '(260) 563-1105',
+      serviceNotes: 'Service via Odyssey IEFS or Certified Mail'
+    },
+    sheriff: {
+      title: "Wabash County Sheriff's Department",
+      address: '79 W. Main St.',
+      city: 'Wabash',
+      state: 'IN',
+      zip: '46992',
+      phone: '(260) 563-8891'
+    }
+  },
+  'GRANT': {
+    name: 'Grant',
+    countySeat: 'Marion',
+    courtName: 'Grant Circuit & Superior Courts',
+    courtCode: '27C01',
+    clerk: {
+      title: 'Grant County Clerk of the Circuit Court',
+      address: '101 E. 4th St., Suite 201',
+      city: 'Marion',
+      state: 'IN',
+      zip: '46952',
+      phone: '(765) 668-8121',
+      efileCode: 'grant:court'
+    },
+    prosecutor: {
+      title: 'Office of the Grant County Prosecuting Attorney',
+      division: 'Criminal Division',
+      address: '214 E. 4th St.',
+      city: 'Marion',
+      state: 'IN',
+      zip: '46952',
+      phone: '(765) 664-0739',
+      serviceNotes: 'Service via Odyssey IEFS or Certified Mail'
+    },
+    sheriff: {
+      title: "Grant County Sheriff's Department",
+      address: '214 E. 4th St.',
+      city: 'Marion',
+      state: 'IN',
+      zip: '46952',
+      phone: '(765) 662-9836'
+    }
+  },
+  'BLACKFORD': {
+    name: 'Blackford',
+    countySeat: 'Hartford City',
+    courtName: 'Blackford Circuit & Superior Courts',
+    courtCode: '05C01',
+    clerk: {
+      title: 'Blackford County Clerk of the Circuit Court',
+      address: '110 W. Washington St.',
+      city: 'Hartford City',
+      state: 'IN',
+      zip: '47348',
+      phone: '(765) 348-1130',
+      efileCode: 'blackford:court'
+    },
+    prosecutor: {
+      title: 'Office of the Blackford County Prosecuting Attorney',
+      division: 'Criminal Division',
+      address: '110 W. Washington St.',
+      city: 'Hartford City',
+      state: 'IN',
+      zip: '47348',
+      phone: '(765) 348-1422',
+      serviceNotes: 'Service via Odyssey IEFS or Certified Mail'
+    },
+    sheriff: {
+      title: "Blackford County Sheriff's Office",
+      address: '0064 N 100 E',
+      city: 'Hartford City',
+      state: 'IN',
+      zip: '47348',
+      phone: '(765) 348-0930'
+    }
+  },
+  'JAY': {
+    name: 'Jay',
+    countySeat: 'Portland',
+    courtName: 'Jay Circuit & Superior Courts',
+    courtCode: '38C01',
+    clerk: {
+      title: 'Jay County Clerk of the Circuit Court',
+      address: '120 S. Court St., Suite 201',
+      city: 'Portland',
+      state: 'IN',
+      zip: '47371',
+      phone: '(260) 726-4951',
+      efileCode: 'jay:court'
+    },
+    prosecutor: {
+      title: 'Office of the Jay County Prosecuting Attorney',
+      division: 'Criminal Division',
+      address: '120 S. Court St., Suite 301',
+      city: 'Portland',
+      state: 'IN',
+      zip: '47371',
+      phone: '(260) 726-8575',
+      serviceNotes: 'Service via Odyssey IEFS or Certified Mail'
+    },
+    sheriff: {
+      title: "Jay County Sheriff's Office",
+      address: '224 N. Meridian St.',
+      city: 'Portland',
+      state: 'IN',
+      zip: '47371',
+      phone: '(260) 726-8188'
+    }
+  },
+  'DEKALB': {
+    name: 'DeKalb',
+    countySeat: 'Auburn',
+    courtName: 'DeKalb Circuit & Superior Courts',
+    courtCode: '17C01',
+    clerk: {
+      title: 'DeKalb County Clerk of the Circuit Court',
+      address: '100 S. Main St.',
+      city: 'Auburn',
+      state: 'IN',
+      zip: '46706',
+      phone: '(260) 925-0912',
+      efileCode: 'dekalb:court'
+    },
+    prosecutor: {
+      title: 'Office of the DeKalb County Prosecuting Attorney',
+      division: 'Criminal Division',
+      address: '100 S. Main St., 3rd Floor',
+      city: 'Auburn',
+      state: 'IN',
+      zip: '46706',
+      phone: '(260) 925-1646',
+      serviceNotes: 'Service via Odyssey IEFS or Certified Mail'
+    },
+    sheriff: {
+      title: "DeKalb County Sheriff's Office",
+      address: '215 E. 8th St.',
+      city: 'Auburn',
+      state: 'IN',
+      zip: '46706',
+      phone: '(260) 925-3365'
+    }
+  },
+  'NOBLE': {
+    name: 'Noble',
+    countySeat: 'Albion',
+    courtName: 'Noble Circuit & Superior Courts',
+    courtCode: '57C01',
+    clerk: {
+      title: 'Noble County Clerk of the Circuit Court',
+      address: '101 N. Orange St.',
+      city: 'Albion',
+      state: 'IN',
+      zip: '46701',
+      phone: '(260) 636-2736',
+      efileCode: 'noble:court'
+    },
+    prosecutor: {
+      title: 'Office of the Noble County Prosecuting Attorney',
+      division: 'Criminal Division',
+      address: '109 N. York St.',
+      city: 'Albion',
+      state: 'IN',
+      zip: '46701',
+      phone: '(260) 636-2193',
+      serviceNotes: 'Service via Odyssey IEFS or Certified Mail'
+    },
+    sheriff: {
+      title: "Noble County Sheriff's Department",
+      address: '1699 W. North St.',
+      city: 'Albion',
+      state: 'IN',
+      zip: '46701',
+      phone: '(260) 636-2182'
+    }
+  },
+  'KOSCIUSKO': {
+    name: 'Kosciusko',
+    countySeat: 'Warsaw',
+    courtName: 'Kosciusko Circuit & Superior Courts',
+    courtCode: '43C01',
+    clerk: {
+      title: 'Kosciusko County Clerk of the Circuit Court',
+      address: '121 N. Indiana St.',
+      city: 'Warsaw',
+      state: 'IN',
+      zip: '46580',
+      phone: '(574) 372-2332',
+      efileCode: 'kosciusko:court'
+    },
+    prosecutor: {
+      title: 'Office of the Kosciusko County Prosecuting Attorney',
+      division: 'Criminal Division',
+      address: '121 N. Indiana St., Suite 200',
+      city: 'Warsaw',
+      state: 'IN',
+      zip: '46580',
+      phone: '(574) 372-2419',
+      serviceNotes: 'Service via Odyssey IEFS or Certified Mail'
+    },
+    sheriff: {
+      title: "Kosciusko County Sheriff's Office",
+      address: '221 W. Main St.',
+      city: 'Warsaw',
+      state: 'IN',
+      zip: '46580',
+      phone: '(574) 267-5667'
+    }
+  },
+  'STEUBEN': {
+    name: 'Steuben',
+    countySeat: 'Angola',
+    courtName: 'Steuben Circuit & Superior Courts',
+    courtCode: '76C01',
+    clerk: {
+      title: 'Steuben County Clerk of the Circuit Court',
+      address: '55 S. Public Square',
+      city: 'Angola',
+      state: 'IN',
+      zip: '46703',
+      phone: '(260) 668-1000 ext. 2220',
+      efileCode: 'steuben:court'
+    },
+    prosecutor: {
+      title: 'Office of the Steuben County Prosecuting Attorney',
+      division: 'Criminal Division',
+      address: '205 S. Martha St.',
+      city: 'Angola',
+      state: 'IN',
+      zip: '46703',
+      phone: '(260) 668-1000 ext. 2400',
+      serviceNotes: 'Service via Odyssey IEFS or Certified Mail'
+    },
+    sheriff: {
+      title: "Steuben County Sheriff's Office",
+      address: '206 E. Elm St.',
+      city: 'Angola',
+      state: 'IN',
+      zip: '46703',
+      phone: '(260) 668-1000 ext. 2500'
+    }
   }
 };
 
@@ -600,11 +996,18 @@ export const COUNTY_DATA = {
  */
 export function getCountyInfo(countyName) {
   if (!countyName) countyName = 'Marion';
-  const clean = String(countyName).trim().toUpperCase().replace(/\s+COUNTY$/, '').replace(/^COUNTY\s+OF\s+/, '');
+  const clean = String(countyName).trim().toUpperCase()
+    .replace(/\s+COUNTY$/, '')
+    .replace(/^COUNTY\s+OF\s+/, '')
+    .replace(/\s+/g, ' ');
   
   if (COUNTY_DATA[clean]) {
     return COUNTY_DATA[clean];
   }
+
+  // Common spelling variations
+  if (clean === 'DE KALB' && COUNTY_DATA['DEKALB']) return COUNTY_DATA['DEKALB'];
+  if ((clean === 'ST JOSEPH' || clean === 'SAINT JOSEPH') && COUNTY_DATA['ST. JOSEPH']) return COUNTY_DATA['ST. JOSEPH'];
 
   // Format capitalized county name
   const formattedName = clean.charAt(0) + clean.slice(1).toLowerCase();
@@ -649,5 +1052,5 @@ export function getStatewideAgencies() {
 }
 
 export function getAvailableCounties() {
-  return Object.keys(COUNTY_DATA).map(k => COUNTY_DATA[k].name);
+  return Object.keys(COUNTY_DATA).map(k => COUNTY_DATA[k].name).sort((a, b) => a.localeCompare(b));
 }
