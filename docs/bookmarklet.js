@@ -335,10 +335,16 @@
           if (rightCol) caseData.filed = rightCol.textContent.trim();
         }
 
-        if (titleEl && titleEl.getAttribute('data-bind')) {
-          const onclick = titleEl.getAttribute('onclick') || '';
-          const tokenMatch = onclick.match(/CaseToken[=:][\s'"]*([^'"&]+)/);
-          if (tokenMatch) caseData.caseToken = tokenMatch[1];
+        if (titleEl) {
+          const href = titleEl.getAttribute('href') || '';
+          const hrefMatch = href.match(/CaseToken=([^&]+)/i);
+          if (hrefMatch) {
+            caseData.caseToken = hrefMatch[1];
+          } else {
+            const onclick = titleEl.getAttribute('onclick') || '';
+            const tokenMatch = onclick.match(/CaseToken[=:][\s'"]*([^'"&]+)/i);
+            if (tokenMatch) caseData.caseToken = tokenMatch[1];
+          }
         }
 
         if (caseData.case_number) {
