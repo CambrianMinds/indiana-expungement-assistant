@@ -2,6 +2,12 @@
 
 **Automated in-browser MyCase scraping + court-ready IC § 35-38-9 petition generator**
 
+[![Live Portal](https://img.shields.io/badge/Live_Portal-GitHub_Pages-blue?style=for-the-badge&logo=github)](https://cambrianminds.github.io/indiana-expungement-assistant/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
+[![Indiana Code](https://img.shields.io/badge/Statute-IC_%C2%A7_35--38--9-emerald?style=for-the-badge)](https://iga.in.gov/laws/2023/ic/titles/35#35-38-9)
+
+🌐 **Live Website & Interactive Eligibility Checker:** [https://cambrianminds.github.io/indiana-expungement-assistant/](https://cambrianminds.github.io/indiana-expungement-assistant/)
+
 > ### 🛑 CRITICAL LEGAL NOTICE & ONE-SHOT RULE WARNING
 > **INDIANA CODE § 35-38-9-9(i) LIFETIME ONE-SHOT LIMITATION:**
 > Under Indiana law, **you are permitted to petition for expungement of criminal conviction records ONLY ONCE IN YOUR ENTIRE LIFETIME.**
