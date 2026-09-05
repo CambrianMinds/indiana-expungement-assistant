@@ -128,8 +128,12 @@
 
   <!-- Hero Section -->
   <section class="hero">
-    <div class="container hero-container">
-      <div class="hero-content">
+    <div class="hero-bg-media" aria-hidden="true">
+      <img src="assets/hero-courthouse.jpg" alt="" class="hero-bg-img">
+      <div class="hero-bg-overlay"></div>
+    </div>
+    <div class="container hero-grid">
+      <div class="hero-text-col">
         <div class="hero-badge">
           <span class="hero-badge-pulse"></span>
           <span>A Free Public Self-Help Tool under Indiana Code § 35-38-9</span>
@@ -165,6 +169,28 @@
           <div class="trust-item">
             <span class="trust-num">10 Court Forms</span>
             <span class="trust-label">Official Court Pleadings with Discrete Per-Document Pagination</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-visual-col">
+        <div class="hero-visual-card">
+          <div class="visual-card-image-wrap">
+            <img src="assets/second-chance.jpg" alt="Official Indiana Court Expungement Pleadings and Scales of Justice" class="visual-card-img" loading="eager">
+            <div class="visual-card-badge">
+              <span>🏛️</span>
+              <span>Trial Rule 77 Standards</span>
+            </div>
+          </div>
+          <div class="visual-card-caption">
+            <div class="caption-title">Court-Ready Second Chance Pleadings</div>
+            <p class="caption-text">Compiles verified petitions, proposed orders, notices of exclusion, and certificates of service right in your browser.</p>
+            <div class="caption-tags">
+              <span class="caption-tag">IC § 35-38-9</span>
+              <span class="caption-tag">Fillable Form Fields</span>
+              <span class="caption-tag">Physical Signature Ready</span>
+              <span class="caption-tag">92 Counties</span>
+            </div>
           </div>
         </div>
       </div>
@@ -374,35 +400,49 @@
 
         <h2 class="advisory-title">Protecting Your Rights: The Once-In-a-Lifetime Expungement Rule</h2>
 
-        <div class="advisory-quote">
-          &ldquo;A person may file a petition for expungement of a conviction record under this chapter only one (1)
-          time during any period of the person's life.&rdquo;
-          <br><strong style="font-size: 0.88rem; color: var(--color-navy-950);">— Indiana Code § 35-38-9-9(i)</strong>
-        </div>
+        <div class="advisory-split">
+          <div class="advisory-main">
+            <div class="advisory-quote">
+              &ldquo;A person may file a petition for expungement of a conviction record under this chapter only one (1)
+              time during any period of the person's life.&rdquo;
+              <br><strong style="font-size: 0.88rem; color: var(--color-navy-950);">— Indiana Code § 35-38-9-9(i)</strong>
+            </div>
 
-        <div class="advisory-columns">
-          <div class="advisory-col">
-            <h4>A Single Lifetime Proceeding</h4>
-            <p>
-              Unlike states with rolling expungement statutes, Indiana strictly limits conviction record expungement to
-              <b>a single proceeding in your lifetime</b>.
-            </p>
+            <div class="advisory-columns">
+              <div class="advisory-col">
+                <h4>A Single Lifetime Proceeding</h4>
+                <p>
+                  Unlike states with rolling expungement statutes, Indiana strictly limits conviction record expungement to
+                  <b>a single proceeding in your lifetime</b>.
+                </p>
+              </div>
+
+              <div class="advisory-col">
+                <h4>The 365-Day Consolidation Window</h4>
+                <p>
+                  Under <b>IC § 35-38-9-9(d)</b>, if you have convictions across different Indiana counties (e.g. Marion
+                  &amp; Hamilton), all petitions must be filed within <b>365 days</b> of the first filing.
+                </p>
+              </div>
+
+              <div class="advisory-col">
+                <h4>Permanent Forfeiture of Omitted Cases</h4>
+                <p>
+                  If you neglect to include any conviction in your petition, <b>you permanently forfeit the right to ever
+                    expunge that conviction for the remainder of your life</b>.
+                </p>
+              </div>
+            </div>
           </div>
 
-          <div class="advisory-col">
-            <h4>The 365-Day Consolidation Window</h4>
-            <p>
-              Under <b>IC § 35-38-9-9(d)</b>, if you have convictions across different Indiana counties (e.g. Marion
-              &amp; Hamilton), all petitions must be filed within <b>365 days</b> of the first filing.
-            </p>
-          </div>
-
-          <div class="advisory-col">
-            <h4>Permanent Forfeiture of Omitted Cases</h4>
-            <p>
-              If you neglect to include any conviction in your petition, <b>you permanently forfeit the right to ever
-                expunge that conviction for the remainder of your life</b>.
-            </p>
+          <div class="advisory-side-visual">
+            <div class="seal-visual-card">
+              <img src="assets/indiana-seal.jpg" alt="Seal of the State of Indiana and Indiana Statutes" class="seal-visual-img" loading="lazy">
+              <div class="seal-visual-overlay">
+                <div class="seal-badge">Statewide Statutory Consolidation</div>
+                <div class="seal-subtext">Indiana Code § 35-38-9 · Comprehensive Relief Across All 92 Counties</div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -874,6 +914,13 @@
           <div>
             <h3>The Public Interest Mission</h3>
             <p>A message from the creator on legal accessibility</p>
+          </div>
+        </div>
+
+        <div class="letter-banner-wrap">
+          <img src="assets/hero-courthouse.jpg" alt="Indiana Statehouse Capitol Building at Sunrise" class="letter-banner-img" loading="lazy">
+          <div class="letter-banner-overlay">
+            <span class="letter-banner-quote">&ldquo;Technology should open courtroom doors for self-represented citizens, not keep them shut.&rdquo;</span>
           </div>
         </div>
 

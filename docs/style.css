@@ -479,14 +479,45 @@ body {
 }
 
 /* ==========================================================================
-   Hero Section - Modern Civic Glassmorphism & Ambient Glow
+   Hero Section - Modern Civic Architecture & Ambient Atmosphere
    ========================================================================== */
 .hero {
-  padding: 5rem 0 4.5rem;
-  background: radial-gradient(circle at 50% 0%, var(--color-blue-50) 0%, var(--color-canvas) 85%);
+  padding: 5.5rem 0 4.75rem;
+  background: var(--color-canvas);
   border-bottom: 1px solid var(--border-subtle);
   position: relative;
   overflow: hidden;
+}
+
+.hero-bg-media {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.hero-bg-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 30%;
+  opacity: 0.15;
+  filter: saturate(1.2) contrast(1.05);
+  transform: scale(1.02);
+  transition: opacity var(--transition);
+}
+
+[data-theme="dark"] .hero-bg-img {
+  opacity: 0.22;
+  filter: saturate(1.1) brightness(0.85);
+}
+
+.hero-bg-overlay {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 75% 20%, transparent 0%, var(--color-canvas) 85%),
+              linear-gradient(180deg, transparent 0%, var(--color-canvas) 100%);
 }
 
 .hero::before {
@@ -501,16 +532,120 @@ body {
   z-index: 0;
 }
 
-.hero-container {
-  max-width: 960px;
-  margin: 0 auto;
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1.12fr 0.88fr;
+  gap: 3.5rem;
+  align-items: center;
   position: relative;
   z-index: 1;
 }
 
-.hero-content {
+.hero-text-col {
   display: flex;
   flex-direction: column;
+}
+
+.hero-visual-col {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.hero-visual-card {
+  width: 100%;
+  max-width: 520px;
+  background: var(--color-surface);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-xl), 0 20px 45px -10px rgba(15, 23, 42, 0.15);
+  transition: transform var(--transition), box-shadow var(--transition);
+}
+
+.hero-visual-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-2xl), 0 25px 50px -12px rgba(37, 99, 235, 0.22);
+}
+
+.visual-card-image-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9.5;
+  overflow: hidden;
+  background-color: var(--color-navy-950);
+}
+
+.visual-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.hero-visual-card:hover .visual-card-img {
+  transform: scale(1.03);
+}
+
+.visual-card-badge {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: rgba(15, 23, 42, 0.78);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #ffffff;
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.78rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: var(--shadow-sm);
+}
+
+.visual-card-caption {
+  padding: 1.25rem 1.4rem;
+  background: var(--color-surface);
+}
+
+.caption-title {
+  font-family: var(--font-serif);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.35rem;
+}
+
+.caption-text {
+  font-size: 0.86rem;
+  color: var(--text-secondary);
+  line-height: 1.55;
+  margin-bottom: 0.85rem;
+}
+
+.caption-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.caption-tag {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--radius-pill);
+  background-color: var(--color-blue-50);
+  color: var(--color-blue-700);
+  border: 1px solid rgba(37, 99, 235, 0.2);
+}
+
+[data-theme="dark"] .caption-tag {
+  background-color: rgba(37, 99, 235, 0.15);
+  color: var(--color-blue-400);
+  border-color: rgba(59, 130, 246, 0.3);
 }
 
 .hero-badge {
@@ -578,7 +713,7 @@ body {
 .hero-trust-bar {
   display: flex;
   flex-wrap: wrap;
-  gap: 2.5rem;
+  gap: 2rem 2.5rem;
   padding-top: 2rem;
   border-top: 1px solid var(--border-subtle);
 }
@@ -1092,22 +1227,83 @@ body {
   border-left: 4px solid var(--color-gold-600);
   padding: 1.25rem 1.75rem;
   border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-  margin-bottom: 2.25rem;
+  margin-bottom: 1.75rem;
   line-height: 1.7;
+}
+
+.advisory-split {
+  display: grid;
+  grid-template-columns: 1.18fr 0.82fr;
+  gap: 2.25rem;
+  align-items: stretch;
+  margin-bottom: 2.5rem;
+}
+
+.advisory-main {
+  display: flex;
+  flex-direction: column;
+}
+
+.advisory-side-visual {
+  display: flex;
+  align-items: center;
+}
+
+.seal-visual-card {
+  position: relative;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border-medium);
+  width: 100%;
+  height: 100%;
+  min-height: 320px;
+  background-color: var(--color-navy-950);
+}
+
+.seal-visual-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.seal-visual-card:hover .seal-visual-img {
+  transform: scale(1.03);
+}
+
+.seal-visual-overlay {
+  position: absolute;
+  inset: auto 0 0 0;
+  padding: 1.25rem 1.5rem;
+  background: linear-gradient(180deg, transparent 0%, rgba(15, 23, 42, 0.94) 75%);
+  color: #ffffff;
+}
+
+.seal-badge {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--color-gold-400);
+  margin-bottom: 0.25rem;
+}
+
+.seal-subtext {
+  font-size: 0.78rem;
+  color: #cbd5e1;
+  line-height: 1.4;
 }
 
 .advisory-columns {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.5rem;
-  margin-bottom: 2.5rem;
+  grid-template-columns: 1fr;
+  gap: 1rem;
 }
 
 .advisory-col {
   background-color: var(--color-canvas);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
-  padding: 1.65rem;
+  padding: 1.25rem 1.4rem;
   transition: transform var(--transition), box-shadow var(--transition);
 }
 
@@ -1118,15 +1314,15 @@ body {
 
 .advisory-col h4 {
   font-family: var(--font-serif);
-  font-size: 1.12rem;
+  font-size: 1.05rem;
   color: var(--text-primary);
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.35rem;
 }
 
 .advisory-col p {
   font-size: 0.88rem;
   color: var(--text-secondary);
-  line-height: 1.65;
+  line-height: 1.6;
 }
 
 /* Pre-Filing Audit Checklist Box */
@@ -1729,6 +1925,43 @@ body {
   font-size: 0.92rem;
 }
 
+.letter-banner-wrap {
+  position: relative;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  margin-bottom: 2.25rem;
+  max-height: 240px;
+  border: 1px solid var(--border-medium);
+  box-shadow: var(--shadow-sm);
+}
+
+.letter-banner-img {
+  width: 100%;
+  height: 240px;
+  object-fit: cover;
+  object-position: center 30%;
+  filter: brightness(0.88) contrast(1.05);
+  display: block;
+}
+
+.letter-banner-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.15) 0%, rgba(15, 23, 42, 0.8) 100%);
+  display: flex;
+  align-items: flex-end;
+  padding: 1.5rem 2rem;
+}
+
+.letter-banner-quote {
+  font-family: var(--font-serif);
+  font-size: 1.15rem;
+  font-style: italic;
+  color: #ffffff;
+  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.6);
+  line-height: 1.5;
+}
+
 .letter-body p {
   font-size: 1rem;
   color: var(--text-secondary);
@@ -1920,6 +2153,10 @@ body {
    Responsive Adaptations
    ========================================================================== */
 @media (max-width: 1024px) {
+  .hero-grid {
+    grid-template-columns: 1fr;
+    gap: 2.75rem;
+  }
   .hero h1 {
     font-size: 2.75rem;
   }
@@ -1927,6 +2164,10 @@ body {
     grid-template-columns: repeat(2, 1fr);
   }
   .assessment-card {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+  .advisory-split {
     grid-template-columns: 1fr;
     gap: 2rem;
   }
@@ -1956,6 +2197,24 @@ body {
   .hero-trust-bar {
     flex-direction: column;
     gap: 1.25rem;
+  }
+  .seal-visual-card {
+    min-height: 220px;
+  }
+  .letter-panel {
+    padding: 2rem 1.5rem;
+  }
+  .letter-banner-wrap {
+    max-height: 180px;
+  }
+  .letter-banner-img {
+    height: 180px;
+  }
+  .letter-banner-overlay {
+    padding: 1rem;
+  }
+  .letter-banner-quote {
+    font-size: 0.95rem;
   }
   .doc-list-header {
     display: none;
