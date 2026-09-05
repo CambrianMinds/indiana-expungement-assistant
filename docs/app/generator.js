@@ -29,29 +29,38 @@ import { getCountyInfo, STATEWIDE_AGENCIES, getAvailableCounties } from './count
 
 
   export async function downloadPetition(blob, filename) {
-    if (!chrome.downloads?.download) {
-      throw new Error('Chrome downloads permission is unavailable.');
+    if (typeof chrome !== 'undefined' && chrome?.downloads?.download) {
+      const url = URL.createObjectURL(blob);
+      return new Promise((resolve, reject) => {
+        chrome.downloads.download({
+          url,
+          filename,
+          saveAs: true
+        }, (downloadId) => {
+          URL.revokeObjectURL(url);
+          const lastError = chrome.runtime?.lastError;
+          if (lastError) {
+            reject(new Error(lastError.message));
+            return;
+          }
+          resolve(downloadId);
+        });
+      });
     }
 
+    // Standard Web App / PWA download flow
     const url = URL.createObjectURL(blob);
-
-    return new Promise((resolve, reject) => {
-      chrome.downloads.download({
-        url,
-        filename,
-        saveAs: true
-      }, (downloadId) => {
-        URL.revokeObjectURL(url);
-
-        const lastError = chrome.runtime.lastError;
-        if (lastError) {
-          reject(new Error(lastError.message));
-          return;
-        }
-
-        resolve(downloadId);
-      });
-    });
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 1500);
+    return true;
   }
 
   // Click on backend status pill to manually refresh / retry

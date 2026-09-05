@@ -418,59 +418,65 @@ const MyCaseScraper = (() => {
 
 })();
 
-// ─── Message Handler: Respond to sidepanel and background script ────────
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === 'scrapeSearchResults') {
-    const cases = MyCaseScraper.scrapeSearchResults();
-    const searchContext = MyCaseScraper.getSearchContext();
-    cases.forEach(c => { c.searchContext = searchContext; });
-    sendResponse({ success: true, cases, searchContext });
-    return true;
-  }
-
-  if (request.action === 'analyzeEligibility') {
-    try {
+// ─── Message Handler: Respond to sidepanel and background script (Extension only) ──
+if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.onMessage) {
+  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.action === 'scrapeSearchResults') {
       const cases = MyCaseScraper.scrapeSearchResults();
       const searchContext = MyCaseScraper.getSearchContext();
       cases.forEach(c => { c.searchContext = searchContext; });
-      const report = IndianaExpungement.analyzeAll(cases);
-      sendResponse({ success: true, report, cases, searchContext });
-    } catch (e) {
-      sendResponse({ success: false, error: e.message });
+      sendResponse({ success: true, cases, searchContext });
+      return true;
     }
-    return true;
-  }
 
-  if (request.action === 'deepScrape') {
-    const cases = MyCaseScraper.scrapeSearchResults();
-    MyCaseScraper.deepScrapeCCS(cases, (current, total, caseNum) => {
-      chrome.runtime.sendMessage({
-        action: 'deepScrapeProgress',
-        current, total, caseNum
+    if (request.action === 'analyzeEligibility') {
+      try {
+        const cases = MyCaseScraper.scrapeSearchResults();
+        const searchContext = MyCaseScraper.getSearchContext();
+        cases.forEach(c => { c.searchContext = searchContext; });
+        const report = IndianaExpungement.analyzeAll(cases);
+        sendResponse({ success: true, report, cases, searchContext });
+      } catch (e) {
+        sendResponse({ success: false, error: e.message });
+      }
+      return true;
+    }
+
+    if (request.action === 'deepScrape') {
+      const cases = MyCaseScraper.scrapeSearchResults();
+      MyCaseScraper.deepScrapeCCS(cases, (current, total, caseNum) => {
+        chrome.runtime.sendMessage({
+          action: 'deepScrapeProgress',
+          current, total, caseNum
+        });
+      }).then(enrichedCases => {
+        const report = IndianaExpungement.analyzeAll(enrichedCases);
+        sendResponse({ success: true, report, cases: enrichedCases });
+      }).catch(err => {
+        sendResponse({ success: false, error: err.message });
       });
-    }).then(enrichedCases => {
-      const report = IndianaExpungement.analyzeAll(enrichedCases);
-      sendResponse({ success: true, report, cases: enrichedCases });
-    }).catch(err => {
-      sendResponse({ success: false, error: err.message });
-    });
-    return true; // Keep channel open for async response
-  }
+      return true; // Keep channel open for async response
+    }
 
-  if (request.action === 'getPageStatus') {
-    sendResponse({
-      isSearchResults: MyCaseScraper.isSearchResultsPage(),
-      isCaseSummary: MyCaseScraper.isCaseSummaryPage(),
-      url: window.location.href
-    });
-    return true;
-  }
-});
+    if (request.action === 'getPageStatus') {
+      sendResponse({
+        isSearchResults: MyCaseScraper.isSearchResultsPage(),
+        isCaseSummary: MyCaseScraper.isCaseSummaryPage(),
+        url: window.location.href
+      });
+      return true;
+    }
+  });
 
-// Notify background script that content script is loaded
-chrome.runtime.sendMessage({ action: 'contentScriptLoaded', url: window.location.href });
+  try {
+    chrome.runtime.sendMessage({ action: 'contentScriptLoaded', url: window.location.href });
+  } catch (_) {}
+}
 
-// Export for testing
+// Export for browser and node
 if (typeof window !== 'undefined') {
   window.MyCaseScraper = MyCaseScraper;
+}
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = MyCaseScraper;
 }

@@ -4,38 +4,42 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Indiana Expungement Assistant</title>
+  <title>Indiana Expungement Assistant — Web App</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
     rel="stylesheet">
   <link rel="icon" type="image/png" sizes="32x32" href="../icons/icon32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="../icons/icon16.png">
+  <link rel="manifest" href="../manifest.webmanifest">
+  <meta name="theme-color" content="#101c3d">
   <link rel="stylesheet" href="sidepanel.css">
 </head>
 
 <body>
   <!-- ═══ Header ═══ -->
   <header class="app-header">
-    <div class="header-brand">
-      <div class="header-crest">
-        <img src="../icons/icon32.png" alt="Indiana Expungement Assistant Crest" class="header-crest-img" width="26" height="26">
+    <div class="header-container">
+      <div class="header-brand">
+        <div class="header-crest">
+          <img src="../icons/icon32.png" alt="Indiana Expungement Assistant Crest" class="header-crest-img" width="28" height="28">
+        </div>
+        <div class="brand-info">
+          <h1 class="header-title">Indiana Expungement Assistant</h1>
+          <p class="header-subtitle"><span class="brand-project">a CambrianMinds Project</span> · Second Chance Pro Se Legal Portal · IC § 35-38-9</p>
+        </div>
       </div>
-      <div class="brand-info">
-        <h1 class="header-title">Expungement Assistant</h1>
-        <p class="header-subtitle"><span class="brand-project">a CambrianMinds Project</span> · IC § 35-38-9</p>
-      </div>
-    </div>
-    <div class="header-actions">
-      <button class="guide-badge" id="btnUserGuide" title="Open Step-by-Step Instructions &amp; Guide">
-        <span class="badge-icon">📖</span> Guide
-      </button>
-      <button class="disclaimer-badge" id="btnLegalNotice" title="View Legal Disclaimer & One-Shot Warning">
-        <span class="badge-icon">⚖️</span> Notice
-      </button>
-      <div class="header-status" id="backendStatus" role="button" tabindex="0" title="In-Browser PDF Generator is active and ready">
-        <span class="status-dot online"></span>
-        <span class="status-label">Engine Ready</span>
+      <div class="header-actions">
+        <button class="guide-badge" id="btnUserGuide" title="Open Step-by-Step Instructions &amp; Guide">
+          <span class="badge-icon">📖</span> Guide
+        </button>
+        <button class="disclaimer-badge" id="btnLegalNotice" title="View Legal Disclaimer & One-Shot Warning">
+          <span class="badge-icon">⚖️</span> Legal Notice
+        </button>
+        <div class="header-status" id="backendStatus" role="button" tabindex="0" title="In-Browser PDF Generator is active and ready">
+          <span class="status-dot online"></span>
+          <span class="status-label">Engine Ready</span>
+        </div>
       </div>
     </div>
   </header>
@@ -45,41 +49,44 @@
 
     <!-- ── Tab Navigation ── -->
     <nav class="tab-nav">
-      <button class="tab-btn active" data-tab="scan">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="11" cy="11" r="8" />
-          <path d="m21 21-4.35-4.35" />
-        </svg>
-        Scan
-      </button>
-      <button class="tab-btn" data-tab="results">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-          <polyline points="14 2 14 8 20 8" />
-          <line x1="16" y1="13" x2="8" y2="13" />
-          <line x1="16" y1="17" x2="8" y2="17" />
-        </svg>
-        Results
-        <span class="tab-badge" id="resultsBadge" style="display:none">0</span>
-      </button>
-      <button class="tab-btn" data-tab="profile">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-          <circle cx="12" cy="7" r="4" />
-        </svg>
-        Profile
-      </button>
-      <button class="tab-btn" data-tab="generate">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-          <polyline points="7 10 12 15 17 10" />
-          <line x1="12" y1="15" x2="12" y2="3" />
-        </svg>
-        Generate
-      </button>
+      <div class="tab-nav-container">
+        <button class="tab-btn active" data-tab="scan" id="tabBtnImport">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="17 8 12 3 7 8" />
+            <line x1="12" y1="3" x2="12" y2="15" />
+          </svg>
+          1. Import Records
+        </button>
+        <button class="tab-btn" data-tab="results" id="tabBtnResults">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            <polyline points="14 2 14 8 20 8" />
+            <line x1="16" y1="13" x2="8" y2="13" />
+            <line x1="16" y1="17" x2="8" y2="17" />
+          </svg>
+          2. Results &amp; Eligibility
+          <span class="tab-badge" id="resultsBadge" style="display:none">0</span>
+        </button>
+        <button class="tab-btn" data-tab="profile" id="tabBtnProfile">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+            <circle cx="12" cy="7" r="4" />
+          </svg>
+          3. Petitioner Profile
+        </button>
+        <button class="tab-btn" data-tab="generate" id="tabBtnGenerate">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 6 2 18 2 18 9" />
+            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+            <rect x="6" y="14" width="12" height="8" />
+          </svg>
+          4. Generate Pleadings
+        </button>
+      </div>
     </nav>
 
-    <!-- ═══ Tab: Scan ═══ -->
+    <!-- ═══ Tab 1: Import Records ═══ -->
     <section class="tab-panel active" id="tab-scan">
       <!-- Critical Lifetime Warning Banner -->
       <div class="warning-callout">
@@ -93,137 +100,144 @@
         </div>
       </div>
 
-      <!-- Multi-Page Batch & Alias Accumulation Banner -->
+      <!-- Multi-Page Batch & Source Accumulation Banner -->
       <div class="batch-panel" id="batchPanel" style="display:none">
         <div class="batch-header">
           <div class="batch-title-row">
             <span class="batch-icon">📂</span>
             <div>
               <span class="batch-badge" id="batchBadge">0 Cases Accumulated</span>
-              <span class="batch-pages" id="batchPagesCount">(from 0 searches)</span>
+              <span class="batch-pages" id="batchPagesCount">(from 0 files)</span>
             </div>
           </div>
           <button type="button" class="btn-clear-scans" id="btnClearScans" title="Clear accumulated cases and start fresh">
-            Reset All
+            Reset All Records
           </button>
         </div>
-        <p class="batch-desc">Cases from your different MyCase searches (maiden names, married names, aliases, other counties) are merged here automatically.</p>
+        <p class="batch-desc">Cases from different MyCase files (maiden names, married names, aliases, multi-county searches) are merged here automatically.</p>
         <div class="batch-search-tags" id="batchSearchTags"></div>
       </div>
 
-      <!-- Quick User Guide Banner -->
-      <div class="guide-banner" id="guideBanner">
-        <div class="guide-banner-content">
-          <span class="guide-banner-icon">📘</span>
-          <div class="guide-banner-text">
-            <strong>First time using the assistant?</strong>
-            <span>Review the step-by-step walkthrough on the portal</span>
+      <!-- ── Hero Upload Area ── -->
+      <div class="import-card-container">
+        <div class="dropzone" id="dropZone">
+          <div class="dropzone-inner">
+            <div class="dropzone-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="48" height="48">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="17 8 12 3 7 8" />
+                <line x1="12" y1="3" x2="12" y2="15" />
+              </svg>
+            </div>
+            <h2 class="dropzone-title">Upload Indiana MyCase Records</h2>
+            <p class="dropzone-subtitle">Drag and drop saved MyCase <b>HTML</b> or <b>JSON</b> files here, or choose files from your computer</p>
+            <p class="dropzone-hint">Supports batch multi-file upload (e.g. multiple counties, maiden &amp; married name searches)</p>
+
+            <div class="dropzone-actions">
+              <button type="button" class="btn btn-primary btn-lg" id="btnSelectFiles">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="17 8 12 3 7 8" />
+                  <line x1="12" y1="3" x2="12" y2="15" />
+                </svg>
+                Choose File(s)
+              </button>
+              <button type="button" class="btn btn-outline" id="btnPasteToggle">
+                📋 Paste HTML or JSON
+              </button>
+              <button type="button" class="btn btn-ghost" id="btnLoadDemo" title="Load sample Indiana cases for quick demonstration">
+                ✨ Load Demo Cases
+              </button>
+            </div>
+            <input type="file" id="fileUpload" accept=".json,.html,.htm" multiple style="display: none;">
           </div>
         </div>
-        <button type="button" class="btn-guide-link" id="btnOpenGuideBanner" title="Open Step-by-Step Instructions &amp; Guide">
-          View Guide ↗
-        </button>
-      </div>
 
-      <div class="scan-hero">
-        <div class="scan-icon-container">
-          <svg class="scan-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="1.5">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-          </svg>
+        <!-- Collapsible Paste Drawer -->
+        <div class="paste-container" id="pasteContainer" style="display: none;">
+          <div class="paste-header">
+            <h4>Paste MyCase Page Source or JSON</h4>
+            <p>Paste the raw HTML source of your MyCase search results page or export JSON below:</p>
+          </div>
+          <textarea id="pasteInput" class="paste-textarea" placeholder="Paste HTML source (Ctrl+U on MyCase) or JSON text here..."></textarea>
+          <div class="paste-actions">
+            <button type="button" class="btn btn-primary btn-sm" id="btnProcessPaste">Import Pasted Data</button>
+          </div>
         </div>
-        <h2>Scan MyCase Page</h2>
-        <p class="scan-desc">Navigate to a MyCase search results page, then click scan to extract and analyze all case
-          records.</p>
-      </div>
 
-      <div class="scan-actions">
-        <button class="btn btn-primary btn-lg" id="btnScan">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-            stroke-width="2">
-            <circle cx="11" cy="11" r="8" />
-            <path d="m21 21-4.35-4.35" />
-          </svg>
-          <span id="btnScanLabel">Scan Page &amp; Check Eligibility</span>
-        </button>
-        <div class="scan-mode-toggle">
+        <div class="import-options-row">
           <label class="checkbox-label scan-merge-label">
             <input type="checkbox" id="chkMergeCases" checked>
-            <span><b>Merge across searches</b> (keep maiden/married name &amp; multi-county cases)</span>
+            <span><b>Accumulate &amp; Merge</b> across multiple file uploads (preserves cases from all counties &amp; aliases)</span>
           </label>
         </div>
-        <button class="btn btn-secondary" id="btnDeepScrape" disabled>
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-            stroke-width="2">
-            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
-            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
-          </svg>
-          Deep Scrape CCS Details
-        </button>
-        <div style="margin-top: 12px;">
-          <button class="btn btn-outline" id="btnUploadHtml" style="width: 100%; border-style: dashed; padding: 10px;">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-              <polyline points="17 8 12 3 7 8" />
-              <line x1="12" y1="3" x2="12" y2="15" />
-            </svg>
-            Upload Saved HTML or JSON File
-          </button>
-          <input type="file" id="htmlUpload" accept=".json,.html,.htm" style="display: none;">
+
+        <div class="upload-status" id="uploadStatus" style="display:none">
+          <div class="spinner"></div>
+          <span id="uploadStatusText">Reading uploaded file(s)...</span>
         </div>
       </div>
 
-      <!-- Bookmarklet Exporter Helper Card (No Extension Required) -->
+      <!-- ── 3-Step Guide Grid ── -->
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <h4>Search public.courts.in.gov</h4>
+            <p>Go to <a href="https://public.courts.in.gov/mycase" target="_blank" rel="noopener">Indiana MyCase</a> and search for your name, maiden names, prior names, and aliases across all 92 counties.</p>
+          </div>
+        </div>
+        <div class="step-card">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <h4>Save as HTML or Export JSON</h4>
+            <p>Either press <b>Ctrl+S</b> (Cmd+S) in your browser to save the page as HTML, or use our 1-Click Bookmarklet below to download a clean JSON bundle.</p>
+          </div>
+        </div>
+        <div class="step-card">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <h4>Drop Files Here &amp; Generate</h4>
+            <p>Upload your file(s) above. The assistant evaluates statutory eligibility under IC § 35-38-9 and generates your complete court pleading packet.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Bookmarklet Exporter Helper Card ── -->
       <div class="bookmarklet-box" id="bookmarkletBox">
         <div class="bookmarklet-header">
           <span class="bookmarklet-title">
             <span>⚡</span>
-            <span>1-Click Bookmarklet Exporter</span>
+            <span>1-Click Bookmarklet Exporter (Optional Shortcut)</span>
           </span>
-          <span style="font-size: 0.65rem; background: #bae6fd; color: #0369a1; padding: 2px 6px; border-radius: 4px; font-weight: 600;">No Install Required</span>
+          <span class="badge-pill">No Install Required</span>
         </div>
         <p class="bookmarklet-desc">
-          Drag this button to your browser bookmarks bar. When searching <b>public.courts.in.gov/mycase</b>, click it to extract and deep-scrape your records to a <code>.json</code> file, then upload above!
+          Drag this button to your browser bookmarks bar. When on <b>public.courts.in.gov/mycase</b>, click it to automatically extract and deep-scrape your records to a <code>.json</code> file, then drop it into this web app!
         </p>
         <div class="bookmarklet-actions">
           <a class="bookmarklet-drag-btn" id="appBookmarkletLink" href="javascript:(function(){const s=document.createElement('script');s.src='https://cambrianminds.github.io/indiana-expungement-assistant/bookmarklet.js?v='+Date.now();document.body.appendChild(s);})();" draggable="true" title="Drag this button to your bookmarks bar">
             <span>⚖️ Export MyCase Data</span>
           </a>
           <button type="button" class="btn-copy-bookmarklet" id="btnCopyAppBookmarklet" title="Copy bookmarklet code to clipboard">
-            📋 Copy Code
+            📋 Copy Bookmarklet Code
           </button>
-        </div>
-      </div>
-
-      <div class="scan-tip-box">
-        <span class="tip-icon">💡</span>
-        <p><b>Multi-Search Tip:</b> Search MyCase for your maiden name, previous married names, other counties, or aliases, and scan each page. They will automatically accumulate into one lifetime expungement petition.</p>
-      </div>
-
-      <div class="scan-progress" id="scanProgress" style="display:none">
-        <div class="progress-bar">
-          <div class="progress-fill" id="progressFill"></div>
-        </div>
-        <p class="progress-text" id="progressText">Scanning...</p>
-      </div>
-
-      <div class="page-status" id="pageStatus">
-        <div class="status-indicator" id="pageStatusIndicator">
-          <span class="status-dot"></span>
-          <span id="pageStatusText">Checking page...</span>
         </div>
       </div>
     </section>
 
-    <!-- ═══ Tab: Results ═══ -->
+    <!-- ═══ Tab 2: Results & Eligibility ═══ -->
     <section class="tab-panel" id="tab-results">
       <div id="noResults" class="empty-state">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-          stroke-width="1.5">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48">
           <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
           <polyline points="14 2 14 8 20 8" />
         </svg>
-        <p>No cases scanned yet.<br>Go to the Scan tab to begin.</p>
+        <h3>No Court Records Imported Yet</h3>
+        <p>Go to the <b>Import Records</b> tab to upload your saved MyCase HTML or JSON files.</p>
+        <button type="button" class="btn btn-primary" onclick="document.getElementById('tabBtnImport').click()">
+          Go to Import Tab
+        </button>
       </div>
 
       <div id="resultsContent" style="display:none">
@@ -231,23 +245,29 @@
         <div class="results-header-actions" id="resultsHeaderActions">
           <div class="results-count-summary" id="resultsCountSummary">
             <span class="results-count-pill" id="resultsCountPill">0 Cases</span>
-            <span class="results-searches-pill" id="resultsSearchesPill">from 1 search</span>
+            <span class="results-searches-pill" id="resultsSearchesPill">from 1 import source</span>
           </div>
-          <button type="button" class="btn btn-sm btn-outline" id="btnScanAnotherPage" title="Scan another MyCase name, married name, or county search">
+          <div class="results-filter-group">
+            <button type="button" class="filter-pill active" data-filter="all">All Cases</button>
+            <button type="button" class="filter-pill" data-filter="eligible">Eligible Only</button>
+            <button type="button" class="filter-pill" data-filter="ineligible">Ineligible</button>
+            <button type="button" class="filter-pill" data-filter="excluded">Civil / Excluded</button>
+          </div>
+          <button type="button" class="btn btn-sm btn-outline" id="btnScanAnotherPage" title="Upload another MyCase file for other names or counties">
             <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            <span>Scan Another Name/County</span>
+            <span>Upload Another File</span>
           </button>
         </div>
 
-        <!-- Summary Cards -->
+        <!-- Summary Cards Grid -->
         <div class="summary-grid">
           <div class="summary-card eligible">
             <div class="summary-number" id="summaryEligible">0</div>
-            <div class="summary-label">Eligible</div>
+            <div class="summary-label">Eligible for Expungement</div>
           </div>
           <div class="summary-card ineligible">
             <div class="summary-number" id="summaryIneligible">0</div>
-            <div class="summary-label">Ineligible</div>
+            <div class="summary-label">Currently Ineligible</div>
           </div>
           <div class="summary-card excluded">
             <div class="summary-number" id="summaryExcluded">0</div>
@@ -255,78 +275,99 @@
           </div>
           <div class="summary-card fee">
             <div class="summary-number" id="summaryFee">$0</div>
-            <div class="summary-label">Est. Filing Fee</div>
+            <div class="summary-label">Estimated Filing Fee</div>
           </div>
         </div>
 
         <!-- Statute Breakdown -->
         <div class="statute-breakdown" id="statuteBreakdown"></div>
 
+        <!-- Multi-County Warning / Selector -->
+        <div class="county-select-card" id="countySelectCard" style="display:none">
+          <div class="county-card-header">
+            <span class="county-card-icon">🏛️</span>
+            <div>
+              <h5>Multi-County Records Detected</h5>
+              <p>Under <b>IC § 35-38-9-9(d)</b>, petitions in multiple counties must be filed separately within a 365-day window.</p>
+            </div>
+          </div>
+          <div class="county-select-body">
+            <label for="selectCountyPacket">Select County:</label>
+            <select id="selectCountyPacket" class="county-select-dropdown"></select>
+          </div>
+        </div>
+
         <!-- Case List -->
+        <div class="case-list-header">
+          <h3>Imported Case Records &amp; Statutory Analysis</h3>
+          <p>Click any case to expand full charges, statutory references, and waiting period details.</p>
+        </div>
         <div class="case-list" id="caseList"></div>
       </div>
     </section>
 
-    <!-- ═══ Tab: Profile ═══ -->
+    <!-- ═══ Tab 3: Petitioner Profile ═══ -->
     <section class="tab-panel" id="tab-profile">
       <div class="profile-header">
-        <h3>Petitioner Profile</h3>
-        <p class="profile-desc">This information is required for the Confidential Information Sheet (ACR Form) and is
-          stored locally in your browser only.</p>
+        <h3>Petitioner Legal Information</h3>
+        <p class="profile-desc">This information is required for the Confidential Information Sheet (ACR Form) and verified pleadings. Stored 100% locally in your browser.</p>
       </div>
 
       <form class="profile-form" id="profileForm" novalidate>
-        <div class="form-group">
-          <div class="label-row">
-            <label for="fullName">Full Legal Name <span class="req-star">*</span></label>
-            <span class="field-hint">First &amp; Last</span>
+        <div class="form-grid-layout">
+          <div class="form-group">
+            <div class="label-row">
+              <label for="fullName">Full Legal Name <span class="req-star">*</span></label>
+              <span class="field-hint">First, Middle, Last</span>
+            </div>
+            <input type="text" id="fullName" placeholder="e.g. Jane Marie Doe" autocomplete="name" required>
+            <span class="field-error" id="err-fullName"></span>
           </div>
-          <input type="text" id="fullName" placeholder="e.g. Jane Doe" autocomplete="name" required>
-          <span class="field-error" id="err-fullName"></span>
-        </div>
-        <div class="form-group">
-          <div class="label-row">
-            <label for="aliases">Other Legal Names / Maiden Names / Aliases</label>
-            <span class="field-hint">IC § 35-38-9-8(b)(1)</span>
+
+          <div class="form-group">
+            <div class="label-row">
+              <label for="aliases">Other Legal Names / Maiden Names / Aliases</label>
+              <span class="field-hint">IC § 35-38-9-8(b)(1)</span>
+            </div>
+            <input type="text" id="aliases" placeholder="e.g. Jane Smith, Jane Johnson (comma separated)">
+            <span class="field-error" id="err-aliases"></span>
           </div>
-          <input type="text" id="aliases" placeholder="e.g. Jane Marie Smith, Jane Johnson (comma separated)">
-          <span class="field-error" id="err-aliases"></span>
-        </div>
-        <div class="form-row">
+
           <div class="form-group">
             <div class="label-row">
               <label for="dob">Date of Birth <span class="req-star">*</span></label>
-              <span class="field-hint">Age ≥ 18</span>
             </div>
             <input type="date" id="dob" required>
             <span class="field-error" id="err-dob"></span>
           </div>
+
           <div class="form-group">
             <div class="label-row">
-              <label for="ssn">SSN <span class="req-star">*</span></label>
+              <label for="ssn">Social Security Number <span class="req-star">*</span></label>
               <button type="button" class="btn-toggle-mask" id="btnToggleSSN" title="Show/hide SSN">👁</button>
             </div>
             <input type="password" id="ssn" placeholder="XXX-XX-XXXX" maxlength="14" autocomplete="off" required>
             <span class="field-error" id="err-ssn"></span>
           </div>
-        </div>
-        <div class="form-group">
-          <div class="label-row">
-            <label for="driverLicense">Indiana Driver's License #</label>
-            <span class="field-hint">XXXX-XX-XXXX (10 digits)</span>
+
+          <div class="form-group">
+            <div class="label-row">
+              <label for="driverLicense">Indiana Driver's License / ID #</label>
+              <span class="field-hint">XXXX-XX-XXXX (10 digits)</span>
+            </div>
+            <input type="text" id="driverLicense" placeholder="e.g. 1234-56-7890" maxlength="12">
+            <span class="field-error" id="err-driverLicense"></span>
           </div>
-          <input type="text" id="driverLicense" placeholder="e.g. 1234-56-7890" maxlength="12">
-          <span class="field-error" id="err-driverLicense"></span>
-        </div>
-        <div class="form-group">
-          <div class="label-row">
-            <label for="streetAddress">Street Address <span class="req-star">*</span></label>
-            <span class="field-hint">House #, Street, Apt/Suite</span>
+
+          <div class="form-group">
+            <div class="label-row">
+              <label for="streetAddress">Current Street Address <span class="req-star">*</span></label>
+              <span class="field-hint">House #, Street, Apt/Suite</span>
+            </div>
+            <input type="text" id="streetAddress" placeholder="e.g. 100 N Senate Ave, Apt 4B" autocomplete="street-address" required>
+            <span class="field-error" id="err-streetAddress"></span>
           </div>
-          <input type="text" id="streetAddress" placeholder="e.g. 100 N Senate Ave, Apt 4B" autocomplete="street-address" required>
-          <span class="field-error" id="err-streetAddress"></span>
-        </div>
-        <div class="form-row form-row-city-state-zip">
+
           <div class="form-group">
             <div class="label-row">
               <label for="city">City <span class="req-star">*</span></label>
@@ -334,76 +375,32 @@
             <input type="text" id="city" placeholder="Indianapolis" autocomplete="address-level2" required>
             <span class="field-error" id="err-city"></span>
           </div>
-          <div class="form-group">
-            <div class="label-row">
-              <label for="state">State <span class="req-star">*</span></label>
+
+          <div class="form-group-split">
+            <div class="form-group" style="flex: 1;">
+              <div class="label-row">
+                <label for="state">State <span class="req-star">*</span></label>
+              </div>
+              <select id="state" autocomplete="address-level1" required>
+                <option value="IN" selected>IN</option>
+                <option value="IL">IL</option>
+                <option value="KY">KY</option>
+                <option value="MI">MI</option>
+                <option value="OH">OH</option>
+                <option disabled>───</option>
+                <option value="AL">AL</option><option value="AK">AK</option><option value="AZ">AZ</option><option value="AR">AR</option><option value="CA">CA</option><option value="CO">CO</option><option value="CT">CT</option><option value="DE">DE</option><option value="FL">FL</option><option value="GA">GA</option><option value="HI">HI</option><option value="ID">ID</option><option value="IA">IA</option><option value="KS">KS</option><option value="LA">LA</option><option value="ME">ME</option><option value="MD">MD</option><option value="MA">MA</option><option value="MN">MN</option><option value="MS">MS</option><option value="MO">MO</option><option value="MT">MT</option><option value="NE">NE</option><option value="NV">NV</option><option value="NH">NH</option><option value="NJ">NJ</option><option value="NM">NM</option><option value="NY">NY</option><option value="NC">NC</option><option value="ND">ND</option><option value="OK">OK</option><option value="OR">OR</option><option value="PA">PA</option><option value="RI">RI</option><option value="SC">SC</option><option value="SD">SD</option><option value="TN">TN</option><option value="TX">TX</option><option value="UT">UT</option><option value="VT">VT</option><option value="VA">VA</option><option value="WA">WA</option><option value="WV">WV</option><option value="WI">WI</option><option value="WY">WY</option><option value="DC">DC</option>
+              </select>
+              <span class="field-error" id="err-state"></span>
             </div>
-            <select id="state" autocomplete="address-level1" required>
-              <option value="IN" selected>IN</option>
-              <option value="IL">IL</option>
-              <option value="KY">KY</option>
-              <option value="MI">MI</option>
-              <option value="OH">OH</option>
-              <option disabled>───</option>
-              <option value="AL">AL</option>
-              <option value="AK">AK</option>
-              <option value="AZ">AZ</option>
-              <option value="AR">AR</option>
-              <option value="CA">CA</option>
-              <option value="CO">CO</option>
-              <option value="CT">CT</option>
-              <option value="DE">DE</option>
-              <option value="FL">FL</option>
-              <option value="GA">GA</option>
-              <option value="HI">HI</option>
-              <option value="ID">ID</option>
-              <option value="IA">IA</option>
-              <option value="KS">KS</option>
-              <option value="LA">LA</option>
-              <option value="ME">ME</option>
-              <option value="MD">MD</option>
-              <option value="MA">MA</option>
-              <option value="MN">MN</option>
-              <option value="MS">MS</option>
-              <option value="MO">MO</option>
-              <option value="MT">MT</option>
-              <option value="NE">NE</option>
-              <option value="NV">NV</option>
-              <option value="NH">NH</option>
-              <option value="NJ">NJ</option>
-              <option value="NM">NM</option>
-              <option value="NY">NY</option>
-              <option value="NC">NC</option>
-              <option value="ND">ND</option>
-              <option value="OK">OK</option>
-              <option value="OR">OR</option>
-              <option value="PA">PA</option>
-              <option value="RI">RI</option>
-              <option value="SC">SC</option>
-              <option value="SD">SD</option>
-              <option value="TN">TN</option>
-              <option value="TX">TX</option>
-              <option value="UT">UT</option>
-              <option value="VT">VT</option>
-              <option value="VA">VA</option>
-              <option value="WA">WA</option>
-              <option value="WV">WV</option>
-              <option value="WI">WI</option>
-              <option value="WY">WY</option>
-              <option value="DC">DC</option>
-            </select>
-            <span class="field-error" id="err-state"></span>
-          </div>
-          <div class="form-group">
-            <div class="label-row">
-              <label for="zipCode">ZIP <span class="req-star">*</span></label>
-              <span class="field-hint">5 digits</span>
+            <div class="form-group" style="flex: 1.5;">
+              <div class="label-row">
+                <label for="zipCode">ZIP Code <span class="req-star">*</span></label>
+              </div>
+              <input type="text" id="zipCode" placeholder="46204" maxlength="10" autocomplete="postal-code" required>
+              <span class="field-error" id="err-zipCode"></span>
             </div>
-            <input type="text" id="zipCode" placeholder="46204" maxlength="10" autocomplete="postal-code" required>
-            <span class="field-error" id="err-zipCode"></span>
           </div>
-        </div>
-        <div class="form-row">
+
           <div class="form-group">
             <div class="label-row">
               <label for="phone">Phone Number</label>
@@ -412,6 +409,7 @@
             <input type="tel" id="phone" placeholder="(317) 555-0100" maxlength="14">
             <span class="field-error" id="err-phone"></span>
           </div>
+
           <div class="form-group">
             <div class="label-row">
               <label for="email">Email Address</label>
@@ -423,35 +421,33 @@
 
         <div class="form-section-header">
           <h4>Address History (10+ Years)</h4>
-          <p>Required by IC § 35-38-9-8(b)(3). List all addresses from earliest offense to present.</p>
+          <p>Required by IC § 35-38-9-8(b)(3). List all residential addresses from earliest offense date to present.</p>
         </div>
         <div id="addressHistory" class="address-list">
           <!-- Dynamically populated -->
         </div>
         <button type="button" class="btn btn-ghost" id="btnAddAddress">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-            stroke-width="2">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="12" y1="5" x2="12" y2="19" />
             <line x1="5" y1="12" x2="19" y2="12" />
           </svg>
-          Add Address
+          Add Previous Residence
         </button>
 
         <div class="form-actions">
-          <button type="submit" class="btn btn-primary">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-              stroke-width="2">
+          <button type="submit" class="btn btn-primary btn-lg">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
               <polyline points="17 21 17 13 7 13 7 21" />
               <polyline points="7 3 7 8 15 8" />
             </svg>
-            Save Profile
+            Save Profile &amp; Update Pleadings
           </button>
         </div>
       </form>
     </section>
 
-    <!-- ═══ Tab: Generate ═══ -->
+    <!-- ═══ Tab 4: Generate Pleadings ═══ -->
     <section class="tab-panel" id="tab-generate">
       <!-- 🛑 Critical Lifetime One-Shot Alert -->
       <div class="one-shot-alert">
@@ -469,160 +465,136 @@
           <li><b>Failure to include any conviction is PERMANENT and IRREVERSIBLE:</b> If you omit any conviction in this
             county or another county, you will <b>NEVER</b> be permitted to expunge it for the rest of your life.</li>
           <li><b>Multiple Counties (365-Day Window):</b> Under <b>IC § 35-38-9-9(d)</b>, if you have cases in multiple
-            Indiana counties, all petitions must be filed within <b>365 days</b>. Filing today starts that lifetime
-            clock.</li>
+            Indiana counties, all petitions must be filed within <b>365 days</b>. Filing today starts that lifetime clock.</li>
           <li><b>Check All Names &amp; Counties:</b> You must verify that you searched MyCase for all legal names,
             maiden names, previous names, and aliases across all 92 Indiana counties.</li>
         </ul>
       </div>
 
-      <!-- ⚖️ Creator Disclaimer & Mission Statement -->
-      <div class="creator-disclaimer-box">
-        <div class="disclaimer-title-row">
-          <span class="disclaimer-scale-icon">⚖️</span>
-          <h5>Independent Self-Help Tool · NOT Legal Advice</h5>
-        </div>
-        <p class="disclaimer-p">
-          <b>Mission Statement:</b> I created this tool as an independent individual who believes that expunging your
-          criminal record and reclaiming your second chance under Indiana law should be an <b>accessible, transparent
-            process for ordinary working people</b>—not an expensive privilege locked behind thousands of dollars in
-          attorney fees.
-        </p>
-        <p class="disclaimer-p">
-          <b>Important Legal Safeguards &amp; Pro Se Terms:</b>
-          <br>• <b>I am NOT an attorney.</b> This is NOT a legal service, law firm, or legal aid organization.
-          <br>• This tool does <b>NOT</b> provide legal advice, legal counsel, or case representation.
-          <br>• No attorney-client relationship is created.
-          <br>• You are representing yourself (<b>pro se</b>). You are solely responsible for auditing, verifying,
-          signing, serving, and filing all paperwork with the Court Clerk.
-          <br>• Provided <b>&ldquo;AS IS&rdquo;</b> without warranty. You assume all legal risk and release the creator
-          from any liability.
-        </p>
-      </div>
+      <div class="generate-two-column-layout">
+        <!-- Left Column: Packet Setup & Acknowledgment -->
+        <div class="generate-col-left">
+          <!-- ⚖️ Creator Disclaimer & Mission Statement -->
+          <div class="creator-disclaimer-box">
+            <div class="disclaimer-title-row">
+              <span class="disclaimer-scale-icon">⚖️</span>
+              <h5>Independent Self-Help Tool · NOT Legal Advice</h5>
+            </div>
+            <p class="disclaimer-p">
+              <b>Mission:</b> Expunging your criminal record and reclaiming your second chance under Indiana law should be an <b>accessible, transparent process for ordinary working people</b>.
+            </p>
+            <p class="disclaimer-p">
+              <b>Important Legal Notice:</b>
+              <br>• <b>I am NOT an attorney.</b> This is a pro se document generator.
+              <br>• Does NOT provide legal advice, representation, or counsel.
+              <br>• You are filing <b>pro se</b> (representing yourself).
+            </p>
+          </div>
 
-      <div class="generate-hero">
-        <h3>Generate Expungement Packet</h3>
-        <p>Compiles a complete, court-ready packet adhering to Indiana Trial Rules—including Appearance, Confidential ACR records, Verified Petition, Notices, Certificate of Service, Proposed Order, and Fee Waiver.</p>
-      </div>
+          <!-- Mandatory Pro Se Acknowledgments -->
+          <div class="acknowledgment-card">
+            <div class="ack-card-header">
+              <span class="ack-shield-icon">🛡️</span>
+              <div>
+                <h5>Mandatory Legal Acknowledgments</h5>
+                <p>Check each box to confirm your understanding before generating court forms:</p>
+              </div>
+            </div>
 
-      <!-- Mandatory Pro Se Acknowledgments -->
-      <div class="acknowledgment-card">
-        <div class="ack-card-header">
-          <span class="ack-shield-icon">🛡️</span>
-          <div>
-            <h5>Mandatory Legal Acknowledgments</h5>
-            <p>You must check each box to confirm your understanding before generating court forms:</p>
+            <label class="ack-item">
+              <input type="checkbox" id="ackOneShot" class="ack-checkbox">
+              <span class="ack-label">
+                <b>Lifetime One-Shot Rule (IC § 35-38-9-9(i)):</b> I understand Indiana allows conviction expungement
+                <u>only once in my entire life</u>. Any conviction I fail to include can <u>NEVER</u> be expunged later.
+              </span>
+            </label>
+
+            <label class="ack-item">
+              <input type="checkbox" id="ackAllCounties" class="ack-checkbox">
+              <span class="ack-label">
+                <b>All Charges &amp; Aliases Included:</b> I have searched MyCase for all names/aliases across all Indiana counties and verified that all eligible cases are accounted for.
+              </span>
+            </label>
+
+            <label class="ack-item">
+              <input type="checkbox" id="ackNotLawyer" class="ack-checkbox">
+              <span class="ack-label">
+                <b>Not a Lawyer / Not Legal Advice:</b> I understand the creator is an <u>independent individual, NOT an attorney</u>, and this software is a self-help document tool, not legal counsel.
+              </span>
+            </label>
+
+            <label class="ack-item">
+              <input type="checkbox" id="ackProSe" class="ack-checkbox">
+              <span class="ack-label">
+                <b>Pro Se Responsibility &amp; Liability Release:</b> I accept full responsibility for verifying, signing, and filing my documents, and release the tool creator from all liability.
+              </span>
+            </label>
+          </div>
+
+          <div class="generate-checklist">
+            <div class="checklist-item" id="checkProfile">
+              <span class="check-icon">○</span>
+              <span>Petitioner profile filled</span>
+            </div>
+            <div class="checklist-item" id="checkCases">
+              <span class="check-icon">○</span>
+              <span>Cases imported &amp; reviewed</span>
+            </div>
+            <div class="checklist-item" id="checkBackendReady">
+              <span class="check-icon">○</span>
+              <span>In-browser PDF engine ready</span>
+            </div>
+            <div class="checklist-item" id="checkAcknowledgments">
+              <span class="check-icon">○</span>
+              <span>All 4 legal disclaimers acknowledged</span>
+            </div>
+          </div>
+
+          <div class="generate-options">
+            <label class="checkbox-label">
+              <input type="checkbox" id="includeFeeWaiver" checked>
+              Include Fee Waiver Request (Form 08)
+            </label>
+            <label class="checkbox-label" title="Required by IC § 35-38-9-8(b). Contains SSN, DOB, and 10-year address history.">
+              <input type="checkbox" id="includeAddressSupplement" checked disabled>
+              Include Confidential Info &amp; Address Supplement (Form 03 - REQUIRED)
+            </label>
+          </div>
+
+          <button class="btn btn-primary btn-lg btn-generate" id="btnGenerate" disabled>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            Generate Complete Court Petition Packet (Forms 00–08)
+          </button>
+
+          <div class="generate-status" id="generateStatus" style="display:none">
+            <div class="spinner"></div>
+            <p id="generateStatusText">Generating court pleadings...</p>
           </div>
         </div>
 
-        <label class="ack-item">
-          <input type="checkbox" id="ackOneShot" class="ack-checkbox">
-          <span class="ack-label">
-            <b>Lifetime One-Shot Rule (IC § 35-38-9-9(i)):</b> I understand Indiana allows conviction expungement
-            <u>only once in my entire life</u>. Any conviction I fail to include can <u>NEVER</u> be expunged later.
-          </span>
-        </label>
-
-        <label class="ack-item">
-          <input type="checkbox" id="ackAllCounties" class="ack-checkbox">
-          <span class="ack-label">
-            <b>All Charges &amp; Aliases Included:</b> I have searched MyCase for all names/aliases across all Indiana
-            counties and verified that all eligible cases are accounted for.
-          </span>
-        </label>
-
-        <label class="ack-item">
-          <input type="checkbox" id="ackNotLawyer" class="ack-checkbox">
-          <span class="ack-label">
-            <b>Not a Lawyer / Not Legal Advice:</b> I understand the creator is an <u>independent individual, NOT an
-              attorney</u>, and this software is a self-help formatting tool, not legal counsel.
-          </span>
-        </label>
-
-        <label class="ack-item">
-          <input type="checkbox" id="ackProSe" class="ack-checkbox">
-          <span class="ack-label">
-            <b>Pro Se Responsibility &amp; Liability Release:</b> I accept full responsibility for verifying, signing,
-            and filing my documents, and release the tool creator from all liability.
-          </span>
-        </label>
-      </div>
-
-      <div class="generate-checklist">
-        <div class="checklist-item" id="checkProfile">
-          <span class="check-icon">○</span>
-          <span>Petitioner profile filled</span>
-        </div>
-        <div class="checklist-item" id="checkCases">
-          <span class="check-icon">○</span>
-          <span>Cases scanned &amp; reviewed</span>
-        </div>
-        <div class="checklist-item" id="checkBackendReady">
-          <span class="check-icon">○</span>
-          <span>In-browser PDF engine ready</span>
-        </div>
-        <div class="checklist-item" id="checkAcknowledgments">
-          <span class="check-icon">○</span>
-          <span>All 4 legal disclaimers &amp; one-shot rule acknowledged</span>
-        </div>
-      </div>
-
-      <!-- Multi-County Packet Generator Notice & Selector -->
-      <div class="county-select-card" id="countySelectCard" style="display:none">
-        <div class="county-card-header">
-          <span class="county-card-icon">🏛️</span>
-          <div>
-            <h5>Multi-County Filing Detected</h5>
-            <p>Under <b>IC § 35-38-9-9(d)</b>, petitions must be filed separately in each county court within 365 days.</p>
+        <!-- Right Column: Statutory Service Directory & Forms Info -->
+        <div class="generate-col-right">
+          <div class="service-dir-card" id="serviceDirCard">
+            <div class="service-dir-header">
+              <span class="service-dir-icon">📍</span>
+              <div>
+                <h5>Filing &amp; Service Address Directory</h5>
+                <p>Verified statutory addresses for submitting and serving your expungement paperwork under IC § 35-38-9-8(e).</p>
+              </div>
+            </div>
+            <div class="service-dir-county-row">
+              <label for="selectDirectoryCounty">Select County For Service Addresses:</label>
+              <select id="selectDirectoryCounty" class="county-select-dropdown"></select>
+            </div>
+            <div class="service-dir-list" id="serviceDirBody">
+              <!-- Populated dynamically via generator.js -->
+            </div>
           </div>
         </div>
-        <div class="county-select-body">
-          <label for="selectCountyPacket">Generate petition packet for county:</label>
-          <select id="selectCountyPacket" class="county-select-dropdown"></select>
-        </div>
-      </div>
-
-      <!-- 🏛️ Filing & Service Address Directory Card -->
-      <div class="service-dir-card" id="serviceDirCard">
-        <div class="service-dir-header">
-          <span class="service-dir-icon">📍</span>
-          <div>
-            <h5>Filing &amp; Service Address Directory</h5>
-            <p>Verified statutory addresses for submitting and serving your expungement paperwork under IC § 35-38-9-8(e).</p>
-          </div>
-        </div>
-        <div class="service-dir-county-row">
-          <label for="selectDirectoryCounty">Select County For Service Addresses:</label>
-          <select id="selectDirectoryCounty" class="county-select-dropdown"></select>
-        </div>
-        <div class="service-dir-list" id="serviceDirBody">
-          <!-- Populated dynamically via generator.js -->
-        </div>
-      </div>
-
-      <div class="generate-options">
-        <label class="checkbox-label">
-          <input type="checkbox" id="includeFeeWaiver" checked>
-          Include Fee Waiver Request (Form 08)
-        </label>
-        <label class="checkbox-label" title="Required by IC § 35-38-9-8(b). Contains SSN, DOB, and 10-year address history.">
-          <input type="checkbox" id="includeAddressSupplement" checked disabled>
-          Include Confidential Info & Address Supplement (Form 03 - REQUIRED)
-        </label>
-      </div>
-
-      <button class="btn btn-primary btn-lg btn-generate" id="btnGenerate" disabled>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-          <polyline points="7 10 12 15 17 10" />
-          <line x1="12" y1="15" x2="12" y2="3" />
-        </svg>
-        Generate Complete Petition Packet
-      </button>
-
-      <div class="generate-status" id="generateStatus" style="display:none">
-        <div class="spinner"></div>
-        <p id="generateStatusText">Generating forms...</p>
       </div>
     </section>
 
@@ -631,34 +603,29 @@
   <!-- ═══ Toast Notifications ═══ -->
   <div class="toast-container" id="toastContainer"></div>
 
-  <!-- ═══ Modal: Scraper Parity Check (shown after each scan) ═══ -->
+  <!-- ═══ Modal: Scraper Parity Check (shown after each scan/import) ═══ -->
   <div class="modal-overlay" id="parityModal" style="display:none">
     <div class="modal-dialog">
       <div class="modal-header">
         <div class="modal-icon-alert">🔍</div>
-        <h3>Verify Extracted Cases</h3>
+        <h3>Verify Extracted Court Records</h3>
       </div>
       <div class="modal-body">
         <p class="modal-lead">
-          <b>Confirm these are all the cases you see on MyCase.</b>
+          <b>Confirm these are all the cases from your MyCase search.</b>
         </p>
         <p class="modal-subtext">
-          Our scraper found <b id="parityCaseCount">0</b> case(s) on this page. Review the list below and compare it to
-          what you see on the MyCase search results page. If any cases are missing, click <b>Go Back &amp; Retry</b> and
-          try the scan again.
+          Extracted <b id="parityCaseCount">0</b> case(s). Review the list below. If any cases are missing, click <b>Cancel</b> and try uploading again.
         </p>
         <div class="modal-callout-info" id="parityCaseList">
           <!-- Dynamically populated -->
         </div>
         <div class="modal-callout-warning">
-          <b>⚠️ 92-County Rule Reminder:</b> This scan only covers the current MyCase search results. Under
-          <b>IC § 35-38-9-9(d)</b>, petitions in multiple counties must be filed within a <b>365-day window</b>. You
-          must search <b>all 92 Indiana counties</b> for every name, alias, and maiden name before generating your
-          petition.
+          <b>⚠️ 92-County Rule Reminder:</b> Under <b>IC § 35-38-9-9(d)</b>, petitions in multiple counties must be filed within a <b>365-day window</b>. Search <b>all 92 Indiana counties</b> for every name and alias before generating your petition.
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-secondary" id="btnParityRetry">Go Back &amp; Retry</button>
+        <button class="btn btn-secondary" id="btnParityRetry">Cancel</button>
         <button class="btn btn-primary" id="btnParityConfirm">Cases Match — Continue</button>
       </div>
     </div>
@@ -679,7 +646,7 @@
           The following <b id="confirmCaseCount">0</b> case(s) will be included in your petition. Review carefully — a missed conviction can never be expunged later.
         </p>
         <div class="modal-callout-info" id="confirmCaseList" style="max-height:140px">
-          <!-- Dynamically populated with case numbers before modal is shown -->
+          <!-- Dynamically populated with case numbers -->
         </div>
         <div class="modal-callout-danger">
           <b>INDIANA CODE § 35-38-9-9(i) STRICT LIFETIME LIMIT:</b>
@@ -689,13 +656,12 @@
         <p class="modal-checklist-intro">Before generating, confirm you have searched MyCase for:</p>
         <ul class="modal-list">
           <li>✓ All previous legal names, maiden names, and aliases</li>
-          <li>✓ All 92 Indiana counties (not just the county you currently live in)</li>
+          <li>✓ All 92 Indiana counties (not just your current county)</li>
           <li>✓ Both misdemeanors and felony charges</li>
           <li>✓ Any open or pending warrants/cases</li>
         </ul>
         <p class="modal-subtext">
-          <b>Disclaimer:</b> The creator of this software is an independent individual advocating for accessibility, NOT
-          an attorney. This is NOT legal advice. You are filing pro se.
+          <b>Disclaimer:</b> The creator of this software is an independent individual, NOT an attorney. This is NOT legal advice. You are filing pro se.
         </p>
       </div>
       <div class="modal-footer">
@@ -716,8 +682,7 @@
         <h4>Why This Project Exists</h4>
         <p>
           I am an <b>independent individual</b> who believes that the criminal record expungement process under
-          Indiana's Second Chance Law (IC § 35-38-9) should be <b>an accessible, straightforward process for ordinary
-            people</b>.
+          Indiana's Second Chance Law (IC § 35-38-9) should be <b>an accessible, straightforward process for ordinary people</b>.
         </p>
         <p>
           Today, the system is unnecessarily complicated and intimidating, and many people who have earned a clean slate
@@ -737,16 +702,12 @@
 
         <h4>Not Legal Advice · Non-Attorney Statement</h4>
         <p>
-          • <b>I am NOT an attorney</b>, not a law firm, and not affiliated with Indiana courts or the state
-          government.<br>
-          • This software is a <b>clerical document generator</b> that extracts public data from MyCase and populates
-          standard Indiana court forms.<br>
+          • <b>I am NOT an attorney</b>, not a law firm, and not affiliated with Indiana courts or the state government.<br>
+          • This software is a <b>clerical document generator</b> that extracts public data from MyCase and populates standard Indiana court forms.<br>
           • Nothing here constitutes <b>legal advice, legal counsel, or representation</b>.<br>
           • No attorney-client relationship is created.<br>
-          • You are filing <b>pro se</b> (representing yourself). You bear complete responsibility to verify every case,
-          charge, and statement before filing.<br>
-          • Software is provided <b>&ldquo;AS IS&rdquo;</b> with no warranties. You release the author from any and all
-          liability.
+          • You are filing <b>pro se</b> (representing yourself). You bear complete responsibility to verify every case, charge, and statement before filing.<br>
+          • Software is provided <b>&ldquo;AS IS&rdquo;</b> with no warranties. You release the author from any and all liability.
         </p>
       </div>
       <div class="modal-footer">
@@ -755,8 +716,9 @@
     </div>
   </div>
 
-  <script src="../pdf-lib.min.js"></script>
-  <script src="../eligibility.js"></script>
+  <script src="pdf-lib.min.js"></script>
+  <script src="eligibility.js"></script>
+  <script src="content.js"></script>
   <script type="module" src="main.js"></script>
 </body>
 
