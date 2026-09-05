@@ -2049,6 +2049,8 @@ body {
   gap: 1.25rem;
   color: #ffffff;
   text-shadow: 0 3px 12px rgba(0, 0, 0, 0.85);
+  align-self: start;
+  padding-top: 1.5rem;
 }
 
 .scenic-badge {
