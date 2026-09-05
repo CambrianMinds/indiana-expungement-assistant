@@ -22,6 +22,9 @@ const MyCaseScraper = (() => {
    * @returns {Array} Array of normalized case objects
    */
   function scrapeSearchResults() {
+    if (!isSearchResultsPage()) {
+      throw new Error("Not on a MyCase search results page.");
+    }
     // Strategy 1: Knockout Observable (preferred)
     const koResults = tryKnockoutExtraction();
     if (koResults && koResults.length > 0) {
@@ -31,6 +34,15 @@ const MyCaseScraper = (() => {
 
     // Strategy 2: DOM scraping (fallback)
     const domResults = tryScrapeDOM();
+    
+    if (domResults.length === 0) {
+      // Check if there are no cases at all, vs a layout change
+      const text = document.body.innerText.toLowerCase();
+      if (!text.includes('no cases matched') && !text.includes('0 cases found')) {
+        throw new Error("MyCase layout has changed. Unable to parse search results.");
+      }
+    }
+    
     console.log(`[Expungement] Extracted ${domResults.length} cases via DOM scraping`);
     return domResults;
   }
@@ -411,11 +423,15 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
 
   if (request.action === 'analyzeEligibility') {
-    const cases = MyCaseScraper.scrapeSearchResults();
-    const searchContext = MyCaseScraper.getSearchContext();
-    cases.forEach(c => { c.searchContext = searchContext; });
-    const report = IndianaExpungement.analyzeAll(cases);
-    sendResponse({ success: true, report, cases, searchContext });
+    try {
+      const cases = MyCaseScraper.scrapeSearchResults();
+      const searchContext = MyCaseScraper.getSearchContext();
+      cases.forEach(c => { c.searchContext = searchContext; });
+      const report = IndianaExpungement.analyzeAll(cases);
+      sendResponse({ success: true, report, cases, searchContext });
+    } catch (e) {
+      sendResponse({ success: false, error: e.message });
+    }
     return true;
   }
 
