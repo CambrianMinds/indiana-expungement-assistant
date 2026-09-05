@@ -23,12 +23,29 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# CORS: Allow Chrome Extension and local environments to call this service
+# CORS: Allow only the Chrome Extension and local development hosts.
+# Block everything else to prevent open-proxy abuse (expungement petitions
+# contain highly sensitive PII — SSN, DOB, address history — and must
+# never be tunneled through this service by unintended clients).
+#
+# Extension ID is stable for published Chrome Web Store extensions.
+# During local development the extension runs under a generated ID which
+# will be logged on first load if UNKNOWN_EXTENSIONS is left in debug mode.
+ALLOWED_ORIGINS = [
+    # Local development
+    "http://127.0.0.1",
+    "http://127.0.0.1:8000",
+    "http://localhost",
+    "http://localhost:8000",
+    # Indiana Expungement Assistant — Chrome Web Store (stable ID)
+    "chrome-extension://fgejoecpjkkbpfmhpgfjegkdjppikinb",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origin_regex=r"^(chrome-extension://.*|http://localhost(:\d+)?|http://127\.0\.0\.1(:\d+)?|https://.*\.courts\.in\.gov.*)$",
-    allow_credentials=True,
-    allow_methods=["*"],
+    allow_origins=ALLOWED_ORIGINS,
+    allow_credentials=False,
+    allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
 
@@ -37,6 +54,7 @@ app.add_middleware(
 
 class Petitioner(BaseModel):
     fullName: str
+    aliases: Optional[str] = None
     dob: Optional[str] = None
     ssn: Optional[str] = None
     driverLicense: Optional[str] = None

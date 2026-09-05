@@ -199,7 +199,7 @@ indiana-expungement-assistant/
 │   ├── background.js              # Service worker handling local API routing & downloads
 │   ├── content.js                 # In-browser Knockout observable scraper
 │   ├── eligibility.js             # IC § 35-38-9 statutory decision engine
-│   ├── icons/                     # Standard extension icons (16, 48, 128px)
+│   ├── icons/                     # Standard extension icons (16, 32, 48, 128px)
 │   └── sidepanel/                 # Civic sidepanel user interface
 │       ├── sidepanel.html         # Tabbed UI with alerts, modals & input guards
 │       ├── sidepanel.css          # Styled matching the civic web portal
@@ -207,6 +207,8 @@ indiana-expungement-assistant/
 ├── tests/                         # Automated test suite
 │   ├── test_api_endpoints.py      # Validates disclaimer API & 400 rejection safeguards
 │   └── test_form_engine.py        # Generates synthetic 10-form ZIP verification packet
+├── CHROMEWEBSTORE.md              # Chrome Web Store submission metadata, assets & justifications
+├── LICENSE                        # MIT License (Justin Bogner · CambrianMinds)
 ├── .gitignore                     # Excludes local venvs, bytecode, and generated PDFs
 └── README.md                      # Public project documentation & statutory guidance
 ```

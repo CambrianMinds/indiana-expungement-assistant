@@ -113,6 +113,43 @@ async def run_tests():
     resp_structured = await generate_expungement(req_structured_addr)
     assert resp_structured.media_type == "application/zip"
     print("[OK] Successfully generated packet with structured address fields (street, city, state, zip)")
+
+    # 4. Test petitioner with maiden name / aliases (IC § 35-38-9-8(b)(1))
+    req_aliases = GenerateRequest(
+        petitioner=Petitioner(
+            fullName="Jane Doe",
+            aliases="Jane Marie Smith, Jane M. Johnson",
+            dob="1985-06-15",
+            ssn="000-00-0000",
+            streetAddress="100 North Senate Avenue, Suite 200",
+            city="Indianapolis",
+            state="IN",
+            zipCode="46204"
+        ),
+        county="Marion",
+        court="Marion Superior Court",
+        courtCode="49D01",
+        cases=[
+            CaseRecord(
+                caseNumber="49D01-1605-CM-000555",
+                type="CM - Class A Misdemeanor",
+                statute="IC § 35-38-9-2",
+                charges="Operating While Intoxicated",
+                filed="2016-05-15",
+                dispositionDate="2016-10-20",
+                court="Marion Superior Court",
+                grantType="mandatory"
+            )
+        ],
+        acknowledgedOneShot=True,
+        acknowledgedNotLawyer=True,
+        acknowledgedAllCases=True,
+        acknowledgedProSeLiability=True
+    )
+    resp_aliases = await generate_expungement(req_aliases)
+    assert resp_aliases.media_type == "application/zip"
+    print("[OK] Successfully generated packet with maiden names / aliases (IC § 35-38-9-8(b)(1))")
+
     print("=" * 60)
     print("  ALL API & LEGAL GUARDRAIL TESTS PASSED")
     print("=" * 60)

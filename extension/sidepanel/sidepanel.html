@@ -9,6 +9,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
     rel="stylesheet">
+  <link rel="icon" type="image/png" sizes="32x32" href="../icons/icon32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="../icons/icon16.png">
   <link rel="stylesheet" href="sidepanel.css">
 </head>
 
@@ -17,11 +19,7 @@
   <header class="app-header">
     <div class="header-brand">
       <div class="header-crest">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-          stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-          <path d="m9 12 2 2 4-4" />
-        </svg>
+        <img src="../icons/icon32.png" alt="Indiana Expungement Assistant Crest" class="header-crest-img" width="26" height="26">
       </div>
       <div class="brand-info">
         <h1 class="header-title">Expungement Assistant</h1>
@@ -93,6 +91,24 @@
         </div>
       </div>
 
+      <!-- Multi-Page Batch & Alias Accumulation Banner -->
+      <div class="batch-panel" id="batchPanel" style="display:none">
+        <div class="batch-header">
+          <div class="batch-title-row">
+            <span class="batch-icon">📂</span>
+            <div>
+              <span class="batch-badge" id="batchBadge">0 Cases Accumulated</span>
+              <span class="batch-pages" id="batchPagesCount">(from 0 searches)</span>
+            </div>
+          </div>
+          <button type="button" class="btn-clear-scans" id="btnClearScans" title="Clear accumulated cases and start fresh">
+            Reset All
+          </button>
+        </div>
+        <p class="batch-desc">Cases from your different MyCase searches (maiden names, married names, aliases, other counties) are merged here automatically.</p>
+        <div class="batch-search-tags" id="batchSearchTags"></div>
+      </div>
+
       <div class="scan-hero">
         <div class="scan-icon-container">
           <svg class="scan-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
@@ -112,8 +128,14 @@
             <circle cx="11" cy="11" r="8" />
             <path d="m21 21-4.35-4.35" />
           </svg>
-          Scan Page &amp; Check Eligibility
+          <span id="btnScanLabel">Scan Page &amp; Check Eligibility</span>
         </button>
+        <div class="scan-mode-toggle">
+          <label class="checkbox-label scan-merge-label">
+            <input type="checkbox" id="chkMergeCases" checked>
+            <span><b>Merge across searches</b> (keep maiden/married name &amp; multi-county cases)</span>
+          </label>
+        </div>
         <button class="btn btn-secondary" id="btnDeepScrape" disabled>
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
             stroke-width="2">
@@ -122,6 +144,11 @@
           </svg>
           Deep Scrape CCS Details
         </button>
+      </div>
+
+      <div class="scan-tip-box">
+        <span class="tip-icon">💡</span>
+        <p><b>Multi-Search Tip:</b> Search MyCase for your maiden name, previous married names, other counties, or aliases, and scan each page. They will automatically accumulate into one lifetime expungement petition.</p>
       </div>
 
       <div class="scan-progress" id="scanProgress" style="display:none">
@@ -151,6 +178,18 @@
       </div>
 
       <div id="resultsContent" style="display:none">
+        <!-- Results Header Actions -->
+        <div class="results-header-actions" id="resultsHeaderActions">
+          <div class="results-count-summary" id="resultsCountSummary">
+            <span class="results-count-pill" id="resultsCountPill">0 Cases</span>
+            <span class="results-searches-pill" id="resultsSearchesPill">from 1 search</span>
+          </div>
+          <button type="button" class="btn btn-sm btn-outline" id="btnScanAnotherPage" title="Scan another MyCase name, married name, or county search">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <span>Scan Another Name/County</span>
+          </button>
+        </div>
+
         <!-- Summary Cards -->
         <div class="summary-grid">
           <div class="summary-card eligible">
@@ -195,6 +234,14 @@
           </div>
           <input type="text" id="fullName" placeholder="e.g. Jane Doe" autocomplete="name" required>
           <span class="field-error" id="err-fullName"></span>
+        </div>
+        <div class="form-group">
+          <div class="label-row">
+            <label for="aliases">Other Legal Names / Maiden Names / Aliases</label>
+            <span class="field-hint">IC § 35-38-9-8(b)(1)</span>
+          </div>
+          <input type="text" id="aliases" placeholder="e.g. Jane Marie Smith, Jane Johnson (comma separated)">
+          <span class="field-error" id="err-aliases"></span>
         </div>
         <div class="form-row">
           <div class="form-group">
@@ -472,6 +519,21 @@
         </div>
       </div>
 
+      <!-- Multi-County Packet Generator Notice & Selector -->
+      <div class="county-select-card" id="countySelectCard" style="display:none">
+        <div class="county-card-header">
+          <span class="county-card-icon">🏛️</span>
+          <div>
+            <h5>Multi-County Filing Detected</h5>
+            <p>Under <b>IC § 35-38-9-9(d)</b>, petitions must be filed separately in each county court within 365 days.</p>
+          </div>
+        </div>
+        <div class="county-select-body">
+          <label for="selectCountyPacket">Generate petition packet for county:</label>
+          <select id="selectCountyPacket" class="county-select-dropdown"></select>
+        </div>
+      </div>
+
       <div class="generate-options">
         <label class="checkbox-label">
           <input type="checkbox" id="includeFeeWaiver" checked>
@@ -503,6 +565,39 @@
   <!-- ═══ Toast Notifications ═══ -->
   <div class="toast-container" id="toastContainer"></div>
 
+  <!-- ═══ Modal: Scraper Parity Check (shown after each scan) ═══ -->
+  <div class="modal-overlay" id="parityModal" style="display:none">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div class="modal-icon-alert">🔍</div>
+        <h3>Verify Extracted Cases</h3>
+      </div>
+      <div class="modal-body">
+        <p class="modal-lead">
+          <b>Confirm these are all the cases you see on MyCase.</b>
+        </p>
+        <p class="modal-subtext">
+          Our scraper found <b id="parityCaseCount">0</b> case(s) on this page. Review the list below and compare it to
+          what you see on the MyCase search results page. If any cases are missing, click <b>Go Back &amp; Retry</b> and
+          try the scan again.
+        </p>
+        <div class="modal-callout-info" id="parityCaseList">
+          <!-- Dynamically populated -->
+        </div>
+        <div class="modal-callout-warning">
+          <b>⚠️ 92-County Rule Reminder:</b> This scan only covers the current MyCase search results. Under
+          <b>IC § 35-38-9-9(d)</b>, petitions in multiple counties must be filed within a <b>365-day window</b>. You
+          must search <b>all 92 Indiana counties</b> for every name, alias, and maiden name before generating your
+          petition.
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="btnParityRetry">Go Back &amp; Retry</button>
+        <button class="btn btn-primary" id="btnParityConfirm">Cases Match — Continue</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ═══ Modal: Final One-Shot Confirmation ═══ -->
   <div class="modal-overlay" id="confirmModal" style="display:none">
     <div class="modal-dialog">
@@ -514,6 +609,12 @@
         <p class="modal-lead">
           <b>Are you 100% sure that all of your Indiana criminal convictions are included?</b>
         </p>
+        <p class="modal-subtext" style="margin-bottom:8px">
+          The following <b id="confirmCaseCount">0</b> case(s) will be included in your petition. Review carefully — a missed conviction can never be expunged later.
+        </p>
+        <div class="modal-callout-info" id="confirmCaseList" style="max-height:140px">
+          <!-- Dynamically populated with case numbers before modal is shown -->
+        </div>
         <div class="modal-callout-danger">
           <b>INDIANA CODE § 35-38-9-9(i) STRICT LIFETIME LIMIT:</b>
           <br>You can petition to expunge convictions <u>ONLY ONCE IN YOUR LIFE</u>. Any conviction not included now can
@@ -588,6 +689,7 @@
     </div>
   </div>
 
+  <script src="../eligibility.js"></script>
   <script src="sidepanel.js"></script>
 </body>
 

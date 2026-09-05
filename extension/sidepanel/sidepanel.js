@@ -10,8 +10,13 @@
   // ─── State ─────────────────────────────────────────────────────────
   let currentCases = [];
   let currentReport = null;
+  let searchBatches = [];
   let petitionerProfile = null;
   let backendOnline = false;
+
+  // Holds the most recent scan result while the parity modal is displayed.
+  // Cleared after confirmation or dismissal.
+  let pendingScanResult = null;
 
   // ─── DOM References ────────────────────────────────────────────────
   const $ = (sel) => document.querySelector(sel);
@@ -27,13 +32,164 @@
     });
   });
 
-  function switchTab(tabName) {
-    $$('.tab-btn').forEach(b => {
-      b.classList.toggle('active', b.dataset.tab === tabName);
-    });
-    $$('.tab-panel').forEach(p => p.classList.remove('active'));
-    $(`#tab-${tabName}`).classList.add('active');
+  // ─── Scraper Parity Modal ──────────────────────────────────────────
+  /**
+   * Show the parity confirmation modal after a scan.
+   * Displays the extracted cases and asks the user to verify they match
+   * what's on screen before merging into the accumulated batch.
+   *
+   * @param {Array}  cases        - Cases scraped from this scan
+   * @param {string} searchContext - Human-readable label for this search (e.g. name/county)
+   * @param {boolean} mergeMode   - Whether merge is enabled
+   */
+  function showParityModal(cases, searchContext, mergeMode) {
+    pendingScanResult = { cases, searchContext, mergeMode };
+
+    const countEl = $('#parityCaseCount');
+    const listEl = $('#parityCaseList');
+
+    if (countEl) countEl.textContent = cases.length;
+
+    if (listEl) {
+      listEl.innerHTML = '';
+      if (cases.length === 0) {
+        listEl.innerHTML = '<em style="font-size:0.7rem;color:var(--text-muted)">No cases found on this page.</em>';
+      } else {
+        cases.slice(0, 20).forEach(c => {
+          const item = document.createElement('div');
+          item.className = 'modal-case-item';
+          item.innerHTML = `
+            <span class="modal-case-num">${escapeHtml(c.case_number || 'Unknown')}</span>
+            <span class="modal-case-type">${escapeHtml(c.case_type || '')}</span>
+          `;
+          listEl.appendChild(item);
+        });
+        if (cases.length > 20) {
+          const overflow = document.createElement('div');
+          overflow.style.fontSize = '0.68rem';
+          overflow.style.color = 'var(--text-muted)';
+          overflow.style.marginTop = '6px';
+          overflow.textContent = `…and ${cases.length - 20} more case${cases.length - 20 === 1 ? '' : 's'}`;
+          listEl.appendChild(overflow);
+        }
+      }
+    }
+
+    const modal = $('#parityModal');
+    if (modal) modal.style.display = 'flex';
   }
+
+  /**
+   * Called when the user clicks "Go Back & Retry" in the parity modal.
+   * Closes the modal and lets the user re-run the scan.
+   */
+  $('#btnParityRetry')?.addEventListener('click', () => {
+    const modal = $('#parityModal');
+    if (modal) modal.style.display = 'none';
+    pendingScanResult = null;
+    showToast('Re-run the scan when you\'re ready.', 'info', 3000);
+  });
+
+  /**
+   * Called when the user confirms the cases match what they see on screen.
+   * Merges the pending scan result into the accumulated case set.
+   */
+  $('#btnParityConfirm')?.addEventListener('click', () => {
+    const modal = $('#parityModal');
+    if (modal) modal.style.display = 'none';
+
+    if (!pendingScanResult) return;
+    const { cases: incomingCases, searchContext, mergeMode } = pendingScanResult;
+    pendingScanResult = null;
+
+    if (incomingCases.length === 0) return;
+
+    if (mergeMode && currentCases.length > 0) {
+      // Multi-search merge & de-duplication
+      const existingMap = new Map();
+      currentCases.forEach(c => {
+        const k = (c.case_number || '').trim().toUpperCase();
+        if (k) existingMap.set(k, c);
+      });
+
+      let newAdded = 0;
+      let overlapped = 0;
+
+      incomingCases.forEach(ic => {
+        const k = (ic.case_number || '').trim().toUpperCase();
+        if (!k) return;
+
+        if (existingMap.has(k)) {
+          const existing = existingMap.get(k);
+          if (!existing.searchQueries) {
+            existing.searchQueries = existing.searchContext ? [existing.searchContext] : [];
+          }
+          if (!existing.searchQueries.includes(searchContext)) {
+            existing.searchQueries.push(searchContext);
+          }
+          if (!existing.charges && ic.charges) existing.charges = ic.charges;
+          if (!existing.court && ic.court) existing.court = ic.court;
+          if (!existing.status && ic.status) existing.status = ic.status;
+          if (ic.caseToken && !existing.caseToken) existing.caseToken = ic.caseToken;
+          overlapped++;
+        } else {
+          ic.searchQueries = [searchContext];
+          currentCases.push(ic);
+          existingMap.set(k, ic);
+          newAdded++;
+        }
+      });
+
+      searchBatches.push({
+        query: searchContext,
+        count: incomingCases.length,
+        timestamp: Date.now()
+      });
+
+      if (window.IndianaExpungement?.analyzeAll) {
+        currentReport = window.IndianaExpungement.analyzeAll(currentCases);
+      }
+
+      showToast(
+        newAdded > 0
+          ? `Parity confirmed. Merged ${newAdded} new cases (${overlapped} already in batch). Total: ${currentCases.length} cases.`
+          : `Parity confirmed. All ${overlapped} cases already in batch. Total: ${currentCases.length} cases.`,
+        'success',
+        5000
+      );
+    } else {
+      // Fresh scan (or merge disabled)
+      currentCases = incomingCases;
+      currentCases.forEach(c => {
+        c.searchQueries = [searchContext];
+      });
+      searchBatches = [{
+        query: searchContext,
+        count: incomingCases.length,
+        timestamp: Date.now()
+      }];
+      currentReport = window.IndianaExpungement?.analyzeAll
+        ? window.IndianaExpungement.analyzeAll(currentCases)
+        : null;
+
+      showToast(`Parity confirmed. Found ${incomingCases.length} cases.`, 'success');
+    }
+
+    checkAndSuggestAlias(searchContext);
+    updateBatchPanelUI();
+    renderResults();
+
+    chrome.runtime.sendMessage({
+      action: 'saveScanResults',
+      cases: currentCases,
+      report: currentReport,
+      searchBatches: searchBatches
+    });
+
+    $('#btnDeepScrape').disabled = false;
+    switchTab('results');
+    updateChecklist();
+  });
 
   // ─── Toast Notifications ───────────────────────────────────────────
   function showToast(message, type = 'info', duration = 4000) {
@@ -48,6 +204,120 @@
       toast.style.transform = 'translateX(20px)';
       setTimeout(() => toast.remove(), 300);
     }, duration);
+  }
+
+  // ─── Multi-Search Batch & UI State ─────────────────────────────────
+  function updateBatchPanelUI() {
+    const batchPanel = $('#batchPanel');
+    const badge = $('#batchBadge');
+    const pagesCount = $('#batchPagesCount');
+    const tagsContainer = $('#batchSearchTags');
+    const resultsCountPill = $('#resultsCountPill');
+    const resultsSearchesPill = $('#resultsSearchesPill');
+
+    const totalCases = currentCases.length;
+    const totalSearches = searchBatches.length;
+
+    if (totalCases > 0 || totalSearches > 0) {
+      if (batchPanel) batchPanel.style.display = 'block';
+      if (badge) badge.textContent = `${totalCases} Cases Accumulated`;
+      if (pagesCount) {
+        pagesCount.textContent = totalSearches > 0
+          ? `(across ${totalSearches} search${totalSearches === 1 ? '' : 'es'})`
+          : '';
+      }
+
+      if (tagsContainer) {
+        tagsContainer.innerHTML = '';
+        searchBatches.forEach(b => {
+          const tag = document.createElement('span');
+          tag.className = 'batch-tag';
+          tag.innerHTML = `🔍 ${escapeHtml(b.query)} <span class="batch-tag-count">${b.count}</span>`;
+          tagsContainer.appendChild(tag);
+        });
+      }
+    } else {
+      if (batchPanel) batchPanel.style.display = 'none';
+      if (tagsContainer) tagsContainer.innerHTML = '';
+    }
+
+    if (resultsCountPill) {
+      resultsCountPill.textContent = `${totalCases} Cases`;
+    }
+    if (resultsSearchesPill) {
+      resultsSearchesPill.textContent = totalSearches > 0
+        ? `from ${totalSearches} search${totalSearches === 1 ? '' : 'es'}`
+        : '';
+    }
+  }
+
+  // Clear all accumulated scans
+  $('#btnClearScans')?.addEventListener('click', () => {
+    if (currentCases.length > 0 && !confirm('Clear all accumulated cases and searches to start fresh?')) {
+      return;
+    }
+    currentCases = [];
+    currentReport = null;
+    searchBatches = [];
+
+    chrome.runtime.sendMessage({
+      action: 'saveScanResults',
+      cases: [],
+      report: null,
+      searchBatches: []
+    });
+
+    updateBatchPanelUI();
+    $('#resultsContent').style.display = 'none';
+    $('#noResults').style.display = 'block';
+    $('#resultsBadge').style.display = 'none';
+    $('#btnDeepScrape').disabled = true;
+    updateChecklist();
+    showToast('Accumulated cases cleared. You can start a fresh search.', 'info', 3500);
+  });
+
+  // Jump from Results back to Scan to add another name / county
+  $('#btnScanAnotherPage')?.addEventListener('click', () => {
+    switchTab('scan');
+    showToast('💡 Search MyCase for another maiden name, married name, or county, then click Scan.', 'info', 5000);
+    const scanBtn = $('#btnScan');
+    if (scanBtn) {
+      scanBtn.scrollIntoView({ behavior: 'smooth' });
+    }
+  });
+
+  // Auto-suggest aliases from search queries (IC § 35-38-9-8(b)(1))
+  function checkAndSuggestAlias(query) {
+    if (!query || query === 'MyCase Search' || query.length < 3) return;
+    const aliasesInput = $('#aliases');
+    const currentAliases = (aliasesInput?.value || petitionerProfile?.aliases || '').trim();
+    const fullName = ($('#fullName')?.value || petitionerProfile?.fullName || '').trim().toLowerCase();
+
+    // Clean query text
+    const cleanQuery = query.replace(/[^\w\s,'-]/g, '').trim();
+    if (!cleanQuery) return;
+
+    // If query has comma, e.g. "Smith, Jane", convert to "Jane Smith"
+    let naturalName = cleanQuery;
+    if (cleanQuery.includes(',')) {
+      const parts = cleanQuery.split(',').map(s => s.trim());
+      if (parts.length === 2 && parts[0] && parts[1]) {
+        naturalName = `${parts[1]} ${parts[0]}`;
+      }
+    }
+
+    const normNat = naturalName.toLowerCase();
+    if (fullName && !fullName.includes(normNat) && !normNat.includes(fullName)) {
+      if (!currentAliases.toLowerCase().includes(normNat)) {
+        if (aliasesInput && !aliasesInput.value.trim()) {
+          aliasesInput.value = naturalName;
+          showToast(`💡 Suggested "${naturalName}" for Petitioner Aliases (IC § 35-38-9-8(b)(1))`, 'info', 5000);
+        } else if (aliasesInput && !aliasesInput.value.includes(naturalName)) {
+          aliasesInput.value = `${aliasesInput.value}, ${naturalName}`;
+          showToast(`💡 Added "${naturalName}" to Petitioner Aliases`, 'info', 5000);
+        }
+      }
+    }
   }
 
   // ─── Page Status Check ─────────────────────────────────────────────
@@ -156,7 +426,7 @@
     }
   });
 
-  // ─── Scan Action ───────────────────────────────────────────────────
+  // ─── Scan Action (Supports Multi-Page Merge for Maiden/Aliases) ──────
   $('#btnScan').addEventListener('click', async () => {
     const btn = $('#btnScan');
     btn.disabled = true;
@@ -169,24 +439,19 @@
       const response = await chrome.tabs.sendMessage(tab.id, { action: 'analyzeEligibility' });
 
       if (response?.success) {
-        currentCases = response.cases;
-        currentReport = response.report;
-        renderResults();
-        showToast(`Found ${response.cases.length} cases`, 'success');
+        const incomingCases = response.cases || [];
+        const searchContext = response.searchContext || 'MyCase Search';
+        const mergeMode = $('#chkMergeCases')?.checked ?? true;
 
-        // Save scan results
-        chrome.runtime.sendMessage({
-          action: 'saveScanResults',
-          cases: currentCases,
-          report: currentReport
-        });
+        if (incomingCases.length === 0) {
+          showToast('No case records found on this MyCase page.', 'warning', 4000);
+          return;
+        }
 
-        // Enable deep scrape
-        $('#btnDeepScrape').disabled = false;
-
-        // Switch to results tab
-        switchTab('results');
-        updateChecklist();
+        // Show parity modal so the user can verify extracted cases before merging.
+        // Merge and UI update are deferred until the user confirms via #btnParityConfirm.
+        showParityModal(incomingCases, searchContext, mergeMode);
+        return;
       } else {
         throw new Error(response?.error || 'Scan failed');
       }
@@ -268,10 +533,18 @@
     $('#summaryExcluded').textContent = s.excluded;
     $('#summaryFee').textContent = s.totalFilingFee ? `~$${s.totalFilingFee}` : '$0';
 
-    // Update badge
+    // Update badge & results header pills
     const badge = $('#resultsBadge');
     badge.style.display = 'inline-flex';
     badge.textContent = currentCases.length;
+
+    const resultsCountPill = $('#resultsCountPill');
+    const resultsSearchesPill = $('#resultsSearchesPill');
+    if (resultsCountPill) resultsCountPill.textContent = `${currentCases.length} Cases`;
+    if (resultsSearchesPill) {
+      const numSearches = searchBatches.length || 1;
+      resultsSearchesPill.textContent = `from ${numSearches} search${numSearches === 1 ? '' : 'es'}`;
+    }
 
     // Statute breakdown
     const breakdownEl = $('#statuteBreakdown');
@@ -281,6 +554,27 @@
       tag.className = 'statute-tag';
       tag.innerHTML = `${escapeHtml(statute)} <span class="statute-tag-count">${count}</span>`;
       breakdownEl.appendChild(tag);
+    }
+
+    // Multi-county detection & selector
+    const countySelectCard = $('#countySelectCard');
+    const countySelectDropdown = $('#selectCountyPacket');
+    const counties = currentReport.counties ? Object.entries(currentReport.counties) : [];
+
+    if (countySelectCard && countySelectDropdown) {
+      if (counties.length > 1) {
+        countySelectCard.style.display = 'block';
+        countySelectDropdown.innerHTML = '';
+        counties.forEach(([code, cData]) => {
+          const eligCount = cData.cases.filter(c => c.eligibility?.eligible).length;
+          const opt = document.createElement('option');
+          opt.value = code;
+          opt.textContent = `${cData.courtName || ('County ' + code)} (${eligCount} eligible of ${cData.cases.length} cases)`;
+          countySelectDropdown.appendChild(opt);
+        });
+      } else {
+        countySelectCard.style.display = 'none';
+      }
     }
 
     // Case list
@@ -306,6 +600,30 @@
     for (const c of allCases) {
       listEl.appendChild(createCaseCard(c));
     }
+  }
+
+  function excludeCase(caseNum) {
+    if (!caseNum) return;
+    const idx = currentCases.findIndex(c => (c.case_number || '').trim().toUpperCase() === caseNum.trim().toUpperCase());
+    if (idx === -1) return;
+
+    currentCases.splice(idx, 1);
+
+    if (window.IndianaExpungement?.analyzeAll) {
+      currentReport = window.IndianaExpungement.analyzeAll(currentCases);
+    }
+
+    chrome.runtime.sendMessage({
+      action: 'saveScanResults',
+      cases: currentCases,
+      report: currentReport,
+      searchBatches: searchBatches
+    });
+
+    updateBatchPanelUI();
+    renderResults();
+    updateChecklist();
+    showToast(`Excluded ${caseNum} from filing. Eligibility recalculated.`, 'info', 3500);
   }
 
   function createCaseCard(caseData) {
@@ -334,12 +652,19 @@
 
     const chargesDisplay = caseData.charges || caseData.case_type || 'No charges listed';
     const typeCode = el?.typeCode || '';
+    const searchQueriesDisplay = caseData.searchQueries?.length
+      ? caseData.searchQueries.join(' · ')
+      : (caseData.searchContext || '');
 
     card.innerHTML = `
       <div class="case-card-header">
         <span class="case-number">${escapeHtml(caseData.case_number || '')}</span>
-        <span class="case-badge ${badgeClass}">${badgeText}</span>
+        <div class="case-card-header-actions">
+          <span class="case-badge ${badgeClass}">${badgeText}</span>
+          <button type="button" class="btn-remove-case" title="Exclude this case from petition (e.g. maiden name mismatch / not you)">&times; Exclude</button>
+        </div>
       </div>
+      ${searchQueriesDisplay ? `<div class="case-search-tag">🔍 Found via: ${escapeHtml(searchQueriesDisplay)}</div>` : ''}
       <div class="case-charges">${escapeHtml(chargesDisplay)}</div>
       <div class="case-meta">
         <span>${escapeHtml(typeCode)}</span>
@@ -380,6 +705,11 @@
     `;
 
     card.addEventListener('click', () => card.classList.toggle('expanded'));
+    card.querySelector('.btn-remove-case')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      excludeCase(caseData.case_number);
+    });
+
     return card;
   }
 
@@ -701,6 +1031,7 @@
 
   function fillProfileForm(profile) {
     if (profile.fullName) $('#fullName').value = profile.fullName;
+    if (profile.aliases) $('#aliases').value = profile.aliases;
     if (profile.dob) $('#dob').value = profile.dob;
     if (profile.ssn) $('#ssn').value = formatSSN(profile.ssn);
     if (profile.driverLicense) $('#driverLicense').value = formatDL(profile.driverLicense);
@@ -787,6 +1118,7 @@
 
     petitionerProfile = {
       fullName: $('#fullName').value.trim(),
+      aliases: $('#aliases')?.value.trim() || '',
       dob: $('#dob').value,
       ssn: $('#ssn').value.trim(),
       driverLicense: $('#driverLicense').value.trim(),
@@ -860,6 +1192,21 @@
       return;
     }
 
+    // Populate the case list in the confirm modal so the user sees exactly what will be filed
+    const caseListEl = $('#confirmCaseList');
+    const caseCountEl = $('#confirmCaseCount');
+    if (caseListEl && caseCountEl && currentCases.length > 0) {
+      caseCountEl.textContent = currentCases.length;
+      caseListEl.innerHTML = currentCases.map(c => {
+        const num = c.case_number || 'UNKNOWN';
+        const type = c.case_type || c.type || '';
+        return `<div class="modal-case-item">
+          <span class="modal-case-num">${num}</span>
+          <span class="modal-case-type">${type}</span>
+        </div>`;
+      }).join('');
+    }
+
     // Display the final confirmation modal to prevent accidental filing
     if (confirmModal) {
       confirmModal.style.display = 'flex';
@@ -886,33 +1233,48 @@
         throw new Error('No eligible cases found. Scan a MyCase page first.');
       }
 
-      // Build payload for the backend
+      // Determine target county (supports multi-county filing selection)
+      const countySelectCard = $('#countySelectCard');
+      const countySelectDropdown = $('#selectCountyPacket');
+      const selectedCountyCode = (countySelectCard?.style.display !== 'none' && countySelectDropdown?.value)
+        ? countySelectDropdown.value
+        : null;
+
+      let targetCounty = null;
+      if (selectedCountyCode && currentReport.counties[selectedCountyCode]) {
+        targetCounty = currentReport.counties[selectedCountyCode];
+      } else {
+        targetCounty = Object.values(currentReport.counties)[0];
+      }
+
+      // Build payload for the backend (filtered to targetCounty if multi-county)
       const eligibleCases = [];
-      for (const county of Object.values(currentReport.counties)) {
-        for (const c of county.cases) {
-          if (c.eligibility?.eligible) {
-            eligibleCases.push({
-              caseNumber: c.case_number,
-              type: c.eligibility.typeCode,
-              statute: c.eligibility.statute,
-              charges: c.charges || c.case_type,
-              filed: c.filed,
-              dispositionDate: c.eligibility.dispositionDate?.toISOString()?.split('T')[0] || c.filed,
-              court: c.court,
-              grantType: c.eligibility.grantType
-            });
-          }
+      const casesToInclude = targetCounty ? targetCounty.cases : currentCases;
+
+      for (const c of casesToInclude) {
+        if (c.eligibility?.eligible) {
+          eligibleCases.push({
+            caseNumber: c.case_number,
+            type: c.eligibility.typeCode,
+            statute: c.eligibility.statute,
+            charges: c.charges || c.case_type,
+            filed: c.filed,
+            dispositionDate: c.eligibility.dispositionDate?.toISOString()?.split('T')[0] || c.filed,
+            court: c.court,
+            grantType: c.eligibility.grantType
+          });
         }
       }
 
-      // Determine primary county
-      const primaryCounty = Object.values(currentReport.counties)[0];
+      if (eligibleCases.length === 0) {
+        throw new Error(`No eligible cases in ${targetCounty?.courtName || 'the selected county'}.`);
+      }
 
       const payload = {
         petitioner: petitionerProfile,
-        county: primaryCounty?.courtName?.replace(/\s*(Superior|Circuit|Court)\s*/gi, '').trim() || 'Unknown',
-        court: primaryCounty?.courtName || 'Unknown Court',
-        courtCode: primaryCounty?.courtCode || 'XXXXX',
+        county: targetCounty?.courtName?.replace(/\s*(Superior|Circuit|Court)\s*/gi, '').trim() || 'Unknown',
+        court: targetCounty?.courtName || 'Unknown Court',
+        courtCode: targetCounty?.courtCode || 'XXXXX',
         cases: eligibleCases,
         includeFeeWaiver: $('#includeFeeWaiver')?.checked ?? true,
         includeAddressSupplement: $('#includeAddressSupplement')?.checked ?? true,
@@ -996,6 +1358,8 @@
       if (lastScan?.scan) {
         currentCases = lastScan.scan.cases || [];
         currentReport = lastScan.scan.report || null;
+        searchBatches = lastScan.scan.searchBatches || [];
+        updateBatchPanelUI();
         if (currentReport) {
           renderResults();
         }

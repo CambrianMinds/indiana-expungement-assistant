@@ -356,6 +356,34 @@ const MyCaseScraper = (() => {
       document.querySelector('.od-ccs-entry, .ccs-entry') !== null;
   }
 
+  /**
+   * Extract search context or party name query from the active MyCase page.
+   * Useful for tracking multiple maiden/married name or alias searches.
+   */
+  function getSearchContext() {
+    try {
+      // 1. Try search inputs (e.g. Last Name, First Name)
+      const last = document.querySelector('input[id*="LastName" i], input[name*="LastName" i]')?.value?.trim();
+      const first = document.querySelector('input[id*="FirstName" i], input[name*="FirstName" i]')?.value?.trim();
+      const nameParts = [last, first].filter(Boolean);
+      if (nameParts.length > 0) {
+        return nameParts.join(', ');
+      }
+
+      // 2. Try breadcrumb or search summary headers
+      const summaryEl = document.querySelector('.search-summary, .search-criteria, .k-header-column-menu, .breadcrumb');
+      if (summaryEl && summaryEl.innerText?.trim()) {
+        const text = summaryEl.innerText.trim().replace(/\s+/g, ' ');
+        if (text.length > 0 && text.length < 60) return text;
+      }
+
+      // 3. Fallback to page title or timestamp
+      const titleMatch = document.title.match(/MyCase\s*[-–]\s*(.+)/i);
+      if (titleMatch && titleMatch[1]) return titleMatch[1].trim();
+    } catch (_) {}
+    return 'MyCase Search';
+  }
+
   // ─── Public API ──────────────────────────────────────────────────────
   return {
     scrapeSearchResults,
@@ -363,6 +391,7 @@ const MyCaseScraper = (() => {
     deepScrapeCCS,
     isSearchResultsPage,
     isCaseSummaryPage,
+    getSearchContext,
     // Expose internals for testing
     _tryKnockoutExtraction: tryKnockoutExtraction,
     _tryScrapeDOM: tryScrapeDOM,
@@ -375,14 +404,18 @@ const MyCaseScraper = (() => {
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'scrapeSearchResults') {
     const cases = MyCaseScraper.scrapeSearchResults();
-    sendResponse({ success: true, cases });
+    const searchContext = MyCaseScraper.getSearchContext();
+    cases.forEach(c => { c.searchContext = searchContext; });
+    sendResponse({ success: true, cases, searchContext });
     return true;
   }
 
   if (request.action === 'analyzeEligibility') {
     const cases = MyCaseScraper.scrapeSearchResults();
+    const searchContext = MyCaseScraper.getSearchContext();
+    cases.forEach(c => { c.searchContext = searchContext; });
     const report = IndianaExpungement.analyzeAll(cases);
-    sendResponse({ success: true, report, cases });
+    sendResponse({ success: true, report, cases, searchContext });
     return true;
   }
 

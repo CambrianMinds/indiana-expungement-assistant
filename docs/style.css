@@ -146,13 +146,22 @@ body {
   width: 42px;
   height: 42px;
   border-radius: var(--radius-sm);
-  background: var(--color-navy-900);
+  background: var(--color-navy-950);
   color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.35rem;
   box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.nav-crest-img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  display: block;
 }
 
 .brand-text {

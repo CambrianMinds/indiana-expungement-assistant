@@ -174,17 +174,19 @@ def get_pdf_styles():
 # ─── Reusable Components ───────────────────────────────────────────────
 
 def make_court_caption(st, petitioner_name: str, county_name: str, court_name: str,
-                       court_code: str, cause_str: str = None, doc_title_code: str = "XP - EXPUNGEMENT PETITION"):
+                       court_code: str, cause_str: str = None, doc_title_code: str = "XP - EXPUNGEMENT PETITION",
+                       aliases: str = None):
     """Generate the standard Indiana court caption block."""
     if not cause_str:
         cause_str = f"CAUSE NO. {court_code}-____-XP-______"
 
+    aka_block = f"<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<i>a/k/a {aliases}</i>" if aliases else ""
     left_p = Paragraph(
         f"<b>STATE OF INDIANA</b><br/>"
         f"<b>COUNTY OF {county_name.upper()}</b><br/><br/>"
         f"<b>IN RE THE EXPUNGEMENT OF THE<br/>"
         f"ARREST AND CONVICTION RECORDS OF:</b><br/><br/>"
-        f"<b>{petitioner_name.upper()}</b>,<br/>"
+        f"<b>{petitioner_name.upper()}</b>{aka_block},<br/>"
         f"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<i>Petitioner.</i>",
         st['caption']
     )
@@ -264,6 +266,7 @@ def _ctx(payload: dict):
     raw_pet = payload.get('petitioner', {}) or {}
     pet = {
         'fullName': raw_pet.get('fullName') or 'PETITIONER NAME',
+        'aliases': raw_pet.get('aliases') or '',
         'dob': raw_pet.get('dob') or '_______ / _______ / ______________',
         'ssn': raw_pet.get('ssn') or 'XXX - XX - ________________',
         'driverLicense': raw_pet.get('driverLicense') or '________________________________________',
@@ -600,6 +603,8 @@ def generate_form_3(st, payload):
 
     id_data = [
         [Paragraph("<b>Full Legal Name:</b>", st['tbl_cell_bold']), Paragraph(name, st['tbl_cell'])],
+        [Paragraph("<b>Other Names / Maiden Names / Aliases:</b>", st['tbl_cell_bold']),
+         Paragraph(pet.get('aliases') or 'None', st['tbl_cell'])],
         [Paragraph("<b>Date of Birth:</b>", st['tbl_cell_bold']), Paragraph(dob_display, st['tbl_cell'])],
         [Paragraph("<b>Social Security Number:</b>", st['tbl_cell_bold']), Paragraph(ssn_display, st['tbl_cell'])],
         [Paragraph("<b>Driver's License / ID Number:</b>", st['tbl_cell_bold']),
@@ -669,7 +674,7 @@ def generate_form_4(st, payload):
     name, name_upper, county, court, court_code, cases, pet, _ = _ctx(payload)
     n_cases = len(cases)
     story = []
-    story.append(make_court_caption(st, name, county, court, court_code))
+    story.append(make_court_caption(st, name, county, court, court_code, aliases=pet.get('aliases') or None))
     story.append(Spacer(1, 8))
     story.append(Paragraph(
         "<b>VERIFIED PETITION FOR EXPUNGEMENT OF ARREST, INFRACTION, MISDEMEANOR, AND FELONY RECORDS</b>",
@@ -698,8 +703,9 @@ def generate_form_4(st, payload):
         st['body']))
 
     story.append(Paragraph("<b>I. PETITIONER IDENTIFICATION &amp; JURISDICTION</b>", st['heading']))
+    aliases_stmt = f" All other legal names, maiden names, prior married names, or aliases by which Petitioner has been known pursuant to IC § 35-38-9-8(b)(1) are: <b>{pet['aliases']}</b>." if pet.get('aliases') else " Petitioner has had no other legal names, maiden names, or aliases (IC § 35-38-9-8(b)(1))."
     story.append(Paragraph(
-        f"<b>1. Petitioner's Identity:</b> Petitioner's full legal name is {name}.",
+        f"<b>1. Petitioner's Identity:</b> Petitioner's full legal name is {name}.{aliases_stmt}",
         st['body']))
     story.append(Paragraph(
         f"<b>2. Confidential Identifying Information:</b> Pursuant to IC § 35-38-9-8(b) and Access to Court Records Rule 5, "
@@ -920,15 +926,16 @@ def generate_form_7(st, payload):
     name, name_upper, county, court, court_code, cases, pet, _ = _ctx(payload)
     n_cases = len(cases)
     story = []
-    story.append(make_court_caption(st, name, county, court, court_code))
+    story.append(make_court_caption(st, name, county, court, court_code, aliases=pet.get('aliases') or None))
     story.append(Spacer(1, 8))
     story.append(Paragraph(
         "<b>ORDER GRANTING VERIFIED PETITION FOR EXPUNGEMENT OF ARREST, INFRACTION, MISDEMEANOR, AND FELONY RECORDS</b>",
         st['title']))
 
+    aka_str = f" (a/k/a {pet['aliases']})" if pet.get('aliases') else ""
     story.append(Paragraph(
         f"This matter came before the Court upon the <i>Verified Petition for Expungement</i> "
-        f"filed by Petitioner, <b>{name}</b>, pursuant to Indiana Code §§ 35-38-9-1, 35-38-9-2, 35-38-9-3, and 35-38-9-8. "
+        f"filed by Petitioner, <b>{name}</b>{aka_str}, pursuant to Indiana Code §§ 35-38-9-1, 35-38-9-2, 35-38-9-3, and 35-38-9-8. "
         f"The Court, having examined the verified pleadings, court records, and files, and having received no objection "
         f"from the Prosecuting Attorney, now enters the following:",
         st['body']))

@@ -71,7 +71,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       lastScan: {
         timestamp: new Date().toISOString(),
         cases: request.cases,
-        report: request.report
+        report: request.report,
+        searchBatches: request.searchBatches || []
       }
     }, () => {
       sendResponse({ success: true });
