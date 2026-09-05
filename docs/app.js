@@ -214,9 +214,9 @@ function initEligibilityCalculator() {
     if (progressBar) {
       progressBar.style.width = `${progressPct.toFixed(0)}%`;
       if (progressPct >= 100) {
-        progressBar.style.background = 'linear-gradient(90deg, #10b981 0%, #059669 100%)';
+        progressBar.style.background = 'var(--color-emerald-600)';
       } else {
-        progressBar.style.background = 'linear-gradient(90deg, #3b82f6 0%, #f59e0b 100%)';
+        progressBar.style.background = 'var(--color-blue-600)';
       }
     }
     if (progressText) {

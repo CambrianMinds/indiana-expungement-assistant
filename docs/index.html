@@ -49,11 +49,11 @@
   <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
   <link rel="manifest" href="manifest.webmanifest">
 
-  <!-- Google Fonts: Editorial Serif (Lora) + Modern Sans (Plus Jakarta Sans) + Tech Mono (JetBrains Mono) -->
+  <!-- Google Fonts: Editorial Serif (Newsreader) + Tech Mono (JetBrains Mono) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
-    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Lora:ital,wght@0,500;0,600;0,700;1,400;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..700&display=swap"
     rel="stylesheet">
 
   <link rel="stylesheet" href="style.css?v=7">
@@ -132,62 +132,45 @@
 
   <!-- Hero Section -->
   <section class="hero">
-    <div class="hero-bg-media" aria-hidden="true">
-      <img src="assets/hero-courthouse.jpg" alt="" class="hero-bg-img">
-      <div class="hero-bg-overlay"></div>
-    </div>
-    <div class="container hero-grid">
-      <div class="hero-text-col">
-        <div class="hero-badge">
-          <span class="hero-badge-pulse"></span>
-          <span>A Free Public Self-Help Tool under Indiana Code § 35-38-9</span>
-        </div>
-
-        <h1>Your Second Chance Starts Here. <span class="hero-gradient-text">Free, Private, & Dignified.</span></h1>
-
-        <p class="hero-subtitle">
-          Navigate Indiana's expungement process with confidence. This free, open-source tool helps you check your
-          eligibility under IC § 35-38-9, retrieve public records from MyCase, and compile all 10 court-ready
-          pleadings — entirely in your browser, with complete privacy.
-        </p>
-
-        <div class="hero-cta-row">
-          <a href="#assessment" class="btn btn-primary">
-            <span>Check Your Statutory Eligibility</span>
-            <span>→</span>
-          </a>
-          <a href="#instructions" class="btn btn-outline">
-            <span>How to Prepare Your Petition</span>
-          </a>
-        </div>
-
-        <div class="hero-trust-bar">
-          <div class="trust-item">
-            <span class="trust-num"><span class="trust-icon">🔒</span> 100% Private</span>
-            <span class="trust-label">All processing happens in your browser — nothing leaves your computer</span>
-          </div>
-          <div class="trust-item">
-            <span class="trust-num"><span class="trust-icon">💲</span> $0 Cost</span>
-            <span class="trust-label">No attorney fees, no software fees, no hidden costs</span>
-          </div>
-          <div class="trust-item">
-            <span class="trust-num"><span class="trust-icon">📄</span> 10 Court Forms</span>
-            <span class="trust-label">Every required pleading, formatted and ready to file</span>
-          </div>
-        </div>
+    <div class="container hero-container">
+      <div class="hero-badge">
+        <span class="hero-badge-bullet">§</span>
+        <span>A Free Public Legal Self-Help Initiative &bull; Indiana Code § 35-38-9</span>
       </div>
 
-      <div class="hero-visual-col">
-        <div class="hero-visual-card">
-          <div class="visual-card-image-wrap">
-            <img src="assets/second-chance.jpg" alt="Official Indiana Court Expungement Pleadings and Scales of Justice"
-              class="visual-card-img" loading="eager">
-          </div>
-          <div class="visual-card-caption">
-            <div class="caption-title">Court-Ready Documents</div>
-            <p class="caption-text">Compiles verified petitions, proposed orders, notices of exclusion, and certificates
-              of service right in your browser.</p>
-          </div>
+      <h1>Your Second Chance Starts Here. <span class="hero-subhead">Free, Private, & Dignified.</span></h1>
+
+      <p class="hero-subtitle">
+        Navigate Indiana's expungement process with confidence and statutory precision. This free, open-source tool
+        helps you check your
+        eligibility under IC § 35-38-9, retrieve public records from MyCase, and compile all 10 court-ready
+        pleadings — entirely in your browser, with complete privacy.
+      </p>
+
+      <div class="hero-cta-row">
+        <a href="#assessment" class="btn btn-primary">
+          <span>Check Your Statutory Eligibility</span>
+          <span>→</span>
+        </a>
+        <a href="#instructions" class="btn btn-outline">
+          <span>How to Prepare Your Petition</span>
+        </a>
+      </div>
+
+      <div class="hero-trust-bar">
+        <div class="trust-item">
+          <span class="trust-num">100% Private</span>
+          <span class="trust-label">All processing executes locally in your browser — zero tracking, zero logs</span>
+        </div>
+        <div class="trust-item">
+          <span class="trust-num">$0 State Resource</span>
+          <span class="trust-label">Completely free open-source legal aid. No lawyer fees, subscriptions, or
+            paywalls</span>
+        </div>
+        <div class="trust-item">
+          <span class="trust-num">10 Court Pleadings</span>
+          <span class="trust-label">Complete petition packet formatted pursuant to Indiana Trial Rules for all 92
+            counties</span>
         </div>
       </div>
     </div>
@@ -438,40 +421,37 @@
             <div class="seal-visual-card">
               <img src="assets/indiana-seal.jpg" alt="Seal of the State of Indiana and Indiana Statutes"
                 class="seal-visual-img" loading="lazy">
-              <div class="seal-visual-overlay">
-                <div class="seal-badge">Statewide Statutory Consolidation</div>
-                <div class="seal-subtext">Indiana Code § 35-38-9 · Comprehensive Relief Across All 92 Counties</div>
-              </div>
             </div>
           </div>
         </div>
+      </div>
 
-        <!-- Pre-Filing Record Audit Checklist -->
-        <div class="audit-box">
-          <div class="audit-header">
-            <h4>Mandatory Pre-Filing Record Audit Checklist</h4>
-            <span class="audit-counter" id="prepProgressText">0 of 4 Audited</span>
-          </div>
-          <div class="audit-grid">
-            <label class="audit-item">
-              <input type="checkbox">
-              <span>Searched MyCase under all legal names, maiden names, and prior aliases</span>
-            </label>
-            <label class="audit-item">
-              <input type="checkbox">
-              <span>Searched across all 92 Indiana counties, not just your current residence</span>
-            </label>
-            <label class="audit-item">
-              <input type="checkbox">
-              <span>Audited BMV driver history for criminal traffic convictions (OWI, DWS, Reckless Driving)</span>
-            </label>
-            <label class="audit-item">
-              <input type="checkbox">
-              <span>Requested Indiana State Police (ISP) formal criminal history record for complete verification</span>
-            </label>
-          </div>
+      <!-- Pre-Filing Record Audit Checklist -->
+      <div class="audit-box">
+        <div class="audit-header">
+          <h4>Mandatory Pre-Filing Record Audit Checklist</h4>
+          <span class="audit-counter" id="prepProgressText">0 of 4 Audited</span>
+        </div>
+        <div class="audit-grid">
+          <label class="audit-item">
+            <input type="checkbox">
+            <span>Searched MyCase under all legal names, maiden names, and prior aliases</span>
+          </label>
+          <label class="audit-item">
+            <input type="checkbox">
+            <span>Searched across all 92 Indiana counties, not just your current residence</span>
+          </label>
+          <label class="audit-item">
+            <input type="checkbox">
+            <span>Audited BMV driver history for criminal traffic convictions (OWI, DWS, Reckless Driving)</span>
+          </label>
+          <label class="audit-item">
+            <input type="checkbox">
+            <span>Requested Indiana State Police (ISP) formal criminal history record for complete verification</span>
+          </label>
         </div>
       </div>
+    </div>
     </div>
   </section>
 
