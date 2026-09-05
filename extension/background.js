@@ -89,27 +89,40 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 // ─── Backend API Communication ─────────────────────────────────────────
 
-const BACKEND_URL = 'http://127.0.0.1:8000';
+const BACKEND_URLS = ['http://127.0.0.1:8000', 'http://localhost:8000'];
+let activeBackendUrl = 'http://127.0.0.1:8000';
 
 async function checkBackendHealth() {
-  try {
-    const response = await fetch(`${BACKEND_URL}/health`, {
-      method: 'GET',
-      signal: AbortSignal.timeout(3000)
-    });
-    if (response.ok) {
-      const data = await response.json();
-      return { success: true, status: data };
+  for (const url of BACKEND_URLS) {
+    try {
+      const response = await fetch(`${url}/health`, {
+        method: 'GET',
+        signal: AbortSignal.timeout(2000)
+      });
+      if (response.ok) {
+        const data = await response.json();
+        activeBackendUrl = url;
+        return { success: true, url, status: data };
+      }
+    } catch (e) {
+      // try next candidate url
     }
-    return { success: false, error: `Backend returned ${response.status}` };
-  } catch (e) {
-    return { success: false, error: 'Backend not running. Start with: python backend/app.py' };
   }
+  return { success: false, error: 'Backend not running. Start with: python backend/app.py' };
 }
 
 async function generatePacketViaBackend(payload) {
   try {
-    const response = await fetch(`${BACKEND_URL}/api/generate-expungement`, {
+    // Ensure we use the healthy URL or check first
+    let targetUrl = activeBackendUrl;
+    try {
+      const ping = await checkBackendHealth();
+      if (ping.success && ping.url) {
+        targetUrl = ping.url;
+      }
+    } catch (_) {}
+
+    const response = await fetch(`${targetUrl}/api/generate-expungement`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)

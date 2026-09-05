@@ -23,15 +23,10 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# CORS: Allow the Chrome Extension to call this local service
+# CORS: Allow Chrome Extension and local environments to call this service
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "chrome-extension://*",
-        "http://localhost",
-        "http://127.0.0.1",
-        "https://public.courts.in.gov",
-    ],
+    allow_origin_regex=r"^(chrome-extension://.*|http://localhost(:\d+)?|http://127\.0\.0\.1(:\d+)?|https://.*\.courts\.in\.gov.*)$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -85,21 +85,76 @@
   }
 
   // ─── Backend Health Check ──────────────────────────────────────────
-  async function checkBackend() {
+  async function checkBackend(showFeedback = false) {
     const statusEl = $('#backendStatus');
     const dot = statusEl.querySelector('.status-dot');
+    const label = statusEl.querySelector('.status-label');
     dot.className = 'status-dot checking';
+    if (label) label.textContent = 'Checking...';
 
+    let online = false;
+    let details = null;
+
+    // 1. Try checking via background service worker
     try {
-      const result = await chrome.runtime.sendMessage({ action: 'checkBackend' });
-      backendOnline = result?.success || false;
-      dot.className = `status-dot ${backendOnline ? 'online' : 'offline'}`;
-      updateChecklist();
-    } catch {
-      backendOnline = false;
-      dot.className = 'status-dot offline';
+      const bgResult = await chrome.runtime.sendMessage({ action: 'checkBackend' });
+      if (bgResult?.success) {
+        online = true;
+        details = bgResult.status;
+      }
+    } catch (_) {
+      // Service worker may be idle or transitioning
     }
+
+    // 2. Direct fetch fallback from sidepanel (uses host_permissions for localhost)
+    if (!online) {
+      for (const host of ['http://127.0.0.1:8000', 'http://localhost:8000']) {
+        try {
+          const res = await fetch(`${host}/health`, {
+            method: 'GET',
+            signal: AbortSignal.timeout(1800)
+          });
+          if (res.ok) {
+            online = true;
+            details = await res.json();
+            break;
+          }
+        } catch (_) {}
+      }
+    }
+
+    backendOnline = online;
+    dot.className = `status-dot ${backendOnline ? 'online' : 'offline'}`;
+    if (label) {
+      label.textContent = backendOnline ? 'Backend Online' : 'Backend Offline';
+    }
+    statusEl.title = backendOnline
+      ? 'Local Form Engine is running and ready (http://127.0.0.1:8000)'
+      : 'Form Engine offline. Click to retry or launch: python backend/app.py';
+
+    updateChecklist();
+
+    if (showFeedback) {
+      if (backendOnline) {
+        showToast('✓ Form Engine detected at http://127.0.0.1:8000', 'success', 3000);
+      } else {
+        showToast('Backend offline. Run: python backend/app.py', 'error', 4000);
+      }
+    }
+
+    return backendOnline;
   }
+
+  // Click on backend status pill to manually refresh / retry
+  $('#backendStatus')?.addEventListener('click', () => {
+    checkBackend(true);
+  });
+  $('#backendStatus')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      checkBackend(true);
+    }
+  });
 
   // ─── Scan Action ───────────────────────────────────────────────────
   $('#btnScan').addEventListener('click', async () => {
@@ -190,13 +245,15 @@
   });
 
   // ─── Deep Scrape Progress Listener ─────────────────────────────────
-  chrome.runtime.onMessage.addListener((request) => {
-    if (request.action === 'deepScrapeProgress') {
-      const pct = Math.round((request.current / request.total) * 100);
-      $('#progressFill').style.width = `${pct}%`;
-      $('#progressText').textContent = `Fetching CCS ${request.current}/${request.total}: ${request.caseNum}`;
-    }
-  });
+  if (typeof chrome !== 'undefined' && chrome?.runtime?.onMessage) {
+    chrome.runtime.onMessage.addListener((request) => {
+      if (request.action === 'deepScrapeProgress') {
+        const pct = Math.round((request.current / request.total) * 100);
+        $('#progressFill').style.width = `${pct}%`;
+        $('#progressText').textContent = `Fetching CCS ${request.current}/${request.total}: ${request.caseNum}`;
+      }
+    });
+  }
 
   // ─── Render Results ────────────────────────────────────────────────
   function renderResults() {
@@ -332,12 +389,16 @@
 
   // Load saved profile
   async function loadProfile() {
-    const result = await chrome.runtime.sendMessage({ action: 'loadPetitionerProfile' });
-    if (result?.profile) {
-      petitionerProfile = result.profile;
-      fillProfileForm(result.profile);
-    } else {
-      addAddressEntry(); // Start with one empty entry
+    try {
+      const result = await chrome?.runtime?.sendMessage?.({ action: 'loadPetitionerProfile' });
+      if (result?.profile) {
+        petitionerProfile = result.profile;
+        fillProfileForm(result.profile);
+      } else {
+        addAddressEntry(); // Start with one empty entry
+      }
+    } catch (_) {
+      addAddressEntry();
     }
     updateChecklist();
   }
@@ -576,20 +637,25 @@
     await checkPageStatus();
 
     // Load last scan results
-    const lastScan = await chrome.runtime.sendMessage({ action: 'loadLastScan' });
-    if (lastScan?.scan) {
-      currentCases = lastScan.scan.cases || [];
-      currentReport = lastScan.scan.report || null;
-      if (currentReport) {
-        renderResults();
+    try {
+      const lastScan = await chrome?.runtime?.sendMessage?.({ action: 'loadLastScan' });
+      if (lastScan?.scan) {
+        currentCases = lastScan.scan.cases || [];
+        currentReport = lastScan.scan.report || null;
+        if (currentReport) {
+          renderResults();
+        }
       }
-    }
+    } catch (_) {}
 
     updateChecklist();
 
-    // Periodic checks
+    // Periodic checks: poll rapidly (every 4s) when offline so newly launched backend is caught instantly
     setInterval(checkPageStatus, 5000);
-    setInterval(checkBackend, 15000);
+    setInterval(() => {
+      // If offline, check frequently to catch when user runs python backend/app.py
+      checkBackend(false);
+    }, backendOnline ? 12000 : 4000);
   }
 
   init();
