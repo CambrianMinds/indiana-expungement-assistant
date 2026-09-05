@@ -185,7 +185,11 @@ const MyCaseScraper = (() => {
 
         // Try to extract case token from the title link
         if (titleEl) {
-          const href = titleEl.getAttribute('href') || '';
+          let href = titleEl.getAttribute('href') || '';
+          if (!href) {
+             const a = titleEl.querySelector('a');
+             if (a) href = a.getAttribute('href') || '';
+          }
           const hrefMatch = href.match(/CaseToken=([^&]+)/i);
           if (hrefMatch) {
             caseData.caseToken = hrefMatch[1];
@@ -194,6 +198,12 @@ const MyCaseScraper = (() => {
             const tokenMatch = onclick.match(/CaseToken[=:][\s'"]*([^'"&]+)/i);
             if (tokenMatch) caseData.caseToken = tokenMatch[1];
           }
+        }
+        
+        // Ultimate fallback: regex the row's innerHTML
+        if (!caseData.caseToken) {
+           const htmlMatch = row.innerHTML.match(/CaseToken=([^&"'>\s]+)/i);
+           if (htmlMatch) caseData.caseToken = htmlMatch[1];
         }
 
         if (caseData.case_number) {
