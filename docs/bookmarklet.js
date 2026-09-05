@@ -6,6 +6,9 @@
  * then downloads a formatted JSON bundle for instant upload into the
  * Indiana Expungement Assistant web app.
  * 
+ * This bookmarklet acts as the critical bridge for the Web App (PWA) 
+ * because the PWA cannot fetch CCS data directly due to browser CORS limits.
+ * 
  * 100% Client-Side · Zero Tracking · Preserves Full Session Privacy
  */
 (function () {
@@ -496,8 +499,9 @@
 
           if (c.caseToken) {
             c.ccs = await fetchCCS(c.caseToken);
+            // Natural delay: 800-1500ms between deep-scrape requests to mimic human browsing and prevent rate limiting
             if (i < cases.length - 1) {
-              await sleep(400 + Math.random() * 300);
+              await sleep(800 + Math.random() * 700);
             }
           }
         }
