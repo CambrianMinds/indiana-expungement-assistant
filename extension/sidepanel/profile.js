@@ -1,5 +1,5 @@
 import { AppState } from './state.js';
-import { $, $$ } from './utils.js';
+import { $, $$, escapeHtml } from './utils.js';
 import { showToast, updateChecklist } from './ui.js';
 
 
@@ -348,11 +348,14 @@ import { showToast, updateChecklist } from './ui.js';
     if (profile.email) $('#email').value = profile.email;
 
     // Addresses
-    addressContainer.innerHTML = '';
-    if (profile.addresses && profile.addresses.length > 0) {
-      profile.addresses.forEach(addr => addAddressEntry(addr));
-    } else {
-      addAddressEntry();
+    const container = $('#addressHistory') || addressContainer;
+    if (container) {
+      container.innerHTML = '';
+      if (profile.addresses && profile.addresses.length > 0) {
+        profile.addresses.forEach(addr => addAddressEntry(addr));
+      } else {
+        addAddressEntry();
+      }
     }
   }
 
@@ -415,19 +418,24 @@ import { showToast, updateChecklist } from './ui.js';
     const stateSelect = $('#state');
     const selected = String(selectedState || 'IN').toUpperCase();
 
-    return Array.from(stateSelect?.options || []).map(option => {
-      const value = option.value;
-      const disabled = option.disabled ? ' disabled' : '';
-      const isSelected = value === selected ? ' selected' : '';
-      return `<option value="${escapeAttr(value)}"${disabled}${isSelected}>${escapeHtml(option.textContent)}</option>`;
-    }).join('');
+    if (stateSelect && stateSelect.options && stateSelect.options.length > 0) {
+      return Array.from(stateSelect.options).map(option => {
+        const value = option.value;
+        const disabled = option.disabled ? ' disabled' : '';
+        const isSelected = value === selected ? ' selected' : '';
+        return `<option value="${escapeAttr(value)}"${disabled}${isSelected}>${escapeHtml(option.textContent)}</option>`;
+      }).join('');
+    }
+
+    const fallbackStates = ['IN', 'IL', 'KY', 'MI', 'OH', 'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA', 'HI', 'ID', 'IA', 'KS', 'LA', 'ME', 'MD', 'MA', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ', 'NM', 'NY', 'NC', 'ND', 'OK', 'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY', 'DC'];
+    return fallbackStates.map(st => `<option value="${st}"${st === selected ? ' selected' : ''}>${st}</option>`).join('');
   }
 
   function formatAddressLine(address) {
-    const street = address.street.trim();
-    const city = address.city.trim();
-    const state = address.state.trim();
-    const zip = address.zipCode.trim();
+    const street = (address.street || '').trim();
+    const city = (address.city || '').trim();
+    const state = (address.state || '').trim();
+    const zip = (address.zipCode || '').trim();
 
     return [
       street,
@@ -436,33 +444,112 @@ import { showToast, updateChecklist } from './ui.js';
     ].filter(Boolean).join(', ');
   }
 
-  function addAddressEntry(value = '') {
+  function renumberAddressCards() {
+    const container = $('#addressHistory') || addressContainer;
+    if (!container) return;
+    const cards = container.querySelectorAll('.address-entry');
+    cards.forEach((card, idx) => {
+      const badgeText = card.querySelector('.badge-text');
+      if (badgeText) badgeText.textContent = `Prior Address #${idx + 1}`;
+    });
+  }
+
+  export function addAddressEntry(value = '', shouldFocus = false) {
+    const container = $('#addressHistory') || addressContainer;
+    if (!container) return;
+
     const address = parseAddressEntry(value);
+    const count = container.querySelectorAll('.address-entry').length + 1;
     const entry = document.createElement('div');
     entry.className = 'address-entry';
     entry.innerHTML = `
-      <div class="address-fields">
-        <input type="text" class="address-street" placeholder="Street address" value="${escapeAttr(address.street)}" autocomplete="street-address">
-        <div class="address-grid">
-          <input type="text" class="address-city" placeholder="City" value="${escapeAttr(address.city)}" autocomplete="address-level2">
-          <select class="address-state" autocomplete="address-level1">${getStateOptionsHtml(address.state)}</select>
-          <input type="text" class="address-zip" placeholder="ZIP" maxlength="10" value="${escapeAttr(formatZIP(address.zipCode))}" autocomplete="postal-code">
-          <input type="text" class="address-from" placeholder="From" value="${escapeAttr(address.fromDate)}">
-          <input type="text" class="address-to" placeholder="To / Present" value="${escapeAttr(address.toDate)}">
+      <div class="address-card-header">
+        <span class="address-index-badge">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+          <span class="badge-text">Prior Address #${count}</span>
+        </span>
+        <button type="button" class="btn-remove btn-remove-address" title="Remove this address entry">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+          Remove
+        </button>
+      </div>
+
+      <div class="form-group">
+        <div class="label-row">
+          <label>Street Address</label>
+          <span class="field-hint">House #, Street, Apt/Suite</span>
+        </div>
+        <input type="text" class="address-street" placeholder="e.g. 500 N Capitol Ave, Apt 2" value="${escapeAttr(address.street)}" autocomplete="street-address">
+      </div>
+
+      <div class="form-row form-row-city-state-zip">
+        <div class="form-group">
+          <div class="label-row">
+            <label>City</label>
+          </div>
+          <input type="text" class="address-city" placeholder="Indianapolis" value="${escapeAttr(address.city)}" autocomplete="address-level2">
+        </div>
+        <div class="form-group">
+          <div class="label-row">
+            <label>State</label>
+          </div>
+          <select class="address-state" autocomplete="address-level1">
+            ${getStateOptionsHtml(address.state)}
+          </select>
+        </div>
+        <div class="form-group">
+          <div class="label-row">
+            <label>ZIP</label>
+            <span class="field-hint">5 digits</span>
+          </div>
+          <input type="text" class="address-zip" placeholder="46204" maxlength="10" value="${escapeAttr(formatZIP(address.zipCode))}" autocomplete="postal-code">
         </div>
       </div>
-      <button type="button" class="btn-remove" title="Remove">&times;</button>
+
+      <div class="form-row">
+        <div class="form-group">
+          <div class="label-row">
+            <label>Dates of Residence — From</label>
+            <span class="field-hint">Month/Year</span>
+          </div>
+          <input type="text" class="address-from" placeholder="e.g. 05/2014" value="${escapeAttr(address.fromDate)}">
+        </div>
+        <div class="form-group">
+          <div class="label-row">
+            <label>To</label>
+            <span class="field-hint">Month/Year or Present</span>
+          </div>
+          <input type="text" class="address-to" placeholder="e.g. 08/2018 or Present" value="${escapeAttr(address.toDate)}">
+        </div>
+      </div>
     `;
+
+    // Live ZIP code formatting
     entry.querySelector('.address-zip')?.addEventListener('input', (e) => {
       e.target.value = formatZIP(e.target.value);
     });
-    entry.querySelector('.btn-remove').addEventListener('click', () => {
+
+    // Remove button listener
+    entry.querySelector('.btn-remove')?.addEventListener('click', () => {
       entry.remove();
+      renumberAddressCards();
     });
-    addressContainer.appendChild(entry);
+
+    container.appendChild(entry);
+    renumberAddressCards();
+
+    if (shouldFocus) {
+      entry.querySelector('.address-street')?.focus();
+    }
   }
 
-  $('#btnAddAddress').addEventListener('click', () => addAddressEntry());
+  $('#btnAddAddress')?.addEventListener('click', () => addAddressEntry('', true));
 
   profileForm.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -496,7 +583,8 @@ import { showToast, updateChecklist } from './ui.js';
     const zip = $('#zipCode').value.trim();
     const fullAddress = `${street}, ${city}, ${state} ${zip}`;
 
-    const addresses = Array.from(addressContainer.querySelectorAll('.address-entry'))
+    const addressListContainer = $('#addressHistory') || addressContainer;
+    const addresses = Array.from(addressListContainer ? addressListContainer.querySelectorAll('.address-entry') : [])
       .map(entry => {
         const address = {
           street: entry.querySelector('.address-street')?.value.trim() || '',
