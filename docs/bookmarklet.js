@@ -515,6 +515,14 @@
 
           if (c.caseToken) {
             c.ccs = await fetchCCS(c.caseToken);
+            
+            // Clean up the main charges string if we found better data
+            if (c.ccs && Array.isArray(c.ccs.charges) && c.ccs.charges.length > 0) {
+              if (!c.charges || c.charges.toUpperCase().includes('SEE CCS ENTRY')) {
+                c.charges = c.ccs.charges.map(ch => `${ch.count ? 'Count ' + ch.count + ': ' : ''}${ch.offense} (${ch.level || ''})`).join('; ');
+              }
+            }
+
             // Natural delay: 800-1500ms between deep-scrape requests to mimic human browsing and prevent rate limiting
             if (i < cases.length - 1) {
               await sleep(800 + Math.random() * 700);

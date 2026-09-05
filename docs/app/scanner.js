@@ -288,6 +288,16 @@ export function parseFileContent(text, filename = 'MyCase File') {
     } else {
       throw new Error(`File ${filename} does not contain a recognized case array.`);
     }
+    if (cases && Array.isArray(cases)) {
+      cases.forEach(c => {
+        if (c.ccs && Array.isArray(c.ccs.charges) && c.ccs.charges.length > 0) {
+          if (!c.charges || c.charges.toUpperCase().includes('SEE CCS ENTRY')) {
+            c.charges = c.ccs.charges.map(ch => `${ch.count ? 'Count ' + ch.count + ': ' : ''}${ch.offense} (${ch.level || ''})`).join('; ');
+          }
+        }
+      });
+    }
+
     return { cases, searchContext };
   }
 

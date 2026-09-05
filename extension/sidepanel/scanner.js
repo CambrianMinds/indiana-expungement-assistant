@@ -19,6 +19,16 @@ export function isMyCaseUrl(url) {
  * @param {boolean} mergeMode   - Whether merge is enabled
  */
 export function showParityModal(cases, searchContext, mergeMode) {
+  if (cases && Array.isArray(cases)) {
+    cases.forEach(c => {
+      if (c.ccs && Array.isArray(c.ccs.charges) && c.ccs.charges.length > 0) {
+        if (!c.charges || c.charges.toUpperCase().includes('SEE CCS ENTRY')) {
+          c.charges = c.ccs.charges.map(ch => `${ch.count ? 'Count ' + ch.count + ': ' : ''}${ch.offense} (${ch.level || ''})`).join('; ');
+        }
+      }
+    });
+  }
+
   AppState.pendingScanResult = { cases, searchContext, mergeMode };
 
   const countEl = $('#parityCaseCount');
