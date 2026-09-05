@@ -27,6 +27,27 @@ class PdfContext {
     this.bottomMargin = 72;
     this.cursorY = 720; // 792 - 72 = 720
     this.fieldCounter = {};
+    this.documents = [];
+    this.currentDocName = '';
+    this.docStartPageIndex = 0;
+  }
+
+  startDocument(docName) {
+    this.currentDocName = docName;
+    this.docStartPageIndex = this.pdfDoc.getPageCount();
+  }
+
+  endDocument() {
+    const totalPages = this.pdfDoc.getPageCount();
+    const count = totalPages - this.docStartPageIndex;
+    if (count > 0) {
+      this.documents.push({
+        name: this.currentDocName,
+        startIndex: this.docStartPageIndex,
+        endIndex: totalPages - 1,
+        pageCount: count
+      });
+    }
   }
 
   addPage() {
@@ -99,8 +120,9 @@ class PdfContext {
   drawCenteredText(text, y, size = 12, fontType = 'bold', color = this.colors.black) {
     const font = this.fonts[fontType] || this.fonts.bold;
     const clean = this.cleanText(text);
+    if (!clean) return;
     const textWidth = font.widthOfTextAtSize(clean, size);
-    const x = (this.pageWidth - textWidth) / 2;
+    const x = Math.max(this.leftMargin, (this.pageWidth - textWidth) / 2);
     this.drawText(clean, x, y, size, fontType, color);
   }
 
@@ -172,7 +194,7 @@ class PdfContext {
 
   // ── Caption Structure (Trial Rule 10) ──
   drawCaption(payload, rule7ADesignation = 'XP - EXPUNGEMENT PETITION') {
-    this.ensureSpace(140);
+    this.ensureSpace(180);
     const county = (payload.county || 'MARION').toUpperCase();
     const court = (payload.court || 'CIRCUIT / SUPERIOR COURT').toUpperCase();
     const courtCode = payload.courtCode || '49D01';
@@ -181,39 +203,82 @@ class PdfContext {
 
     const startY = this.cursorY;
 
-    // Left Column: Parties & Title of Action
-    this.drawText('STATE OF INDIANA', 72, startY, 12, 'bold');
-    this.drawText(`COUNTY OF ${county}`, 72, startY - 16, 12, 'bold');
-    this.drawText('IN RE THE EXPUNGEMENT OF THE', 72, startY - 36, 11, 'bold');
-    this.drawText('ARREST AND CONVICTION RECORDS OF:', 72, startY - 50, 11, 'bold');
-    this.drawText(petName, 72, startY - 68, 12, 'bold');
-
-    let leftOffset = 82;
-    if (aliases) {
-      this.drawText(aliases, 84, startY - leftOffset, 10, 'italic');
-      leftOffset += 14;
-    }
-    this.drawText('Petitioner.', 96, startY - leftOffset, 11, 'bold');
-
     // Right Column: Exact Name of Court, Cause No., Rule 7(A) Designation
-    this.drawText(`IN THE ${court}`, 310, startY, 11, 'bold');
-    this.drawText('CAUSE NO.', 310, startY - 24, 11, 'bold');
-    // Interactive fillable Cause Number field
-    this.addTextField('causeNumber', 380, startY - 28, 160, 18, `${courtCode}-____-XP-______`, { fontSize: 10 });
-    this.drawText(rule7ADesignation, 310, startY - 48, 10, 'bold');
+    const courtClean = court.toUpperCase();
+    const courtTitle = courtClean.startsWith('IN ') ? courtClean : `IN THE ${courtClean}`;
+    const courtLines = this.wrapText(courtTitle, this.fonts.bold, 11, 230);
 
-    const bottomY = Math.min(startY - leftOffset - 12, startY - 80);
+    let rightY = startY;
+    for (const cl of courtLines) {
+      this.drawText(cl, 305, rightY, 11, 'bold');
+      rightY -= 15;
+    }
+    rightY -= 6;
+    this.drawText('CAUSE NO.', 305, rightY, 11, 'bold');
+    // Interactive fillable Cause Number field
+    this.addTextField('causeNumber', 375, rightY - 4, 165, 18, `${courtCode}-____-XP-______`, { fontSize: 10 });
+    rightY -= 26;
+    this.drawText(rule7ADesignation, 305, rightY, 9.5, 'bold');
+
+    // Left Column: State/County, In Re, and Petitioner with Indiana parenthesis divider column
+    let leftY = startY;
+    this.drawText('STATE OF INDIANA', 72, leftY, 11.5, 'bold');
+    this.drawText(')', 275, leftY, 12, 'regular');
+    leftY -= 16;
+
+    this.drawText(`COUNTY OF ${county}`, 72, leftY, 11.5, 'bold');
+    this.drawText(')  SS:', 275, leftY, 11, 'regular');
+    leftY -= 22;
+
+    this.drawText(')', 275, leftY, 12, 'regular');
+    leftY -= 6;
+
+    this.drawText('IN RE THE EXPUNGEMENT OF', 72, leftY, 10.5, 'bold');
+    this.drawText(')', 275, leftY, 12, 'regular');
+    leftY -= 15;
+
+    this.drawText('THE ARREST AND CONVICTION', 72, leftY, 10.5, 'bold');
+    this.drawText(')', 275, leftY, 12, 'regular');
+    leftY -= 15;
+
+    this.drawText('RECORDS OF:', 72, leftY, 10.5, 'bold');
+    this.drawText(')', 275, leftY, 12, 'regular');
+    leftY -= 20;
+
+    this.drawText(`${petName},`, 72, leftY, 11.5, 'bold');
+    this.drawText(')', 275, leftY, 12, 'regular');
+    leftY -= 15;
+
+    if (aliases) {
+      this.drawText(aliases, 84, leftY, 9.5, 'italic');
+      this.drawText(')', 275, leftY, 12, 'regular');
+      leftY -= 14;
+    }
+
+    this.drawText('       Petitioner.', 72, leftY, 11, 'bold');
+    this.drawText(')', 275, leftY, 12, 'regular');
+    leftY -= 12;
+
+    const bottomY = Math.min(leftY, rightY - 12);
     this.drawLine(72, bottomY, 540, bottomY, 1, this.colors.black);
-    this.cursorY = bottomY - 18;
+    this.cursorY = bottomY - 20;
   }
 
   drawTitleBlock(title, subtitle = '') {
-    this.ensureSpace(44);
-    this.drawCenteredText(title, this.cursorY, 13, 'bold');
-    this.cursorY -= 16;
-    if (subtitle) {
-      this.drawCenteredText(subtitle, this.cursorY, 10.5, 'italic');
-      this.cursorY -= 14;
+    // Multi-line wrapping within 1-inch margins (448 pt max text width)
+    const titleLines = this.wrapText(title, this.fonts.bold, 12.5, this.contentWidth - 20);
+    const subtitleLines = subtitle ? this.wrapText(subtitle, this.fonts.italic, 10, this.contentWidth - 20) : [];
+    const totalNeeded = (titleLines.length * 16) + (subtitleLines.length * 14) + 16;
+    this.ensureSpace(totalNeeded);
+
+    for (const line of titleLines) {
+      this.drawCenteredText(line, this.cursorY, 12.5, 'bold');
+      this.cursorY -= 16;
+    }
+    this.cursorY -= 2;
+    for (const line of subtitleLines) {
+      this.drawCenteredText(line, this.cursorY, 10, 'italic');
+      this.cursorY -= 13;
     }
     this.cursorY -= 8;
   }
@@ -327,7 +392,11 @@ class PdfContext {
       const bg = r % 2 === 1 ? this.colors.tableHeaderBg : null;
       this.drawRectangle(72, this.cursorY - rowHeight, this.contentWidth, rowHeight, bg, this.colors.black, 0.5);
       for (let c = 0; c < rows[r].length; c++) {
-        const cellText = String(rows[r][c] || '');
+        let cellText = String(rows[r][c] || '');
+        const maxCellW = colWidths[c] - 8;
+        while (cellText.length > 3 && this.fonts.regular.widthOfTextAtSize(cellText, 8.5) > maxCellW) {
+          cellText = cellText.slice(0, -4) + '...';
+        }
         this.drawText(cellText, xOffset + 4, this.cursorY - 14, 8.5, 'regular');
         xOffset += colWidths[c];
       }
@@ -337,24 +406,26 @@ class PdfContext {
   }
 
   drawSignatureBlock(nameUpper, title = 'Petitioner Pro Se', fieldPrefix = 'sig') {
-    this.ensureSpace(75);
+    this.ensureSpace(95);
     this.drawText('Respectfully submitted,', 72, this.cursorY, 12, 'regular');
-    this.cursorY -= 30;
+    this.cursorY -= 36; // Blank vertical space for ink signature
 
-    // Fillable signature line
+    // Physical signature line (strictly blank for physical handwritten signature)
     this.drawLine(72, this.cursorY, 320, this.cursorY, 0.75, this.colors.black);
-    this.addTextField(`${fieldPrefix}_signer`, 72, this.cursorY + 2, 248, 20, `${nameUpper}, ${title}`, { fontSize: 11, fontType: 'bold' });
 
-    this.drawText(`${nameUpper}, ${title}`, 72, this.cursorY - 14, 12, 'bold');
+    // Printed name and title underneath the line
+    this.drawText(nameUpper, 72, this.cursorY - 14, 11, 'bold');
+    this.drawText(title, 72, this.cursorY - 26, 10, 'regular');
 
-    // Fillable date field
-    this.drawText('Date:', 72, this.cursorY - 32, 11, 'regular');
-    this.addTextField(`${fieldPrefix}_date`, 108, this.cursorY - 36, 140, 18, '', { fontSize: 10 });
-    this.cursorY -= 48;
+    // Date line with optional fillable text field
+    this.drawText('Date:', 72, this.cursorY - 46, 11, 'regular');
+    this.drawLine(108, this.cursorY - 46, 250, this.cursorY - 46, 0.5, this.colors.black);
+    this.addTextField(`${fieldPrefix}_date`, 108, this.cursorY - 50, 142, 18, '', { fontSize: 10 });
+    this.cursorY -= 64;
   }
 
   drawPerjuryAffirmation(nameUpper, fieldPrefix = 'verif') {
-    this.ensureSpace(90);
+    this.ensureSpace(120);
     this.drawHeading('AFFIRMATION UNDER PENALTIES FOR PERJURY (T.R. 11)');
     this.drawDoubleSpacedParagraph(
       'I affirm, under the penalties for perjury, that the foregoing representations, factual statements, ' +
@@ -406,14 +477,14 @@ function buildForm01(ctx, payload) {
   ctx.drawCaption(payload, 'APPEARANCE BY SELF-REPRESENTED PERSON');
   ctx.drawTitleBlock('APPEARANCE BY SELF-REPRESENTED PERSON IN CIVIL CASE');
 
-  ctx.drawHeading('1. Party Information:');
   const pet = payload.petitioner || {};
   const name = pet.fullName || 'Petitioner';
   const nameUpper = name.toUpperCase();
 
-  ctx.drawDoubleSpacedParagraph(
-    `The Petitioner, ${name}, hereby enters an appearance pro se (self-represented) ` +
-    `in the above-captioned expungement proceeding pursuant to Indiana Trial Rule 3.1.`
+  ctx.drawSingleSpacedParagraph(
+    `1. Party Information: The Petitioner, ${name}, hereby enters an appearance pro se (self-represented) ` +
+    `in the above-captioned expungement proceeding pursuant to Indiana Trial Rule 3.1.`,
+    { size: 11, extraSpacing: 6 }
   );
 
   ctx.drawInteractiveKeyValueTable([
@@ -423,21 +494,21 @@ function buildForm01(ctx, payload) {
     ['Email Address:', pet.email || '', 'f1_email'],
   ], 160);
 
-  ctx.drawHeading('2. Case Type & Nature of Proceeding:');
-  ctx.drawDoubleSpacedParagraph(
-    'This is a civil Miscellaneous proceeding for the Expungement of Conviction and Arrest Records ' +
-    '(Case Type: XP) pursuant to Indiana Code §§ 35-38-9-1, 35-38-9-2, 35-38-9-3, 35-38-9-4, and 35-38-9-8.'
+  ctx.drawSingleSpacedParagraph(
+    '2. Case Type & Nature of Proceeding: This is a civil Miscellaneous proceeding for the Expungement of ' +
+    'Conviction and Arrest Records (Case Type: XP) pursuant to Indiana Code § 35-38-9.',
+    { size: 11, extraSpacing: 6 }
   );
 
-  ctx.drawHeading('3. Service Information:');
-  ctx.drawDoubleSpacedParagraph(
-    'Petitioner accepts service of all court documents, notices, and orders at the postal address and/or ' +
-    'email address provided above, or via the Indiana Odyssey E-Filing System (IEFS).'
+  ctx.drawSingleSpacedParagraph(
+    '3. Service Information: Petitioner accepts service of all court documents, notices, and orders at the postal ' +
+    'address and/or email address provided above, or via the Indiana Odyssey E-Filing System (IEFS).',
+    { size: 11, extraSpacing: 6 }
   );
 
-  ctx.drawHeading('4. Representation Status:');
-  ctx.drawDoubleSpacedParagraph(
-    'Petitioner represents himself/herself in this matter and is not represented by legal counsel.'
+  ctx.drawSingleSpacedParagraph(
+    '4. Representation Status: Petitioner represents himself/herself in this matter and is not represented by legal counsel.',
+    { size: 11, extraSpacing: 10 }
   );
 
   ctx.drawSignatureBlock(nameUpper, 'Petitioner Pro Se', 'f1');
@@ -457,29 +528,33 @@ function buildForm02(ctx, payload) {
   const name = pet.fullName || 'Petitioner';
   const nameUpper = name.toUpperCase();
 
-  ctx.drawDoubleSpacedParagraph(
+  ctx.drawSingleSpacedParagraph(
     `Pursuant to the Indiana Rules on Access to Court Records (Rule 5), Petitioner, ${name}, ` +
     `gives notice that the accompanying Confidential Information Supplement (Form 03) contains confidential ` +
-    `identifying information that is excluded from public access under Indiana law, and states:`
+    `identifying information that is excluded from public access under Indiana law, and states:`,
+    { size: 11, extraSpacing: 8 }
   );
 
   ctx.drawHeading('1. Confidential Personal Identifiers:');
-  ctx.drawDoubleSpacedParagraph(
+  ctx.drawSingleSpacedParagraph(
     "The Petitioner's complete Social Security Number, Date of Birth, and Driver's License Number are excluded " +
     "from public access pursuant to Access to Court Records Rule 5(C)(1). These identifiers are supplied under separate " +
-    "confidential cover because Indiana Code § 35-38-9-8(b)(8) explicitly mandates them for court review."
+    "confidential cover because Indiana Code § 35-38-9-8(b)(8) explicitly mandates them for court review.",
+    { size: 11, extraSpacing: 8 }
   );
 
   ctx.drawHeading('2. Complete Residential History:');
-  ctx.drawDoubleSpacedParagraph(
+  ctx.drawSingleSpacedParagraph(
     "Petitioner's residential history from the date of the earliest offense to present is excluded from public access " +
-    "pursuant to Access to Court Records Rule 5 to protect Petitioner's personal privacy and residential security."
+    "pursuant to Access to Court Records Rule 5 to protect Petitioner's personal privacy and residential security.",
+    { size: 11, extraSpacing: 8 }
   );
 
   ctx.drawHeading('3. Separate Filing:');
-  ctx.drawDoubleSpacedParagraph(
+  ctx.drawSingleSpacedParagraph(
     'The excluded information is filed contemporaneously on Form 03 (Confidential Information Supplement) ' +
-    'and designated as confidential pursuant to Access to Court Records Rule 5.'
+    'and designated as confidential pursuant to Access to Court Records Rule 5.',
+    { size: 11, extraSpacing: 10 }
   );
 
   ctx.drawSignatureBlock(nameUpper, 'Petitioner Pro Se', 'f2');
@@ -677,30 +752,59 @@ function buildForm05(ctx, payload) {
 function buildForm06(ctx, payload) {
   ctx.addPage();
   ctx.drawCaption(payload, 'CERTIFICATE OF SERVICE');
-  ctx.drawTitleBlock('CERTIFICATE OF SERVICE');
+  ctx.drawTitleBlock('CERTIFICATE OF SERVICE', '(Pursuant to Indiana Trial Rule 5 & IC § 35-38-9-8(e))');
 
   const pet = payload.petitioner || {};
   const name = pet.fullName || 'Petitioner';
   const nameUpper = name.toUpperCase();
-  const county = payload.county || 'County';
+  const county = (payload.county || 'County').toUpperCase();
 
-  ctx.drawDoubleSpacedParagraph(
+  ctx.drawSingleSpacedParagraph(
     `I hereby certify that on the date set forth below, a true and correct copy of the foregoing ` +
-    `Verified Petition for Expungement, Appearance, Notice of Exclusion of Confidential Information, ` +
-    `and Proposed Order was served upon the following parties pursuant to Indiana Trial Rule 5:`
+    `Verified Petition for Expungement of Arrest and Conviction Records, Appearance, Notice of Exclusion ` +
+    `of Confidential Information, and Proposed Order was served upon the following parties pursuant to Indiana Trial Rule 5 ` +
+    `and Indiana Code § 35-38-9-8(e):`,
+    { size: 11, extraSpacing: 8 }
   );
 
-  ctx.drawInteractiveKeyValueTable([
-    ['1. County Prosecuting Attorney:', `Office of the ${county} County Prosecutor, Criminal Courts Division`],
-    ['2. Indiana State Police:', 'Criminal History Repository / Expungement Section, 100 N Senate Ave, Indianapolis, IN 46204'],
-    ['3. Indiana Bureau of Motor Vehicles:', 'Legal Department / Records Division, 100 N Senate Ave, Room N400, Indianapolis, IN 46204'],
-    ['4. Local Arresting Agencies:', `Sheriff of ${county} County and Local Municipal Police Departments`],
-  ], 165);
+  const recipients = [
+    {
+      num: '1.',
+      title: `Office of the ${county} County Prosecuting Attorney`,
+      line: 'Criminal Courts Division / Expungement Section (via IEFS and/or Hand Delivery)'
+    },
+    {
+      num: '2.',
+      title: 'Indiana State Police',
+      line: 'Criminal History Repository, 100 N. Senate Ave, Suite N302, Indianapolis, IN 46204 (via Certified Mail)'
+    },
+    {
+      num: '3.',
+      title: 'Indiana Bureau of Motor Vehicles',
+      line: 'Legal Department / Records Division, 100 N. Senate Ave, Room N400, Indianapolis, IN 46204 (via Certified Mail)'
+    },
+    {
+      num: '4.',
+      title: 'Local Arresting Agencies & Law Enforcement:',
+      line: `Sheriff of ${county} County, Indiana and Local Municipal Police Departments (via First Class / Certified Mail)`
+    }
+  ];
+
+  for (const r of recipients) {
+    ctx.drawText(r.num, 72, ctx.cursorY, 10.5, 'bold');
+    ctx.drawText(r.title, 90, ctx.cursorY, 10.5, 'bold');
+    ctx.cursorY -= 14;
+    const wrapped = ctx.wrapText(r.line, ctx.fonts.regular, 10, ctx.contentWidth - 22);
+    for (const wl of wrapped) {
+      ctx.drawText(wl, 90, ctx.cursorY, 10, 'regular');
+      ctx.cursorY -= 13;
+    }
+    ctx.cursorY -= 4;
+  }
 
   ctx.drawHeading('Method of Service:');
-  ctx.drawSingleSpacedParagraph(
-    '[X] Indiana Odyssey E-Filing System (IEFS)    [X] Certified U.S. Mail    [X] First Class U.S. Mail'
-  );
+  ctx.drawText('[  ] Indiana Odyssey E-Filing System (IEFS)      [  ] Certified Mail      [  ] First Class Mail', 72, ctx.cursorY, 10.5, 'regular');
+  ctx.cursorY -= 16;
 
   ctx.drawSignatureBlock(nameUpper, 'Petitioner Pro Se', 'f6');
 }
@@ -751,14 +855,12 @@ function buildForm07(ctx, payload) {
     '3. Petitioner’s full civil rights (including rights to vote, hold public office, and serve on a jury) are fully RESTORED.'
   );
 
-  ctx.ensureSpace(85);
+  ctx.ensureSpace(95);
   ctx.drawText('SO ORDERED this ________ day of ____________________, 20____.', 72, ctx.cursorY, 12, 'bold');
-  ctx.cursorY -= 36;
+  ctx.cursorY -= 40; // Blank space for Judge's physical signature
   ctx.drawLine(72, ctx.cursorY, 320, ctx.cursorY, 1, ctx.colors.black);
-  // Interactive fillable judge signature field
-  ctx.addTextField('judgeSignature_f7', 72, ctx.cursorY + 2, 248, 22, '', { fontSize: 11 });
   ctx.drawText('Judge, Circuit / Superior Court', 72, ctx.cursorY - 16, 12, 'bold');
-  ctx.cursorY -= 30;
+  ctx.cursorY -= 32;
 
   ctx.drawHeading('DISTRIBUTION LIST FOR CLERK OF COURT:');
   ctx.drawSingleSpacedParagraph(
@@ -812,11 +914,10 @@ function buildForm08(ctx, payload) {
     'is indigent and unable to pay court costs. IT IS THEREFORE ORDERED that the filing fees and court costs in this action ' +
     'are hereby [   ] WAIVED in full; [   ] DENIED.'
   );
-  ctx.cursorY -= 28;
+  ctx.cursorY -= 36; // Blank space for Judge's physical signature
   ctx.drawLine(72, ctx.cursorY, 320, ctx.cursorY, 1, ctx.colors.black);
-  ctx.addTextField('judgeSignature_f8', 72, ctx.cursorY + 2, 248, 22, '', { fontSize: 11 });
   ctx.drawText('Judge, Circuit / Superior Court', 72, ctx.cursorY - 16, 12, 'bold');
-  ctx.cursorY -= 24;
+  ctx.cursorY -= 28;
 }
 
 
@@ -843,50 +944,70 @@ export async function generateCompletePacket(payload) {
   const ctx = new PdfContext(pdfDoc, { regular: regularFont, bold: boldFont, italic: italicFont }, colors);
 
   // 1. Instructions & Warnings Cover Sheet
+  ctx.startDocument('Form 00');
   buildForm00(ctx, payload);
+  ctx.endDocument();
 
   // 2. Appearance Form (Trial Rule 3.1)
+  ctx.startDocument('Form 01');
   buildForm01(ctx, payload);
+  ctx.endDocument();
 
   // 3. Form ACR (Exclusion of Confidential Info)
+  ctx.startDocument('Form 02');
   buildForm02(ctx, payload);
+  ctx.endDocument();
 
   // 4. Form 03: Confidential Information Supplement & Residential History
   if (payload.includeAddressSupplement !== false) {
+    ctx.startDocument('Form 03');
     buildForm03(ctx, payload);
+    ctx.endDocument();
   }
 
   // 5. Form 04: Verified Petition for Expungement
+  ctx.startDocument('Form 04');
   buildForm04(ctx, payload);
+  ctx.endDocument();
 
   // 6. Form 05: Notice of Filing to Prosecuting Attorney
+  ctx.startDocument('Form 05');
   buildForm05(ctx, payload);
+  ctx.endDocument();
 
   // 7. Form 06: Certificate of Service
+  ctx.startDocument('Form 06');
   buildForm06(ctx, payload);
+  ctx.endDocument();
 
   // 8. Form 07: Proposed Order Granting Expungement
+  ctx.startDocument('Form 07');
   buildForm07(ctx, payload);
+  ctx.endDocument();
 
   // 9. Form 08: Fee Waiver Request & Order
   if (payload.includeFeeWaiver) {
+    ctx.startDocument('Form 08');
     buildForm08(ctx, payload);
+    ctx.endDocument();
   }
 
-  // Consecutive Pagination Rule (Section 4):
-  // "Pages must be numbered consecutively, located at the bottom of the page, beginning with numeral 1 on the first page"
-  const totalPages = pdfDoc.getPageCount();
-  for (let i = 0; i < totalPages; i++) {
-    const page = pdfDoc.getPage(i);
-    const pageNumStr = `${i + 1}`;
-    const strWidth = regularFont.widthOfTextAtSize(pageNumStr, 11);
-    page.drawText(pageNumStr, {
-      x: (612 - strWidth) / 2,
-      y: 40,
-      size: 11,
-      font: regularFont,
-      color: colors.black
-    });
+  // Per-Document Pagination (Section 4):
+  // Each court pleading/form is independently paginated (e.g. Page 1 of 3, Page 2 of 3)
+  for (const doc of ctx.documents) {
+    for (let p = 0; p < doc.pageCount; p++) {
+      const pageIndex = doc.startIndex + p;
+      const page = pdfDoc.getPage(pageIndex);
+      const pageNumStr = `Page ${p + 1} of ${doc.pageCount}`;
+      const strWidth = regularFont.widthOfTextAtSize(pageNumStr, 10.5);
+      page.drawText(pageNumStr, {
+        x: (612 - strWidth) / 2,
+        y: 36,
+        size: 10.5,
+        font: regularFont,
+        color: colors.black
+      });
+    }
   }
 
   return await pdfDoc.save();
@@ -911,16 +1032,24 @@ export async function generateAppearanceForm(payload) {
   };
 
   const ctx = new PdfContext(pdfDoc, { regular: regularFont, bold: boldFont, italic: italicFont }, colors);
+  ctx.startDocument('Form 01');
   buildForm01(ctx, payload);
+  ctx.endDocument();
 
-  const page = pdfDoc.getPage(0);
-  page.drawText('1', {
-    x: 300,
-    y: 40,
-    size: 11,
-    font: regularFont,
-    color: colors.black
-  });
+  for (const doc of ctx.documents) {
+    for (let p = 0; p < doc.pageCount; p++) {
+      const page = pdfDoc.getPage(doc.startIndex + p);
+      const pageNumStr = `Page ${p + 1} of ${doc.pageCount}`;
+      const strWidth = regularFont.widthOfTextAtSize(pageNumStr, 10.5);
+      page.drawText(pageNumStr, {
+        x: (612 - strWidth) / 2,
+        y: 36,
+        size: 10.5,
+        font: regularFont,
+        color: colors.black
+      });
+    }
+  }
 
   return await pdfDoc.save();
 }
