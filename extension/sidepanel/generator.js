@@ -1,7 +1,7 @@
 import { AppState } from './state.js';
 import { $, safeISOString } from './utils.js';
 import { showToast, updateChecklist, switchTab } from './ui.js';
-import { generateAppearanceForm } from './pdf-generator.js';
+import { generateCompletePacket, generateAppearanceForm } from './pdf-generator.js';
 
 
 
@@ -212,17 +212,16 @@ import { generateAppearanceForm } from './pdf-generator.js';
         acknowledgedProSeLiability: $('#ackProSe')?.checked ?? true
       };
 
-      statusText.textContent = 'Generating court documents & warnings (JS PoC)...';
+      statusText.textContent = 'Generating complete expungement packet (Forms 00–08)...';
 
-      // --- PoC: Use JS PDF Generator ---
-      const pdfBytes = await generateAppearanceForm(payload);
+      const pdfBytes = await generateCompletePacket(payload);
       const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-      const countyName = payload.county || 'expungement';
-      const petitionerLast = (payload.petitioner?.fullName || 'packet').split(' ').pop();
-      const filename = `${petitionerLast}_${countyName}_Appearance_Form.pdf`;
+      const countyName = (payload.county || 'expungement').replace(/\s+/g, '_');
+      const petitionerLast = (payload.petitioner?.fullName || 'packet').split(/\s+/).pop();
+      const filename = `${petitionerLast}_${countyName}_Expungement_Packet.pdf`;
 
       await downloadPetition(blob, filename);
-      showToast(`Form 01 generated: ${filename}`, 'success', 6000);
+      showToast(`Complete court packet generated: ${filename}`, 'success', 6000);
       statusText.textContent = `✓ Download started: ${filename}`;
     } catch (e) {
       showToast(e.message, 'error');
