@@ -10,6 +10,8 @@
 // - Interactive Form Fields: All blank/unanswered fields are fillable for manual completion
 // ═══════════════════════════════════════════════════════════════════════
 
+import { getCountyInfo, STATEWIDE_AGENCIES } from './county-directory.js';
+
 class PdfContext {
   constructor(pdfDoc, fonts, colors) {
     this.pdfDoc = pdfDoc;
@@ -757,7 +759,8 @@ function buildForm06(ctx, payload) {
   const pet = payload.petitioner || {};
   const name = pet.fullName || 'Petitioner';
   const nameUpper = name.toUpperCase();
-  const county = (payload.county || 'County').toUpperCase();
+  const county = payload.county || 'Marion';
+  const countyInfo = getCountyInfo(county);
 
   ctx.drawSingleSpacedParagraph(
     `I hereby certify that on the date set forth below, a true and correct copy of the foregoing ` +
@@ -770,23 +773,23 @@ function buildForm06(ctx, payload) {
   const recipients = [
     {
       num: '1.',
-      title: `Office of the ${county} County Prosecuting Attorney`,
-      line: 'Criminal Courts Division / Expungement Section (via IEFS and/or Hand Delivery)'
+      title: countyInfo.prosecutor.title,
+      line: `${countyInfo.prosecutor.division}, ${countyInfo.prosecutor.address}, ${countyInfo.prosecutor.city}, IN ${countyInfo.prosecutor.zip} (${countyInfo.prosecutor.serviceNotes})`
     },
     {
       num: '2.',
-      title: 'Indiana State Police',
-      line: 'Criminal History Repository, 100 N. Senate Ave, Suite N302, Indianapolis, IN 46204 (via Certified Mail)'
+      title: STATEWIDE_AGENCIES.isp.name,
+      line: `${STATEWIDE_AGENCIES.isp.division}, ${STATEWIDE_AGENCIES.isp.address}, ${STATEWIDE_AGENCIES.isp.city}, IN ${STATEWIDE_AGENCIES.isp.zip} (via Certified Mail)`
     },
     {
       num: '3.',
-      title: 'Indiana Bureau of Motor Vehicles',
-      line: 'Legal Department / Records Division, 100 N. Senate Ave, Room N400, Indianapolis, IN 46204 (via Certified Mail)'
+      title: STATEWIDE_AGENCIES.bmv.name,
+      line: `${STATEWIDE_AGENCIES.bmv.division}, ${STATEWIDE_AGENCIES.bmv.address}, ${STATEWIDE_AGENCIES.bmv.city}, IN ${STATEWIDE_AGENCIES.bmv.zip} (via Certified Mail)`
     },
     {
       num: '4.',
-      title: 'Local Arresting Agencies & Law Enforcement:',
-      line: `Sheriff of ${county} County, Indiana and Local Municipal Police Departments (via First Class / Certified Mail)`
+      title: countyInfo.sheriff.title,
+      line: `${countyInfo.sheriff.address}, ${countyInfo.sheriff.city}, IN ${countyInfo.sheriff.zip} and Local Arresting Police Departments (via First Class / Certified Mail)`
     }
   ];
 

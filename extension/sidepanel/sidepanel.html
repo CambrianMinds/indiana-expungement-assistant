@@ -439,7 +439,7 @@
           attorney fees.
         </p>
         <p class="disclaimer-p">
-          <b>Important Legal Safeguards ("Cover My Ass"):</b>
+          <b>Important Legal Safeguards &amp; Pro Se Terms:</b>
           <br>• <b>I am NOT an attorney.</b> This is NOT a legal service, law firm, or legal aid organization.
           <br>• This tool does <b>NOT</b> provide legal advice, legal counsel, or case representation.
           <br>• No attorney-client relationship is created.
@@ -452,8 +452,7 @@
 
       <div class="generate-hero">
         <h3>Generate Expungement Packet</h3>
-        <p>Creates a complete, court-ready filing package including all required forms, petition, certificate of
-          service, proposed order, and filing instructions.</p>
+        <p>Compiles a complete, court-ready packet adhering to Indiana Trial Rules—including Appearance, Confidential ACR records, Verified Petition, Notices, Certificate of Service, Proposed Order, and Fee Waiver.</p>
       </div>
 
       <!-- Mandatory Pro Se Acknowledgments -->
@@ -510,7 +509,7 @@
         </div>
         <div class="checklist-item" id="checkBackendReady">
           <span class="check-icon">○</span>
-          <span>Backend form engine running</span>
+          <span>In-browser PDF engine ready</span>
         </div>
         <div class="checklist-item" id="checkAcknowledgments">
           <span class="check-icon">○</span>
@@ -530,6 +529,24 @@
         <div class="county-select-body">
           <label for="selectCountyPacket">Generate petition packet for county:</label>
           <select id="selectCountyPacket" class="county-select-dropdown"></select>
+        </div>
+      </div>
+
+      <!-- 🏛️ Filing & Service Address Directory Card -->
+      <div class="service-dir-card" id="serviceDirCard">
+        <div class="service-dir-header">
+          <span class="service-dir-icon">📍</span>
+          <div>
+            <h5>Filing &amp; Service Address Directory</h5>
+            <p>Verified statutory addresses for submitting and serving your expungement paperwork under IC § 35-38-9-8(e).</p>
+          </div>
+        </div>
+        <div class="service-dir-county-row">
+          <label for="selectDirectoryCounty">Select County For Service Addresses:</label>
+          <select id="selectDirectoryCounty" class="county-select-dropdown"></select>
+        </div>
+        <div class="service-dir-list" id="serviceDirBody">
+          <!-- Populated dynamically via generator.js -->
         </div>
       </div>
 

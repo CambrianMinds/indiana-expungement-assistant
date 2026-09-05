@@ -58,6 +58,97 @@ import { showToast, updateChecklist } from './ui.js';
     return `${digits.slice(0, 5)}-${digits.slice(5)}`;
   }
 
+  function formatResidenceDate(val, isToField = false) {
+    if (!val) return '';
+    const trimmed = String(val).trim();
+    if (isToField && /^p/i.test(trimmed)) {
+      return 'Present';
+    }
+    const digits = trimmed.replace(/\D/g, '').slice(0, 6);
+    if (digits.length === 0) return '';
+    if (digits.length <= 2) return digits;
+    return `${digits.slice(0, 2)}/${digits.slice(2)}`;
+  }
+
+  function validateResidenceDateStr(val, isToField = false) {
+    if (!val || val.trim().length === 0) {
+      return { isValid: true, isEmpty: true };
+    }
+    const trimmed = val.trim();
+    if (isToField && /^present$/i.test(trimmed)) {
+      const now = new Date();
+      return { isValid: true, isPresent: true, year: now.getFullYear(), month: now.getMonth() + 1 };
+    }
+    const match = trimmed.match(/^(\d{1,2})\/(\d{4})$/);
+    if (!match) {
+      return { isValid: false, errorMsg: 'Use MM/YYYY format (e.g. 05/2014)' };
+    }
+    const month = parseInt(match[1], 10);
+    const year = parseInt(match[2], 10);
+    const currentYear = new Date().getFullYear();
+
+    if (month < 1 || month > 12) {
+      return { isValid: false, errorMsg: 'Month must be 01 to 12' };
+    }
+    if (year < 1900 || year > currentYear + 1) {
+      return { isValid: false, errorMsg: `Year must be between 1900 and ${currentYear + 1}` };
+    }
+    return { isValid: true, month, year, isEmpty: false };
+  }
+
+  function validateAddressDates(entry) {
+    const fromInput = entry.querySelector('.address-from');
+    const toInput = entry.querySelector('.address-to');
+    const fromErr = entry.querySelector('.err-address-from');
+    const toErr = entry.querySelector('.err-address-to');
+    if (!fromInput || !toInput) return true;
+
+    const fromVal = fromInput.value.trim();
+    const toVal = toInput.value.trim();
+
+    let isValid = true;
+
+    if (fromErr) { fromErr.textContent = ''; fromErr.classList.remove('active'); }
+    if (toErr) { toErr.textContent = ''; toErr.classList.remove('active'); }
+    fromInput.classList.remove('is-invalid', 'is-valid');
+    toInput.classList.remove('is-invalid', 'is-valid');
+
+    const fromRes = validateResidenceDateStr(fromVal, false);
+    if (!fromRes.isValid) {
+      if (fromErr) { fromErr.textContent = fromRes.errorMsg; fromErr.classList.add('active'); }
+      fromInput.classList.add('is-invalid');
+      isValid = false;
+    } else if (!fromRes.isEmpty) {
+      fromInput.classList.add('is-valid');
+    }
+
+    const toRes = validateResidenceDateStr(toVal, true);
+    if (!toRes.isValid) {
+      if (toErr) { toErr.textContent = toRes.errorMsg; toErr.classList.add('active'); }
+      toInput.classList.add('is-invalid');
+      isValid = false;
+    } else if (!toRes.isEmpty) {
+      toInput.classList.add('is-valid');
+    }
+
+    // Chronological check: from <= to
+    if (isValid && !fromRes.isEmpty && !toRes.isEmpty) {
+      const fromTotal = fromRes.year * 12 + fromRes.month;
+      const toTotal = toRes.year * 12 + toRes.month;
+      if (fromTotal > toTotal) {
+        if (toErr) {
+          toErr.textContent = "'To' date must be after 'From' date";
+          toErr.classList.add('active');
+        }
+        toInput.classList.remove('is-valid');
+        toInput.classList.add('is-invalid');
+        isValid = false;
+      }
+    }
+
+    return isValid;
+  }
+
   function setFieldError(fieldId, errorMsg) {
     const input = $(`#${fieldId}`);
     const errSpan = $(`#err-${fieldId}`);
@@ -524,16 +615,18 @@ import { showToast, updateChecklist } from './ui.js';
         <div class="form-group">
           <div class="label-row">
             <label>Dates of Residence — From</label>
-            <span class="field-hint">Month/Year</span>
+            <span class="field-hint">MM/YYYY</span>
           </div>
-          <input type="text" class="address-from" placeholder="e.g. 05/2014" value="${escapeAttr(address.fromDate)}">
+          <input type="text" class="address-from" placeholder="05/2014" maxlength="7" value="${escapeAttr(address.fromDate)}">
+          <span class="field-error err-address-from"></span>
         </div>
         <div class="form-group">
           <div class="label-row">
             <label>To</label>
-            <span class="field-hint">Month/Year or Present</span>
+            <span class="field-hint">MM/YYYY or Present</span>
           </div>
-          <input type="text" class="address-to" placeholder="e.g. 08/2018 or Present" value="${escapeAttr(address.toDate)}">
+          <input type="text" class="address-to" placeholder="08/2018 or Present" maxlength="10" value="${escapeAttr(address.toDate)}">
+          <span class="field-error err-address-to"></span>
         </div>
       </div>
     `;
@@ -541,6 +634,24 @@ import { showToast, updateChecklist } from './ui.js';
     // Live ZIP code formatting
     entry.querySelector('.address-zip')?.addEventListener('input', (e) => {
       e.target.value = formatZIP(e.target.value);
+    });
+
+    // Live Residence Date formatting & validation
+    const fromInput = entry.querySelector('.address-from');
+    const toInput = entry.querySelector('.address-to');
+
+    fromInput?.addEventListener('input', (e) => {
+      e.target.value = formatResidenceDate(e.target.value, false);
+    });
+    fromInput?.addEventListener('blur', () => {
+      validateAddressDates(entry);
+    });
+
+    toInput?.addEventListener('input', (e) => {
+      e.target.value = formatResidenceDate(e.target.value, true);
+    });
+    toInput?.addEventListener('blur', () => {
+      validateAddressDates(entry);
     });
 
     // Remove button listener
@@ -579,8 +690,27 @@ import { showToast, updateChecklist } from './ui.js';
       }
     }
 
+    // Validate residence history dates
+    const addressListContainer = $('#addressHistory') || addressContainer;
+    const addressEntries = addressListContainer ? addressListContainer.querySelectorAll('.address-entry') : [];
+    let dateErrorFound = false;
+
+    for (const entry of addressEntries) {
+      const areDatesValid = validateAddressDates(entry);
+      if (!areDatesValid) {
+        hasError = true;
+        dateErrorFound = true;
+        if (!firstInvalid) {
+          firstInvalid = entry.querySelector('.is-invalid') || entry.querySelector('.address-from');
+        }
+      }
+    }
+
     if (hasError) {
-      showToast('Please correct the highlighted form errors', 'error', 4000);
+      const msg = dateErrorFound
+        ? 'Please correct the invalid residence dates (format: MM/YYYY or Present)'
+        : 'Please correct the highlighted form errors';
+      showToast(msg, 'error', 4000);
       if (firstInvalid) firstInvalid.focus();
       return;
     }
@@ -591,7 +721,6 @@ import { showToast, updateChecklist } from './ui.js';
     const zip = $('#zipCode').value.trim();
     const fullAddress = `${street}, ${city}, ${state} ${zip}`;
 
-    const addressListContainer = $('#addressHistory') || addressContainer;
     const addresses = Array.from(addressListContainer ? addressListContainer.querySelectorAll('.address-entry') : [])
       .map(entry => {
         const address = {

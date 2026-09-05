@@ -1974,3 +1974,132 @@ body {
   border-color: var(--border-focus);
   box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
 }
+
+/* ── Filing & Service Address Directory ─────────────────────────────── */
+.service-dir-card {
+  background: #ffffff;
+  border: 1px solid var(--border-medium);
+  border-top: 3px solid var(--color-gold-600);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  margin: 14px 0;
+  box-shadow: var(--shadow-xs);
+}
+
+.service-dir-header {
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+
+.service-dir-icon {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.service-dir-header h5 {
+  font-family: var(--font-serif);
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--color-navy-950);
+  margin-bottom: 2px;
+}
+
+.service-dir-header p {
+  font-size: 0.69rem;
+  color: var(--text-secondary);
+  line-height: 1.35;
+}
+
+.service-dir-county-row {
+  margin-bottom: 10px;
+}
+
+.service-dir-county-row label {
+  font-size: 0.69rem;
+  font-weight: 600;
+  color: var(--color-navy-900);
+  display: block;
+  margin-bottom: 4px;
+}
+
+.service-dir-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.service-agency-item {
+  background: var(--bg-surface-alt);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  position: relative;
+}
+
+.service-agency-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.service-agency-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--color-navy-950);
+}
+
+.service-agency-badge {
+  font-size: 0.58rem;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: var(--radius-pill);
+  background: #e0e7ff;
+  color: #3730a3;
+}
+
+.service-agency-badge.clerk {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.service-agency-addr {
+  font-size: 0.68rem;
+  color: var(--text-secondary);
+  line-height: 1.35;
+}
+
+.service-agency-meta {
+  font-size: 0.64rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 2px;
+}
+
+.btn-copy-addr {
+  background: #ffffff;
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-pill);
+  padding: 2px 7px;
+  font-size: 0.62rem;
+  font-weight: 600;
+  color: var(--color-blue-700);
+  cursor: pointer;
+  transition: all var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.btn-copy-addr:hover {
+  background: var(--color-blue-50);
+  border-color: #93c5fd;
+}
+

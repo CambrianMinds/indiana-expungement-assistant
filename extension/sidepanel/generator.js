@@ -2,6 +2,7 @@ import { AppState } from './state.js';
 import { $, safeISOString } from './utils.js';
 import { showToast, updateChecklist, switchTab } from './ui.js';
 import { generateCompletePacket, generateAppearanceForm } from './pdf-generator.js';
+import { getCountyInfo, STATEWIDE_AGENCIES, getAvailableCounties } from './county-directory.js';
 
 
 
@@ -232,3 +233,153 @@ import { generateCompletePacket, generateAppearanceForm } from './pdf-generator.
     }
   }
 
+  // ─── Filing & Service Address Directory ───────────────────────────
+  export function renderServiceDirectory(countyName) {
+    const container = $('#serviceDirBody');
+    if (!container) return;
+
+    const countyInfo = getCountyInfo(countyName);
+    const isp = STATEWIDE_AGENCIES.isp;
+    const bmv = STATEWIDE_AGENCIES.bmv;
+
+    const agencies = [
+      {
+        title: countyInfo.clerk.title,
+        badge: 'Filing Court',
+        badgeClass: 'clerk',
+        addr: `${countyInfo.clerk.address}, ${countyInfo.clerk.city}, ${countyInfo.clerk.state} ${countyInfo.clerk.zip}`,
+        phone: countyInfo.clerk.phone,
+        method: 'File original verified petition in person or via Odyssey E-Filing'
+      },
+      {
+        title: countyInfo.prosecutor.title,
+        badge: 'Service Party',
+        badgeClass: '',
+        addr: `${countyInfo.prosecutor.address}, ${countyInfo.prosecutor.city}, ${countyInfo.prosecutor.state} ${countyInfo.prosecutor.zip}`,
+        phone: countyInfo.prosecutor.phone,
+        method: countyInfo.prosecutor.serviceNotes || 'Certified U.S. Mail or IEFS e-service'
+      },
+      {
+        title: isp.name,
+        badge: 'Statutory Repository',
+        badgeClass: '',
+        addr: `${isp.address}, ${isp.city}, ${isp.state} ${isp.zip}`,
+        phone: isp.phone,
+        method: isp.serviceMethod
+      },
+      {
+        title: bmv.name,
+        badge: 'State Agency',
+        badgeClass: '',
+        addr: `${bmv.address}, ${bmv.city}, ${bmv.state} ${bmv.zip}`,
+        phone: bmv.phone,
+        method: bmv.serviceMethod
+      },
+      {
+        title: countyInfo.sheriff.title,
+        badge: 'Law Enforcement',
+        badgeClass: '',
+        addr: `${countyInfo.sheriff.address}, ${countyInfo.sheriff.city}, ${countyInfo.sheriff.state} ${countyInfo.sheriff.zip}`,
+        phone: countyInfo.sheriff.phone,
+        method: 'Certified U.S. Mail or Hand Delivery'
+      }
+    ];
+
+    container.innerHTML = agencies.map((a, idx) => `
+      <div class="service-agency-item">
+        <div class="service-agency-header">
+          <span class="service-agency-title">${a.title}</span>
+          <span class="service-agency-badge ${a.badgeClass}">${a.badge}</span>
+        </div>
+        <div class="service-agency-addr">${a.addr}</div>
+        <div class="service-agency-meta">
+          <span>📞 ${a.phone} · <em>${a.method}</em></span>
+          <button type="button" class="btn-copy-addr" data-copy-idx="${idx}" title="Copy statutory service address to clipboard">
+            📋 Copy
+          </button>
+        </div>
+      </div>
+    `).join('');
+
+    // Attach clipboard copy listeners
+    container.querySelectorAll('.btn-copy-addr').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.dataset.copyIdx, 10);
+        const target = agencies[idx];
+        if (!target) return;
+        const copyText = `${target.title}\n${target.addr}`;
+        if (navigator.clipboard?.writeText) {
+          navigator.clipboard.writeText(copyText).then(() => {
+            const orig = btn.innerHTML;
+            btn.innerHTML = '✓ Copied!';
+            btn.style.borderColor = '#10b981';
+            btn.style.color = '#059669';
+            setTimeout(() => {
+              btn.innerHTML = orig;
+              btn.style.borderColor = '';
+              btn.style.color = '';
+            }, 2000);
+            showToast(`Copied address for ${target.title}`, 'info', 2000);
+          }).catch(() => {
+            showToast('Unable to copy address to clipboard', 'error');
+          });
+        }
+      });
+    });
+  }
+
+  export function syncDirectoryCounty(countyName) {
+    const select = $('#selectDirectoryCounty');
+    if (!select || !countyName) return;
+
+    const target = countyName.trim().replace(/\s+(County|Superior|Circuit).*$/i, '').trim();
+    // Look for matching option
+    for (let i = 0; i < select.options.length; i++) {
+      if (select.options[i].value.toLowerCase() === target.toLowerCase()) {
+        select.selectedIndex = i;
+        renderServiceDirectory(select.options[i].value);
+        return;
+      }
+    }
+  }
+
+  export function initServiceDirectory() {
+    const select = $('#selectDirectoryCounty');
+    if (!select) return;
+
+    const counties = getAvailableCounties();
+    select.innerHTML = counties.map(c => `<option value="${c}">${c} County</option>`).join('');
+
+    select.addEventListener('change', () => {
+      renderServiceDirectory(select.value);
+    });
+
+    const initial = counties[0] || 'Marion';
+    select.value = initial;
+    renderServiceDirectory(initial);
+
+    // Auto-sync when multi-county dropdown changes
+    $('#selectCountyPacket')?.addEventListener('change', (e) => {
+      const selectedCode = e.target.value;
+      if (selectedCode && AppState.currentReport?.counties?.[selectedCode]) {
+        const courtName = AppState.currentReport.counties[selectedCode].courtName;
+        syncDirectoryCounty(courtName);
+      }
+    });
+
+    // Auto-sync when Generate tab is opened
+    document.querySelector('.tab-btn[data-tab="generate"]')?.addEventListener('click', () => {
+      if (AppState.currentReport?.counties) {
+        const selectedCode = $('#selectCountyPacket')?.value;
+        const targetCounty = (selectedCode && AppState.currentReport.counties[selectedCode])
+          ? AppState.currentReport.counties[selectedCode]
+          : Object.values(AppState.currentReport.counties)[0];
+        if (targetCounty?.courtName) {
+          syncDirectoryCounty(targetCounty.courtName);
+        }
+      }
+    });
+  }
+
+  // Initialize service directory
+  initServiceDirectory();
