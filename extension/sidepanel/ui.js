@@ -63,7 +63,7 @@ export function updateChecklist() {
 export function setChecklistItem(id, ready) {
   const el = $(`#${id}`);
   if (!el) return;
-  el.classList.toggle('ready', ready);
-  const icon = el.querySelector('.check-icon');
+  el.classList?.toggle('ready', ready);
+  const icon = el.querySelector?.('.check-icon');
   if (icon) icon.textContent = ready ? '✓' : '○';
 }

@@ -27,8 +27,13 @@ import { showToast, updateChecklist } from './ui.js';
   // ─── Input Formatting & Validation Helpers ─────────────────────────
   function formatSSN(val) {
     const digits = val.replace(/\D/g, '').slice(0, 9);
-    if (digits.length <= 3) return digits;
-    if (digits.length <= 5) return `${digits.slice(0, 3)}-${digits.slice(3)}`;
+    if (digits.length === 0) return '';
+    if (digits.length < 3) return digits;
+    if (digits.length === 3) return String(val).endsWith('-') ? `${digits}-` : digits;
+    if (digits.length <= 5) {
+      const base = `${digits.slice(0, 3)}-${digits.slice(3)}`;
+      return (digits.length === 5 && String(val).endsWith('-')) ? `${base}-` : base;
+    }
     return `${digits.slice(0, 3)}-${digits.slice(3, 5)}-${digits.slice(5)}`;
   }
 
@@ -211,18 +216,21 @@ import { showToast, updateChecklist } from './ui.js';
     }
 
     if (fieldId === 'ssn') {
-      if (!val) {
+      const clean = val.replace(/\D/g, '');
+      if (!clean) {
         setFieldError('ssn', 'SSN is required for the confidential ACR form');
         return false;
       }
-      if (!/^\d{3}-\d{2}-\d{4}$/.test(val)) {
-        setFieldError('ssn', 'Must be a 9-digit SSN (XXX-XX-XXXX)');
+      if (clean.length !== 9) {
+        setFieldError('ssn', `Must be exactly 9 digits (entered ${clean.length})`);
         return false;
       }
-      if (val === '000-00-0000') {
+      if (clean === '000000000' || clean.startsWith('000') || clean.startsWith('666') || clean.startsWith('9')) {
         setFieldError('ssn', 'Invalid SSN');
         return false;
       }
+      // Normalize input value to XXX-XX-XXXX
+      input.value = `${clean.slice(0, 3)}-${clean.slice(3, 5)}-${clean.slice(5)}`;
       clearFieldError('ssn');
       return true;
     }
@@ -456,7 +464,7 @@ import { showToast, updateChecklist } from './ui.js';
 
   export function addAddressEntry(value = '', shouldFocus = false) {
     const container = $('#addressHistory') || addressContainer;
-    if (!container) return;
+    if (!container || typeof container.appendChild !== 'function') return;
 
     const address = parseAddressEntry(value);
     const count = container.querySelectorAll('.address-entry').length + 1;
