@@ -407,6 +407,43 @@ class PdfContext {
     this.cursorY -= 10;
   }
 
+  drawInteractiveGridTable(headers, rows, colWidths, fieldPrefix) {
+    const rowHeight = 22;
+    const totalHeight = (rows.length + 1) * rowHeight;
+    this.ensureSpace(Math.min(totalHeight, 120));
+
+    // Header row
+    let xOffset = 72;
+    this.drawRectangle(72, this.cursorY - rowHeight, this.contentWidth, rowHeight, this.colors.tableHeaderBg, this.colors.black, 0.75);
+    for (let c = 0; c < headers.length; c++) {
+      this.drawText(headers[c], xOffset + 4, this.cursorY - 15, 9, 'bold');
+      xOffset += colWidths[c];
+    }
+    this.cursorY -= rowHeight;
+
+    // Data rows
+    for (let r = 0; r < rows.length; r++) {
+      this.ensureSpace(rowHeight);
+      xOffset = 72;
+      const bg = r % 2 === 1 ? this.colors.tableHeaderBg : null;
+      this.drawRectangle(72, this.cursorY - rowHeight, this.contentWidth, rowHeight, bg, this.colors.black, 0.5);
+      
+      for (let c = 0; c < rows[r].length; c++) {
+        let cellText = String(rows[r][c] || '');
+        if (c === 0) {
+          // Column 0 is static row number
+          this.drawText(cellText, xOffset + 4, this.cursorY - 15, 9, 'regular');
+        } else {
+          // Interactive field
+          this.addTextField(`${fieldPrefix}_r${r}_c${c}`, xOffset + 2, this.cursorY - rowHeight + 2, colWidths[c] - 4, rowHeight - 4, cellText, { fontSize: 8.5 });
+        }
+        xOffset += colWidths[c];
+      }
+      this.cursorY -= rowHeight;
+    }
+    this.cursorY -= 12;
+  }
+
   drawSignatureBlock(nameUpper, title = 'Petitioner Pro Se', fieldPrefix = 'sig') {
     this.ensureSpace(95);
     this.drawText('Respectfully submitted,', 72, this.cursorY, 12, 'regular');
@@ -614,10 +651,11 @@ function buildForm03(ctx, payload) {
     ]);
   }
 
-  ctx.drawTable(
+  ctx.drawInteractiveGridTable(
     ['#', 'Street Address', 'City', 'State', 'ZIP', 'Approx. Residence Dates'],
     tableRows,
-    [24, 170, 85, 38, 51, 100]
+    [24, 170, 85, 38, 51, 100],
+    'f3_addr'
   );
 
   ctx.drawPerjuryAffirmation(nameUpper, 'f3');
@@ -672,10 +710,11 @@ function buildForm04(ctx, payload) {
     caseRows.push(['1', 'XXXXX-XXXX-XP-XXXXXX', 'XP', 'Eligible Criminal Records', 'IC § 35-38-9', 'See MyCase']);
   }
 
-  ctx.drawTable(
+  ctx.drawInteractiveGridTable(
     ['#', 'Cause / Case Number', 'Type', 'Charges / Offenses', 'Statutory Basis', 'Disp. Date'],
     caseRows,
-    [24, 120, 36, 155, 75, 58]
+    [24, 120, 36, 155, 75, 58],
+    'f4_cases'
   );
 
   ctx.drawHeading('3. Statutory Grounds for Expungement:');
