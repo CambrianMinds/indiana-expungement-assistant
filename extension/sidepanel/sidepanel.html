@@ -30,10 +30,9 @@
       <button class="disclaimer-badge" id="btnLegalNotice" title="View Legal Disclaimer & One-Shot Warning">
         <span class="badge-icon">⚖️</span> Notice
       </button>
-      <div class="header-status" id="backendStatus" role="button" tabindex="0" title="Click to test Form Engine connection">
-        <span class="status-dot offline"></span>
-        <span class="status-label">Backend Offline</span>
-        <span class="status-refresh-icon" aria-hidden="true">↻</span>
+      <div class="header-status" id="backendStatus" role="button" tabindex="0" title="In-Browser PDF Generator is active and ready">
+        <span class="status-dot online"></span>
+        <span class="status-label">Engine Ready</span>
       </div>
     </div>
   </header>
@@ -689,8 +688,9 @@
     </div>
   </div>
 
+  <script src="../pdf-lib.min.js"></script>
   <script src="../eligibility.js"></script>
-  <script src="sidepanel.js"></script>
+  <script type="module" src="main.js"></script>
 </body>
 
 </html>

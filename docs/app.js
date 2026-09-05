@@ -1,20 +1,99 @@
 /**
  * Indiana Expungement Assistant - Public Legal Aid & Second Chance Portal
- * Client-Side Interactive Logic
+ * Client-Side Interactive Logic & Premium Experience Engine
  */
 
 document.addEventListener('DOMContentLoaded', () => {
+  initThemeToggle();
+  initHeroMockup();
   initEligibilityCalculator();
+  initDatePresets();
   initAuditChecklist();
+  initDocumentModal();
   initGuideTabs();
   initCopyButtons();
   initMobileNav();
+  initScrollEffects();
 });
 
 /* ==========================================================================
-   1. Statutory Eligibility Assessment (IC § 35-38-9)
+   1. Theme Toggle (Light & Dark Mode)
    ========================================================================== */
+function initThemeToggle() {
+  const toggleBtn = document.getElementById('themeToggle');
+  if (!toggleBtn) return;
 
+  function getActiveTheme() {
+    return document.documentElement.getAttribute('data-theme') ||
+      (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  }
+
+  function setTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+    toggleBtn.setAttribute('aria-label', `Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`);
+    toggleBtn.title = `Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`;
+  }
+
+  toggleBtn.addEventListener('click', () => {
+    const current = getActiveTheme();
+    const next = current === 'dark' ? 'light' : 'dark';
+    setTheme(next);
+  });
+
+  // Listen for OS color scheme adjustments if not explicitly set
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+    if (!localStorage.getItem('theme')) {
+      document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+    }
+  });
+}
+
+/* ==========================================================================
+   2. Hero Sidepanel Interactive Mockup
+   ========================================================================== */
+function initHeroMockup() {
+  const tabs = document.querySelectorAll('.mockup-tab');
+  const panels = document.querySelectorAll('.mockup-panel');
+  const actionBtn = document.getElementById('mockupBtnGenerate');
+  const toast = document.getElementById('mockupToast');
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      const target = tab.getAttribute('data-mockup-tab');
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+
+      panels.forEach(p => {
+        if (p.id === `mockup-panel-${target}`) {
+          p.style.display = 'flex';
+        } else {
+          p.style.display = 'none';
+        }
+      });
+    });
+  });
+
+  if (actionBtn && toast) {
+    actionBtn.addEventListener('click', () => {
+      actionBtn.disabled = true;
+      actionBtn.textContent = 'Compiling PDF Forms...';
+      setTimeout(() => {
+        toast.style.display = 'block';
+        actionBtn.textContent = '✓ Packet Ready';
+        setTimeout(() => {
+          toast.style.display = 'none';
+          actionBtn.disabled = false;
+          actionBtn.textContent = '⚡ Generate Court Packet';
+        }, 3500);
+      }, 700);
+    });
+  }
+}
+
+/* ==========================================================================
+   3. Statutory Eligibility Assessment (IC § 35-38-9)
+   ========================================================================== */
 const STATUTORY_TIERS = {
   tier1: {
     statute: 'IC § 35-38-9-1',
@@ -23,7 +102,7 @@ const STATUTORY_TIERS = {
     grantType: 'Mandatory (Court Shall Grant)',
     isConviction: false,
     courtAction: 'The court SHALL grant expungement if no charges are pending.',
-    details: 'Covers dropped charges, acquittals, or arrests where no charges were filed within 1 year or charges were dismissed. Completely mandatory grant with no filing fees in most circumstances.'
+    details: 'Covers dropped charges, acquittals, or arrests where no charges were filed within 1 year. Mandatory statutory grant with no filing fees.'
   },
   tier2: {
     statute: 'IC § 35-38-9-2',
@@ -41,7 +120,7 @@ const STATUTORY_TIERS = {
     grantType: 'Mandatory (Court Shall Grant)',
     isConviction: true,
     courtAction: 'The court SHALL grant expungement if statutory criteria are met.',
-    details: 'Covers Level 6 and Class D felonies that did not result in bodily injury. Requires 8 years from date of conviction (or 3 years from completion of sentence). Mandatory grant upon statutory proof.'
+    details: 'Covers Level 6 and Class D felonies that did not result in bodily injury. Requires 8 years from date of conviction (or 3 years from completion of sentence).'
   },
   tier4: {
     statute: 'IC § 35-38-9-4',
@@ -50,7 +129,7 @@ const STATUTORY_TIERS = {
     grantType: 'Discretionary (Judicial Review)',
     isConviction: true,
     courtAction: 'The court MAY grant expungement in its judicial discretion.',
-    details: 'Covers higher-level felonies (Class A, B, C or Levels 1-5) that did not result in serious bodily injury. Requires 8 years from conviction (or 3 years from sentence completion). Judge has discretion to grant or deny; court hearing is typically held.'
+    details: 'Covers higher-level felonies (Class A, B, C or Levels 1-5) that did not result in serious bodily injury. Requires 8 years from conviction (or 3 years from sentence completion).'
   },
   tier5: {
     statute: 'IC § 35-38-9-5',
@@ -59,7 +138,7 @@ const STATUTORY_TIERS = {
     grantType: 'Prosecutor Written Consent Required',
     isConviction: true,
     courtAction: 'CANNOT be granted without written consent from the Prosecuting Attorney.',
-    details: 'Covers offenses involving serious bodily injury, elected officials in official capacity, or major sexual offenses not excluded under § 35-38-9-5(b). Requires 10 years and explicit written prosecutor consent.'
+    details: 'Covers offenses involving serious bodily injury. Requires 10 years and explicit written prosecutor consent.'
   }
 };
 
@@ -77,7 +156,7 @@ function initEligibilityCalculator() {
   const calcDateLabel = document.getElementById('calcDateLabel');
   const calcDateHint = document.getElementById('calcDateHint');
 
-  // Set default date to 6 years ago for immediate illustration
+  // Default to 6 years ago for immediate illustration
   if (dateInput && !dateInput.value) {
     const d = new Date();
     d.setFullYear(d.getFullYear() - 6);
@@ -85,7 +164,6 @@ function initEligibilityCalculator() {
   }
 
   function update() {
-    // Determine selected tier
     const selectedRadio = document.querySelector('input[name="calcTier"]:checked');
     const tierKey = selectedRadio ? selectedRadio.value : 'tier2';
     const tier = STATUTORY_TIERS[tierKey];
@@ -105,7 +183,7 @@ function initEligibilityCalculator() {
       if (dateStepLabel) dateStepLabel.textContent = 'Date of Dismissal or Arrest';
       if (calcDateLabel) calcDateLabel.textContent = 'Enter date charges were dismissed (or arrest date if no charges filed):';
       if (calcDateHint) {
-        calcDateHint.innerHTML = '<strong>Arrest / Dismissal Date:</strong> For non-convictions (dismissals, dropped charges, or acquittals), the 1-year statutory waiting clock runs from the date charges were dismissed or the date of arrest if no charges were filed (whichever is later).';
+        calcDateHint.innerHTML = '<strong>Arrest / Dismissal Date:</strong> For non-convictions (dismissals, dropped charges, or acquittals), the 1-year statutory waiting clock runs from the date charges were dismissed or the date of arrest if no charges were filed.';
       }
       if (checkSentenceRow) checkSentenceRow.style.display = 'none';
     } else {
@@ -115,9 +193,9 @@ function initEligibilityCalculator() {
       const isFelony = tierKey === 'tier3' || tierKey === 'tier4' || tierKey === 'tier5';
       if (calcDateHint) {
         if (isFelony) {
-          calcDateHint.innerHTML = '<strong>Sentencing Date, NOT Arrest Date:</strong> Under Indiana Code § 35-38-9, the statutory waiting clock for felony convictions begins on the date of <em>conviction and sentencing</em> by the court, NOT when you were arrested. If a case was pending or someone was on warrant for years before sentencing, that pre-sentence time does not count. In addition, at least 3 years must have passed since you fully completed your sentence (probation, parole, or DOC release).';
+          calcDateHint.innerHTML = '<strong>Sentencing Date, NOT Arrest Date:</strong> Under Indiana Code § 35-38-9, the statutory waiting clock for felony convictions begins on the date of <em>conviction and sentencing</em> by the court, NOT when you were arrested. In addition, at least 3 years must have passed since you fully completed all terms of your sentence.';
         } else {
-          calcDateHint.innerHTML = '<strong>Sentencing Date, NOT Arrest Date:</strong> Under Indiana Code § 35-38-9, the statutory waiting clock for criminal convictions begins on the date of <em>conviction and sentencing</em> by the court, NOT when you were arrested. If a case took years to go to trial or someone was on warrant before sentencing, that pre-sentence time does not count toward the waiting period.';
+          calcDateHint.innerHTML = '<strong>Sentencing Date, NOT Arrest Date:</strong> Under Indiana Code § 35-38-9, the statutory waiting clock begins on the date of <em>conviction and sentencing</em> by the court, NOT when you were arrested. Pre-sentence time does not count toward the waiting period.';
         }
       }
 
@@ -148,7 +226,7 @@ function initEligibilityCalculator() {
       const inputDate = new Date(dateVal);
       const today = new Date();
       const diffMs = today - inputDate;
-      yearsElapsed = diffMs / (1000 * 60 * 60 * 24 * 365.25);
+      yearsElapsed = Math.max(0, diffMs / (1000 * 60 * 60 * 24 * 365.25));
 
       const targetDate = new Date(inputDate);
       targetDate.setFullYear(targetDate.getFullYear() + tier.waitingYears);
@@ -157,7 +235,7 @@ function initEligibilityCalculator() {
       isTimeMet = yearsElapsed >= tier.waitingYears;
     }
 
-    // Determine status
+    // Determine status & update UI
     const statusBadge = document.getElementById('resBadge');
     const headline = document.getElementById('resHeadline');
     const statCitation = document.getElementById('resStatute');
@@ -165,18 +243,36 @@ function initEligibilityCalculator() {
     const elapsedVal = document.getElementById('resElapsed');
     const courtStandardVal = document.getElementById('resStandard');
     const explanation = document.getElementById('resExplanation');
+    const progressBar = document.getElementById('resProgressBar');
+    const progressText = document.getElementById('resProgressText');
 
     statCitation.textContent = tier.statute;
     waitingPeriodVal.textContent = `${tier.waitingYears} Year${tier.waitingYears > 1 ? 's' : ''}`;
     elapsedVal.textContent = dateVal ? `${yearsElapsed.toFixed(1)} Years elapsed` : 'Enter date';
     courtStandardVal.textContent = tier.grantType;
 
+    // Visual progress bar
+    const progressPct = Math.min(100, Math.max(0, (yearsElapsed / tier.waitingYears) * 100));
+    if (progressBar) {
+      progressBar.style.width = `${progressPct.toFixed(0)}%`;
+      if (progressPct >= 100) {
+        progressBar.style.background = 'linear-gradient(90deg, #10b981 0%, #059669 100%)';
+      } else {
+        progressBar.style.background = 'linear-gradient(90deg, #3b82f6 0%, #f59e0b 100%)';
+      }
+    }
+    if (progressText) {
+      progressText.textContent = isTimeMet
+        ? '100% Waiting Period Complete'
+        : `${progressPct.toFixed(0)}% Complete (${daysRemaining} days remaining)`;
+    }
+
     if (!isTimeMet) {
       statusBadge.className = 'status-badge status-badge-warning';
       statusBadge.innerHTML = '⏳ Waiting Period In Progress';
-      headline.textContent = `Eligible in Approximately ${daysRemaining} Days`;
+      headline.textContent = `Eligible in ~${daysRemaining} Days`;
       const dateTypeStr = tierKey === 'tier1' ? 'dismissal or arrest' : 'sentencing / conviction';
-      explanation.innerHTML = `Under <b>${tier.statute}</b>, you must wait at least <b>${tier.waitingYears} years</b> from the date of ${dateTypeStr}. Based on the date provided, you have completed <b>${yearsElapsed.toFixed(1)}</b> of the required <b>${tier.waitingYears}</b> years. (Note: The County Prosecutor may give written consent to file early under IC § 35-38-9-9(b)).`;
+      explanation.innerHTML = `Under <b>${tier.statute}</b>, you must wait at least <b>${tier.waitingYears} years</b> from the date of ${dateTypeStr}. Based on the date provided, you have completed <b>${yearsElapsed.toFixed(1)}</b> of the required <b>${tier.waitingYears}</b> years. (Note: The Prosecutor may grant written permission to file early under IC § 35-38-9-9(b)).`;
     } else if (!finesPaid || !noPending || !noNewConvictions || !sentenceComplete) {
       statusBadge.className = 'status-badge status-badge-danger';
       statusBadge.innerHTML = '⚠️ Statutory Prerequisite Required';
@@ -184,21 +280,20 @@ function initEligibilityCalculator() {
       let missing = [];
       if (!finesPaid) missing.push('All court costs, fines, and restitution must be paid in full');
       if (!noPending) missing.push('No pending criminal charges in any jurisdiction');
-      if (!noNewConvictions) missing.push(`No criminal convictions within the ${tier.waitingYears}-year statutory waiting window`);
+      if (!noNewConvictions) missing.push(`No criminal convictions within the statutory waiting window`);
       if (!sentenceComplete) missing.push('Required statutory time must have elapsed since completing all probation, parole, or DOC sentence terms');
-      explanation.innerHTML = `Although the waiting period has elapsed from your ${tierKey === 'tier1' ? 'arrest/dismissal' : 'sentencing'}, Indiana law requires that all statutory conditions be satisfied prior to filing:<br>• ${missing.join('<br>• ')}`;
+      explanation.innerHTML = `Although the waiting period has elapsed, Indiana law requires that all statutory conditions be satisfied prior to filing:<br>• ${missing.join('<br>• ')}`;
     } else {
-      // Fully Eligible
       if (tier.grantType.includes('Mandatory')) {
         statusBadge.className = 'status-badge status-badge-success';
         statusBadge.innerHTML = '✓ Statutorily Eligible (Mandatory Grant)';
         headline.textContent = 'Court Required By Law To Grant';
-        explanation.innerHTML = `Under <b>${tier.statute}</b>, if you satisfy all statutory prerequisites, the Indiana court <b>SHALL</b> grant the expungement. By law, the court does not have discretion to deny a compliant petition.`;
+        explanation.innerHTML = `Under <b>${tier.statute}</b>, if you satisfy all statutory prerequisites, the Indiana court <b>SHALL</b> grant the expungement. The judge does not have discretion to deny a compliant petition.`;
       } else if (tier.grantType.includes('Discretionary')) {
         statusBadge.className = 'status-badge status-badge-warning';
         statusBadge.innerHTML = '⚖️ Statutorily Eligible (Judicial Review)';
-        headline.textContent = 'Court Exercises Judicial Discretion';
-        explanation.innerHTML = `Under <b>${tier.statute}</b>, you meet the statutory eligibility threshold to petition the court. The judge <b>MAY</b> grant expungement after evaluating evidence of rehabilitation, character, and prosecutor input.`;
+        headline.textContent = 'Court Holds Judicial Discretion';
+        explanation.innerHTML = `Under <b>${tier.statute}</b>, you meet the statutory eligibility threshold to petition the court. The judge <b>MAY</b> grant expungement after evaluating evidence of rehabilitation and prosecutor input.`;
       } else {
         statusBadge.className = 'status-badge status-badge-warning';
         statusBadge.innerHTML = '📜 Prosecutor Written Consent Required';
@@ -215,13 +310,162 @@ function initEligibilityCalculator() {
   if (checkConvictions) checkConvictions.addEventListener('change', update);
   if (checkSentence) checkSentence.addEventListener('change', update);
 
+  window.__recalcExpungement = update;
   update();
 }
 
-/* ==========================================================================
-   2. Record Audit Checklist
-   ========================================================================== */
+/* Quick Date Presets */
+function initDatePresets() {
+  const presets = document.querySelectorAll('[data-preset-years]');
+  const dateInput = document.getElementById('calcDate');
+  if (!dateInput) return;
 
+  presets.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const years = parseFloat(btn.getAttribute('data-preset-years'));
+      const d = new Date();
+      d.setFullYear(d.getFullYear() - years);
+      dateInput.value = d.toISOString().split('T')[0];
+      if (window.__recalcExpungement) window.__recalcExpungement();
+    });
+  });
+}
+
+/* ==========================================================================
+   4. Document Details Modal
+   ========================================================================== */
+const DOCUMENT_DETAILS = {
+  'doc-00-a': {
+    title: 'Consolidated Pro Se Petition Packet (All Documents Combined)',
+    code: 'DOC 00-A',
+    authority: 'Indiana Trial Rules & Rules of Court',
+    destination: 'Trial Court Clerk / Odyssey E-Filing',
+    desc: 'The master combined PDF containing all 10 pleadings ordered in statutory filing sequence for single-upload electronic filing or physical clerk window delivery.',
+    notes: 'Generated automatically with page numbers and standard caption block.'
+  },
+  'doc-00-b': {
+    title: 'Step-by-Step Pro Se Instructions & Warning Guide',
+    code: 'DOC 00-B',
+    authority: 'IC § 35-38-9-9(i) Advisory',
+    destination: 'Petitioner Copy (Keep for Records)',
+    desc: 'Provides a clear 6-step walkthrough for filing pro se in Indiana courts, serving the prosecutor, setting court hearings, and monitoring Odyssey docket updates.',
+    notes: 'Includes critical warnings regarding the irreversible Lifetime One-Shot rule.'
+  },
+  'doc-01': {
+    title: 'Appearance Form for Self-Represented Person in Civil Case',
+    code: 'DOC 01',
+    authority: 'Indiana Trial Rule 3.1',
+    destination: 'County Clerk & Case File',
+    desc: 'Officially registers your appearance as an unrepresented pro se petitioner in the new Miscellaneous (XP) civil expungement cause.',
+    notes: 'Provides service address and contact details for official court notices.'
+  },
+  'doc-02': {
+    title: 'Notice of Exclusion of Confidential Information from Public Access',
+    code: 'DOC 02',
+    authority: 'Indiana Access to Court Records (ACR) Rule 5',
+    destination: 'Public Court Record',
+    desc: 'Mandatory formal notification declaring that confidential identifiers (Social Security Number, Date of Birth, Driver’s License) are excluded from the public court docket.',
+    notes: 'Placed in the public file to satisfy mandatory Indiana public access requirements.'
+  },
+  'doc-03': {
+    title: 'Confidential Information Sheet (Form ACR - Green Paper)',
+    code: 'DOC 03',
+    authority: 'ACR Rule 5 & IC § 35-38-9-8(b)',
+    destination: 'Sealed Confidential Court Envelope',
+    desc: 'Contains your sensitive personal identifiers (full SSN, DOB, driver\'s license number, and 10-year address history) required by court administration for background verification.',
+    notes: 'Filed separately under seal or marked confidential in the E-Filing system.'
+  },
+  'doc-04': {
+    title: 'Verified Petition for Expungement of Conviction & Arrest Records',
+    code: 'DOC 04',
+    authority: 'Indiana Code §§ 35-38-9-1 through 35-38-9-8',
+    destination: 'Presiding Judge',
+    desc: 'The substantive core petition itemizing all qualifying Indiana cause numbers, charges, disposition dates, and affirmations required by statute, verified under penalty of perjury.',
+    notes: 'Must include all convictions in the county to comply with the Lifetime One-Shot rule.'
+  },
+  'doc-05': {
+    title: 'Notice of Filing to Prosecuting Attorney',
+    code: 'DOC 05',
+    authority: 'Indiana Code § 35-38-9-9(g)',
+    destination: 'County Prosecuting Attorney',
+    desc: 'Formal 30-day statutory notice delivered to the County Prosecutor advising them of the expungement filing, initiating the statutory prosecutorial response window.',
+    notes: 'The prosecutor has 30 days to file a response or consent to expungement.'
+  },
+  'doc-06': {
+    title: 'Certificate of Service',
+    code: 'DOC 06',
+    authority: 'Indiana Trial Rule 5',
+    destination: 'Trial Court File',
+    desc: 'Sworn affirmation specifying the precise method and date on which the Petition and Notice were served upon the Prosecuting Attorney (Certified Mail, IEFS E-Service, or Hand Delivery).',
+    notes: 'Essential proof required before the judge can enter an expungement order.'
+  },
+  'doc-07': {
+    title: 'Proposed Order Granting Expungement of Records',
+    code: 'DOC 07',
+    authority: 'Indiana Code §§ 35-38-9-1 through 35-38-9-6',
+    destination: 'Presiding Judge Signature',
+    desc: 'Court-ready draft order containing specific statutory sealing mandates directing the Indiana State Police, Bureau of Motor Vehicles, local law enforcement agencies, and Court Technology to redact/seal the records.',
+    notes: 'Signed by the judge upon approval and transmitted to all state repositories.'
+  },
+  'doc-08': {
+    title: 'Verified Request for Fee Waiver & Proposed Order (Indigency)',
+    code: 'DOC 08',
+    authority: 'Indiana Code § 33-37-3-2',
+    destination: 'Presiding Judge',
+    desc: 'Indigent petition and proposed judicial order requesting waiver of the standard $157 civil filing fee for petitioners receiving public assistance or demonstrating financial hardship.',
+    notes: 'Optional pleading included automatically for petitioners who cannot afford court costs.'
+  }
+};
+
+function initDocumentModal() {
+  const modal = document.getElementById('docModal');
+  const closeBtn = document.getElementById('modalCloseBtn');
+  const items = document.querySelectorAll('.doc-list-item');
+  if (!modal) return;
+
+  function openModal(key) {
+    const data = DOCUMENT_DETAILS[key];
+    if (!data) return;
+
+    document.getElementById('modalDocCode').textContent = data.code;
+    document.getElementById('modalDocTitle').textContent = data.title;
+    document.getElementById('modalDocAuthority').textContent = data.authority;
+    document.getElementById('modalDocDest').textContent = data.destination;
+    document.getElementById('modalDocDesc').textContent = data.desc;
+    document.getElementById('modalDocNotes').textContent = data.notes;
+
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeModal() {
+    modal.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
+  items.forEach(item => {
+    item.addEventListener('click', () => {
+      const key = item.getAttribute('data-doc-key');
+      if (key) openModal(key);
+    });
+  });
+
+  if (closeBtn) closeBtn.addEventListener('click', closeModal);
+
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeModal();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal.classList.contains('active')) {
+      closeModal();
+    }
+  });
+}
+
+/* ==========================================================================
+   5. Record Audit Checklist
+   ========================================================================== */
 function initAuditChecklist() {
   const checkboxes = document.querySelectorAll('.audit-item input[type="checkbox"]');
   const progressText = document.getElementById('prepProgressText');
@@ -248,9 +492,8 @@ function initAuditChecklist() {
 }
 
 /* ==========================================================================
-   3. User Guide Tabs
+   6. User Guide Tabs
    ========================================================================== */
-
 function initGuideTabs() {
   const tabBtns = document.querySelectorAll('.guide-tab-btn');
   const tabPanes = document.querySelectorAll('.guide-pane');
@@ -270,9 +513,8 @@ function initGuideTabs() {
 }
 
 /* ==========================================================================
-   4. Copy Buttons
+   7. Copy Buttons
    ========================================================================== */
-
 function initCopyButtons() {
   const copyBtns = document.querySelectorAll('.btn-snippet-copy');
   copyBtns.forEach(btn => {
@@ -284,7 +526,7 @@ function initCopyButtons() {
       navigator.clipboard.writeText(text).then(() => {
         const originalText = btn.textContent;
         btn.textContent = '✓ Copied';
-        btn.style.backgroundColor = 'rgba(5, 150, 105, 0.5)';
+        btn.style.backgroundColor = 'rgba(16, 185, 129, 0.5)';
         setTimeout(() => {
           btn.textContent = originalText;
           btn.style.backgroundColor = '';
@@ -295,9 +537,8 @@ function initCopyButtons() {
 }
 
 /* ==========================================================================
-   5. Mobile Navigation
+   8. Mobile Navigation
    ========================================================================== */
-
 function initMobileNav() {
   const toggle = document.querySelector('.mobile-nav-toggle');
   const navLinks = document.querySelector('.nav-links');
@@ -313,10 +554,10 @@ function initMobileNav() {
         navLinks.style.top = '100%';
         navLinks.style.left = '0';
         navLinks.style.right = '0';
-        navLinks.style.backgroundColor = '#ffffff';
+        navLinks.style.backgroundColor = 'var(--color-surface)';
         navLinks.style.padding = '1.5rem';
-        navLinks.style.borderBottom = '1px solid #e2e8f0';
-        navLinks.style.boxShadow = '0 4px 12px rgba(15, 23, 42, 0.08)';
+        navLinks.style.borderBottom = '1px solid var(--border-medium)';
+        navLinks.style.boxShadow = 'var(--shadow-lg)';
         navLinks.style.gap = '1.25rem';
       }
     });
@@ -327,6 +568,42 @@ function initMobileNav() {
           navLinks.style.display = 'none';
         }
       });
+    });
+  }
+}
+
+/* ==========================================================================
+   9. Scroll Effects & Back to Top
+   ========================================================================== */
+function initScrollEffects() {
+  const navbar = document.querySelector('.navbar');
+  const backToTopBtn = document.getElementById('backToTop');
+
+  window.addEventListener('scroll', () => {
+    const scrollY = window.scrollY;
+
+    // Navbar shadow & glassmorphism boost
+    if (navbar) {
+      if (scrollY > 20) {
+        navbar.classList.add('scrolled');
+      } else {
+        navbar.classList.remove('scrolled');
+      }
+    }
+
+    // Back to top visibility
+    if (backToTopBtn) {
+      if (scrollY > 400) {
+        backToTopBtn.classList.add('visible');
+      } else {
+        backToTopBtn.classList.remove('visible');
+      }
+    }
+  }, { passive: true });
+
+  if (backToTopBtn) {
+    backToTopBtn.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     });
   }
 }

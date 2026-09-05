@@ -29,25 +29,20 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
   // Deep scrape progress relay (content → sidepanel)
   if (request.action === 'deepScrapeProgress') {
-    // Forward to sidepanel
-    chrome.runtime.sendMessage(request);
+    // Forward to sidepanel (catch if sidepanel not open)
+    try {
+      chrome.runtime.sendMessage(request);
+    } catch (e) {
+      // Sidepanel may be closed, ignore silently
+      console.debug('[Background] Sidepanel not available for deepScrapeProgress');
+    }
     return;
   }
 
-  // Generate expungement packet via local backend
-  if (request.action === 'generatePacket') {
-    generatePacketViaBackend(request.payload)
-      .then(result => sendResponse(result))
-      .catch(err => sendResponse({ success: false, error: err.message }));
-    return true; // Keep channel open for async
-  }
-
-  // Check backend availability
+  // Check engine availability (in-browser client-side engine)
   if (request.action === 'checkBackend') {
-    checkBackendHealth()
-      .then(result => sendResponse(result))
-      .catch(err => sendResponse({ success: false, error: err.message }));
-    return true;
+    sendResponse({ success: true, clientSide: true });
+    return;
   }
 
   // Save/load petitioner profile
@@ -88,79 +83,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
 });
 
-// ─── Backend API Communication ─────────────────────────────────────────
-
-const BACKEND_URLS = ['http://127.0.0.1:8000', 'http://localhost:8000'];
-let activeBackendUrl = 'http://127.0.0.1:8000';
-
-async function checkBackendHealth() {
-  for (const url of BACKEND_URLS) {
-    try {
-      const response = await fetch(`${url}/health`, {
-        method: 'GET',
-        signal: AbortSignal.timeout(2000)
-      });
-      if (response.ok) {
-        const data = await response.json();
-        activeBackendUrl = url;
-        return { success: true, url, status: data };
-      }
-    } catch (e) {
-      // try next candidate url
-    }
-  }
-  return { success: false, error: 'Backend not running. Start with: python backend/app.py' };
-}
-
-async function generatePacketViaBackend(payload) {
-  try {
-    // Ensure we use the healthy URL or check first
-    let targetUrl = activeBackendUrl;
-    try {
-      const ping = await checkBackendHealth();
-      if (ping.success && ping.url) {
-        targetUrl = ping.url;
-      }
-    } catch (_) {}
-
-    const response = await fetch(`${targetUrl}/api/generate-expungement`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Backend error ${response.status}: ${errorText}`);
-    }
-
-    // Response is a ZIP file
-    const blob = await response.blob();
-    const url = URL.createObjectURL(blob);
-
-    // Trigger download
-    const countyName = payload.county || 'expungement';
-    const petitionerLast = (payload.petitioner?.fullName || 'packet').split(' ').pop();
-    const filename = `${petitionerLast}_${countyName}_Expungement_Packet.zip`;
-
-    // Use chrome.downloads API or fallback
-    if (chrome.downloads) {
-      await chrome.downloads.download({
-        url: url,
-        filename: filename,
-        saveAs: true
-      });
-    }
-
-    return {
-      success: true,
-      filename,
-      downloadUrl: url
-    };
-  } catch (e) {
-    return { success: false, error: e.message };
-  }
-}
 
 // ─── Tab Update Listener ───────────────────────────────────────────────
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {

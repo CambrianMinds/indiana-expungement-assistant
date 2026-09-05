@@ -11,8 +11,8 @@ Usage:
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from typing import List, Optional
+from pydantic import BaseModel, Field
+from typing import List, Optional, Union
 import io
 
 from form_engine import generate_packet
@@ -52,6 +52,16 @@ app.add_middleware(
 
 # ─── Request/Response Models ───────────────────────────────────────────
 
+class AddressHistoryEntry(BaseModel):
+    street: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
+    zipCode: Optional[str] = None
+    fromDate: Optional[str] = None
+    toDate: Optional[str] = None
+    line: Optional[str] = None
+
+
 class Petitioner(BaseModel):
     fullName: str
     aliases: Optional[str] = None
@@ -65,7 +75,7 @@ class Petitioner(BaseModel):
     currentAddress: Optional[str] = None
     phone: Optional[str] = None
     email: Optional[str] = None
-    addresses: List[str] = []
+    addresses: List[Union[str, AddressHistoryEntry]] = Field(default_factory=list)
 
 
 class CaseRecord(BaseModel):

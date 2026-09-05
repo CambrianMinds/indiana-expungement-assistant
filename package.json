@@ -1,0 +1,33 @@
+{
+  "name": "indiana-expunge",
+  "version": "1.0.0",
+  "description": "**Automated in-browser MyCase scraper and court-ready expungement packet generator for Indiana's Second Chance Law (Indiana Code § 35-38-9).**",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "jest"
+  },
+  "jest": {
+    "testMatch": [
+      "<rootDir>/tests/**/*.test.js"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CambrianMinds/indiana-expungement-assistant.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/CambrianMinds/indiana-expungement-assistant/issues"
+  },
+  "homepage": "https://github.com/CambrianMinds/indiana-expungement-assistant#readme",
+  "devDependencies": {
+    "jest": "^30.5.1"
+  }
+}

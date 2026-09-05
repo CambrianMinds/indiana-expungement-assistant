@@ -31,7 +31,7 @@ KEY FEATURES
 • Statutory Eligibility Analysis: Evaluates records against IC § 35-38-9 tiers (Arrests/Dismissals, Misdemeanors, Level 6 Felonies, and Major Felonies).
 • Waiting Period Calculations: Automatically calculates required statutory waiting periods from arrest or disposition date.
 • Lifetime One-Shot Rule Protection: Enforces strict statutory warnings under IC § 35-38-9-9(i), preventing irreversible omissions before filing.
-• Complete 10-Form Court Pleadings Packet: Connects to a local open-source Python engine to generate court-ready PDFs including Appearance Form, Notice of Exclusion of Confidential Information, Confidential Information Sheet (ACR Form), Verified Petition, Notice of Filing to Prosecutor, Certificate of Service, Proposed Order, and Fee Waiver Request.
+• Complete In-Browser Court Pleadings: Uses client-side PDF generation (pdf-lib) directly inside the browser to compile court-ready pro se pleadings (including Appearance Form, Notice of Exclusion of Confidential Information, Confidential Information Sheet ACR Form, and Verified Petition) with zero server dependencies or local software setup.
 
 HOW TO USE
 1. Navigate to Indiana MyCase (public.courts.in.gov/mycase) in Google Chrome.
@@ -40,10 +40,10 @@ HOW TO USE
 4. Click "Scan Page & Check Eligibility" to analyze your charges.
 5. Complete your Petitioner Profile in the Profile tab (stored locally only).
 6. Acknowledge the statutory legal disclaimers and one-shot rule.
-7. Click "Generate Complete Petition Packet" to download your filing package.
+7. Click "Generate Complete Petition Packet" to download your filing package immediately.
 
 PRIVACY & DATA SECURITY GUARANTEE
-• 100% Local Execution: All case analysis and document generation happen entirely on your computer.
+• 100% In-Browser Execution: All case analysis and document generation happen entirely on your computer inside the browser session.
 • Zero Cloud Storage: Your Social Security Number, Date of Birth, addresses, and criminal history are NEVER transmitted to external servers, cloud databases, or third parties.
 • Transparent & Open Source: Auditable codebase licensed under the MIT License.
 
@@ -91,7 +91,7 @@ When prompted by the Chrome Developer Dashboard, use the exact justifications be
 | `scripting` | Required to execute the content script that reads public docket table elements from the active MyCase search tab. |
 | `downloads` | Required to trigger the download of the completed petition packet ZIP file containing generated PDF pleadings. |
 | `host_permissions: https://public.courts.in.gov/*` | Required to parse public court records on Indiana's official court records portal (`public.courts.in.gov/mycase`). |
-| `host_permissions: http://127.0.0.1:8000/*` & `localhost` | Required to communicate with the user's local ReportLab form engine running on their machine for private, client-side PDF document compilation. |
+| `host_permissions: http://127.0.0.1:8000/*` & `localhost` | Optional development permission; document generation runs 100% client-side in the browser via pdf-lib with zero external network transmission. |
 
 ---
 

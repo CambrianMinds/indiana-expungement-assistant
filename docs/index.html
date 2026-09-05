@@ -6,6 +6,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Indiana Expungement Assistant — Second Chance Law Self-Help Portal (IC § 35-38-9)</title>
 
+  <!-- Color scheme declaration & Theme initialization script (prevents FOUC) -->
+  <meta name="color-scheme" content="light dark">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('theme');
+        var theme = saved || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-theme', theme);
+      } catch (e) { }
+    })();
+  </script>
+
   <!-- SEO & Civic Metadata -->
   <meta name="description"
     content="A free, independent public legal self-help portal helping Indiana citizens navigate criminal record expungement under Indiana Code § 35-38-9. Retrieve public records from MyCase and format all 10 court-ready pleadings.">
@@ -37,14 +49,14 @@
   <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
   <link rel="manifest" href="manifest.webmanifest">
 
-  <!-- Google Fonts: Dignified Editorial Serif (Lora) + Accessible Sans (Plus Jakarta Sans) -->
+  <!-- Google Fonts: Editorial Serif (Lora) + Modern Sans (Plus Jakarta Sans) + Tech Mono (JetBrains Mono) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
-    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Lora:ital,wght@0,500;0,600;0,700;1,400;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Lora:ital,wght@0,500;0,600;0,700;1,400;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
     rel="stylesheet">
 
-  <link rel="stylesheet" href="style.css?v=5">
+  <link rel="stylesheet" href="style.css?v=6">
 </head>
 
 <body>
@@ -78,10 +90,29 @@
         <li><a href="#oneshot" class="nav-link">The Lifetime Limit</a></li>
         <li><a href="#documents" class="nav-link">Document Library</a></li>
         <li><a href="#instructions" class="nav-link">Filing Steps</a></li>
+        <li><a href="#faq" class="nav-link">FAQ</a></li>
         <li><a href="#mission" class="nav-link">Public Mission</a></li>
       </ul>
 
       <div class="nav-actions">
+        <!-- Theme Toggle Button -->
+        <button id="themeToggle" class="theme-toggle" aria-label="Toggle dark/light color mode" title="Toggle dark/light theme">
+          <svg class="sun-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+          <svg class="moon-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </button>
+
         <a href="https://github.com/CambrianMinds/indiana-expungement-assistant" target="_blank"
           rel="noopener noreferrer" class="btn btn-outline">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
@@ -100,12 +131,11 @@
     <div class="container hero-grid">
       <div class="hero-text-col">
         <div class="hero-badge">
-          <span>📜</span>
+          <span class="hero-badge-pulse"></span>
           <span>A Free Public Self-Help Tool under Indiana Code § 35-38-9</span>
         </div>
 
-        <h1>A Clean Slate Under Indiana Law. <span style="color: var(--color-blue-700);">Accessible, Dignified, &amp;
-            Free.</span></h1>
+        <h1>A Clean Slate Under Indiana Law. <span class="hero-gradient-text">Accessible, Dignified, &amp; Free.</span></h1>
 
         <p class="hero-subtitle">
           An independent civic self-help assistant that empowers everyday Hoosiers to petition for criminal record
@@ -129,15 +159,106 @@
             <span class="trust-label">In-Browser Scraping · Zero Cloud Tracking</span>
           </div>
           <div class="trust-item">
-            <span class="trust-num">$0 This is a Free Service</span>
-            <span class="trust-label">Public Interest Self-Help · No Attorney Fees</span>
+            <span class="trust-num">$0 Pro Se Help</span>
+            <span class="trust-label">Public Interest Self-Help · No Software Fees</span>
+          </div>
+          <div class="trust-item">
+            <span class="trust-num">10 Court Forms</span>
+            <span class="trust-label">Assembled in Sequential Order with continuous numbering</span>
           </div>
         </div>
       </div>
 
+      <!-- Hero Interactive Mockup Showcase -->
       <div class="hero-visual-col">
-        <div class="hero-visual-frame">
-          <img src="assets/hero.jpg" alt="Indiana Courthouse and Legal Aid Desk" class="hero-photo">
+        <div class="hero-mockup-frame">
+          <div class="mockup-titlebar">
+            <div class="mockup-controls">
+              <span class="mockup-dot red"></span>
+              <span class="mockup-dot yellow"></span>
+              <span class="mockup-dot green"></span>
+            </div>
+            <div class="mockup-app-title">
+              <span>🏛️</span>
+              <span>Indiana Expungement Assistant · Sidepanel</span>
+            </div>
+            <div class="mockup-engine-badge">
+              <span>⚡ pdf-lib</span>
+            </div>
+          </div>
+
+          <div class="mockup-body">
+            <div class="mockup-tabs">
+              <button class="mockup-tab active" data-mockup-tab="scan">1. Scanned Case</button>
+              <button class="mockup-tab" data-mockup-tab="profile">2. Profile &amp; Rules</button>
+              <button class="mockup-tab" data-mockup-tab="generate">3. Compile Packet</button>
+            </div>
+
+            <!-- Tab 1: Scanned Record -->
+            <div class="mockup-panel" id="mockup-panel-scan">
+              <div class="mockup-case-card">
+                <div class="mockup-case-header">
+                  <span class="mockup-case-num">49D02-1804-CM-014298</span>
+                  <span class="mockup-badge-eligible">✓ Eligible · Mandatory</span>
+                </div>
+                <div class="mockup-case-desc">
+                  <strong>Marion Superior Court · State of Indiana v. Petitioner</strong><br>
+                  <span>Count 1: Driving While Suspended (Class A Misdemeanor)</span>
+                </div>
+                <div class="mockup-case-meta">
+                  <span>Conviction: 04/18/2018</span>
+                  <span>•</span>
+                  <span>Waiting: 5.0 Years (Met)</span>
+                </div>
+              </div>
+              <div class="mockup-case-metrics">
+                <div class="mockup-metric">
+                  <span class="metric-label">Statute</span>
+                  <span class="metric-val">IC § 35-38-9-2</span>
+                </div>
+                <div class="mockup-metric">
+                  <span class="metric-label">Fines / Costs</span>
+                  <span class="metric-val" style="color: var(--color-emerald-600);">$0.00 Due</span>
+                </div>
+                <div class="mockup-metric">
+                  <span class="metric-label">Court Standard</span>
+                  <span class="metric-val">Shall Grant</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab 2: Profile & Rules -->
+            <div class="mockup-panel" id="mockup-panel-profile" style="display: none;">
+              <div class="mockup-profile-row">
+                <div class="mockup-field">
+                  <label>Petitioner Legal Name</label>
+                  <div class="mockup-field-val">Jane Doe</div>
+                </div>
+                <div class="mockup-field">
+                  <label>Primary County</label>
+                  <div class="mockup-field-val">Marion County</div>
+                </div>
+              </div>
+              <div class="mockup-alert-warning">
+                <span>⚠️</span>
+                <span><strong>Lifetime One-Shot Warning Acknowledged:</strong> Checked across all 92 Indiana counties for prior cases.</span>
+              </div>
+            </div>
+
+            <!-- Tab 3: Generate Packet -->
+            <div class="mockup-panel" id="mockup-panel-generate" style="display: none;">
+              <div class="mockup-doc-count">
+                <span>📄 10 Court Pleadings Ready to Assemble</span>
+                <span class="mockup-tag inbrowser">100% In-Browser</span>
+              </div>
+              <button type="button" class="mockup-action-btn" id="mockupBtnGenerate">
+                ⚡ Generate Court Packet
+              </button>
+              <div class="mockup-toast" id="mockupToast">
+                ✓ Master PDF Assembled! Ready for E-Filing or Delivery to Clerk Window.
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -235,6 +356,16 @@
               <label for="calcDate" id="calcDateLabel" class="form-label">Enter date of conviction / sentencing (NOT
                 date of arrest):</label>
               <input type="date" id="calcDate" class="form-input-date">
+
+              <!-- Date quick presets -->
+              <div class="date-presets-row">
+                <span class="date-presets-label">Quick test dates:</span>
+                <button type="button" class="btn-preset" data-preset-years="1">1 Year Ago</button>
+                <button type="button" class="btn-preset" data-preset-years="5">5 Years Ago</button>
+                <button type="button" class="btn-preset" data-preset-years="8">8 Years Ago</button>
+                <button type="button" class="btn-preset" data-preset-years="10">10 Years Ago</button>
+              </div>
+
               <div class="form-hint" id="calcDateHint">
                 <strong>Why Sentencing Date, NOT Arrest Date?</strong> Under Indiana Code § 35-38-9, the statutory
                 waiting clock for criminal convictions begins on the date of <em>conviction and sentencing</em> by the
@@ -277,6 +408,17 @@
               <span id="resBadge" class="status-badge status-badge-success">✓ Statutorily Eligible (Mandatory
                 Grant)</span>
               <div id="resHeadline" class="result-title">Court Required By Law To Grant</div>
+            </div>
+
+            <!-- Visual Progress Meter -->
+            <div class="progress-meter-container">
+              <div class="progress-meter-header">
+                <span>Statutory Waiting Progress</span>
+                <span id="resProgressText" style="color: var(--text-primary); font-weight: 700;">100% Complete</span>
+              </div>
+              <div class="progress-meter-track">
+                <div id="resProgressBar" class="progress-meter-fill" style="width: 100%;"></div>
+              </div>
             </div>
 
             <div class="result-table">
@@ -397,6 +539,7 @@
           Administrative Rules. The assistant automatically compiles all 10 required legal filings into a court-ready
           bundle.
         </p>
+        <span class="doc-interactive-hint">💡 Click any document below to inspect full statutory purpose, service requirements, and filing rules.</span>
       </div>
 
       <div class="doc-list-card">
@@ -406,7 +549,7 @@
           <span style="text-align: right;">Authority &amp; Recipient</span>
         </div>
 
-        <div class="doc-list-item">
+        <div class="doc-list-item" data-doc-key="doc-00-a">
           <span class="doc-list-badge">DOC 00-A</span>
           <div class="doc-list-main">
             <h3 class="doc-list-title">Master Combined Petition Bundle</h3>
@@ -419,7 +562,7 @@
           </div>
         </div>
 
-        <div class="doc-list-item">
+        <div class="doc-list-item" data-doc-key="doc-00-b">
           <span class="doc-list-badge">DOC 00-B</span>
           <div class="doc-list-main">
             <h3 class="doc-list-title">Pro Se Instruction &amp; Warning Guide</h3>
@@ -432,7 +575,7 @@
           </div>
         </div>
 
-        <div class="doc-list-item">
+        <div class="doc-list-item" data-doc-key="doc-01">
           <span class="doc-list-badge">DOC 01</span>
           <div class="doc-list-main">
             <h3 class="doc-list-title">Appearance Form (Self-Represented)</h3>
@@ -445,7 +588,7 @@
           </div>
         </div>
 
-        <div class="doc-list-item">
+        <div class="doc-list-item" data-doc-key="doc-02">
           <span class="doc-list-badge">DOC 02</span>
           <div class="doc-list-main">
             <h3 class="doc-list-title">Notice of Exclusion of Confidential Information</h3>
@@ -458,7 +601,7 @@
           </div>
         </div>
 
-        <div class="doc-list-item">
+        <div class="doc-list-item" data-doc-key="doc-03">
           <span class="doc-list-badge">DOC 03</span>
           <div class="doc-list-main">
             <h3 class="doc-list-title">Confidential Information Sheet</h3>
@@ -471,7 +614,7 @@
           </div>
         </div>
 
-        <div class="doc-list-item">
+        <div class="doc-list-item" data-doc-key="doc-04">
           <span class="doc-list-badge">DOC 04</span>
           <div class="doc-list-main">
             <h3 class="doc-list-title">Verified Petition for Expungement</h3>
@@ -484,7 +627,7 @@
           </div>
         </div>
 
-        <div class="doc-list-item">
+        <div class="doc-list-item" data-doc-key="doc-05">
           <span class="doc-list-badge">DOC 05</span>
           <div class="doc-list-main">
             <h3 class="doc-list-title">Notice of Filing to Prosecuting Attorney</h3>
@@ -497,7 +640,7 @@
           </div>
         </div>
 
-        <div class="doc-list-item">
+        <div class="doc-list-item" data-doc-key="doc-06">
           <span class="doc-list-badge">DOC 06</span>
           <div class="doc-list-main">
             <h3 class="doc-list-title">Certificate of Service</h3>
@@ -510,7 +653,7 @@
           </div>
         </div>
 
-        <div class="doc-list-item">
+        <div class="doc-list-item" data-doc-key="doc-07">
           <span class="doc-list-badge">DOC 07</span>
           <div class="doc-list-main">
             <h3 class="doc-list-title">Proposed Order Granting Expungement</h3>
@@ -523,7 +666,7 @@
           </div>
         </div>
 
-        <div class="doc-list-item">
+        <div class="doc-list-item" data-doc-key="doc-08">
           <span class="doc-list-badge">DOC 08</span>
           <div class="doc-list-main">
             <h3 class="doc-list-title">Fee Waiver Petition &amp; Proposed Order</h3>
@@ -546,8 +689,8 @@
         <span class="section-kicker">Self-Help Process</span>
         <h2 class="section-title">How Everyday Hoosiers Prepare Their Expungement</h2>
         <p class="section-lead">
-          By combining secure in-browser scraping with an offline local document generator, you maintain complete
-          privacy while preparing court-ready documents.
+          By combining secure in-browser scraping with client-side document generation, you maintain complete
+          privacy while preparing court-ready documents—with zero servers and no software dependencies required.
         </p>
       </div>
 
@@ -568,9 +711,9 @@
 
         <div class="workflow-card">
           <div class="workflow-icon">3</div>
-          <h3>Local PDF Generation</h3>
-          <p>Your local Python engine compiles the data into 10 official court pleadings adhering to Indiana Trial
-            Rules—without sending PII to any cloud server.</p>
+          <h3>In-Browser PDF Generation</h3>
+          <p>The client-side engine formats and compiles court pleadings directly in your browser using pdf-lib adhering
+            to Indiana Trial Rules—100% private, zero servers needed.</p>
         </div>
 
         <div class="workflow-card">
@@ -590,8 +733,8 @@
         <span class="section-kicker">User Guide</span>
         <h2 class="section-title">How to Install and Run the Assistant</h2>
         <p class="section-lead">
-          This software is 100% free and open source. Follow these simple steps to install the Chrome extension and
-          launch the local document generator.
+          This software is 100% free, open source, and runs directly in your web browser. Follow these simple steps to install the Chrome extension and
+          generate your court-ready filing packet.
         </p>
       </div>
 
@@ -600,8 +743,8 @@
           <button class="guide-tab-btn active" data-tab="tab-chrome">
             <span>1. Chrome Extension Installation</span>
           </button>
-          <button class="guide-tab-btn" data-tab="tab-backend">
-            <span>2. Local Document Generator Setup</span>
+          <button class="guide-tab-btn" data-tab="tab-usage">
+            <span>2. How to Scan &amp; Generate Packet</span>
           </button>
         </div>
 
@@ -640,49 +783,29 @@
           </ul>
         </div>
 
-        <div class="guide-pane" id="tab-backend">
+        <div class="guide-pane" id="tab-usage">
           <ul class="guide-steps">
             <li class="guide-step">
               <span class="guide-step-num">1</span>
               <div class="guide-step-body">
-                <h4>Set Up Local Python Environment</h4>
-                <p>Open your command terminal, navigate to the <code>backend/</code> folder, and install the document
-                  generation libraries:</p>
-                <div class="snippet-box">
-                  <button class="btn-snippet-copy">Copy</button>
-                  <pre>cd indiana-expungement-assistant/backend
-python -m venv .venv
-
-# On Windows:
-.\.venv\Scripts\activate
-
-# On macOS or Linux:
-source .venv/bin/activate
-
-pip install -r requirements.txt</pre>
-                </div>
+                <h4>Search All Counties on Indiana MyCase</h4>
+                <p>Navigate to <code>public.courts.in.gov/mycase</code> and search for your records under your full legal name, maiden names, and aliases across all 92 Indiana counties.</p>
               </div>
             </li>
 
             <li class="guide-step">
               <span class="guide-step-num">2</span>
               <div class="guide-step-body">
-                <h4>Start the Document Engine</h4>
-                <p>Launch the local microservice (runs privately on <code>http://127.0.0.1:8000</code>):</p>
-                <div class="snippet-box">
-                  <button class="btn-snippet-copy">Copy</button>
-                  <pre>python app.py</pre>
-                </div>
+                <h4>Scan Page &amp; Review Statutory Eligibility</h4>
+                <p>Open the extension side panel and click <b>Scan Page &amp; Check Eligibility</b>. The rules engine instantly categorizes your cases under IC § 35-38-9 and calculates required waiting periods.</p>
               </div>
             </li>
 
             <li class="guide-step">
               <span class="guide-step-num">3</span>
               <div class="guide-step-body">
-                <h4>Verify System Status</h4>
-                <p>Visit <code>http://127.0.0.1:8000/health</code> in your web browser. You will see
-                  <code>{"status":"healthy"}</code> confirming your private engine is ready.
-                </p>
+                <h4>Enter Profile &amp; Generate Court Packet</h4>
+                <p>Fill in your petitioner information on the Profile tab, review the mandatory One-Shot statutory acknowledgments, and click <b>Generate Complete Petition Packet</b> to download your court-ready PDF filings immediately.</p>
               </div>
             </li>
           </ul>
@@ -691,8 +814,122 @@ pip install -r requirements.txt</pre>
     </div>
   </section>
 
-  <!-- Section 6: Public Interest Mission & Creator Letter -->
-  <section class="section section-alt" id="mission">
+  <!-- Section 6: Frequently Asked Questions (FAQ) -->
+  <section class="section section-alt" id="faq">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-kicker">Knowledge Base</span>
+        <h2 class="section-title">Frequently Asked Questions</h2>
+        <p class="section-lead">
+          Essential legal context, court costs, and common pitfalls under Indiana's Second Chance statute.
+        </p>
+      </div>
+
+      <div class="faq-list">
+        <details class="faq-item" open>
+          <summary class="faq-question">
+            <span>How much does an expungement cost in Indiana if I represent myself?</span>
+            <svg class="faq-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </summary>
+          <div class="faq-answer">
+            <p>
+              <strong>Filing Fees:</strong> Under Indiana law, petitions for <em>non-convictions</em> (arrests, dismissals, dropped charges under IC § 35-38-9-1) require <strong>$0 in court filing fees</strong>.
+            </p>
+            <p>
+              For <em>convictions</em> (misdemeanors or felonies under §§ 35-38-9-2 through 5), standard Indiana trial courts charge a single civil filing fee (typically ~$157), regardless of how many cases you consolidate in that county. If you receive public assistance or have low income, you can submit the included <strong>DOC 08 Fee Waiver Petition</strong> to ask the judge to waive this fee entirely under IC § 33-37-3-2.
+            </p>
+          </div>
+        </details>
+
+        <details class="faq-item">
+          <summary class="faq-question">
+            <span>What is the difference between "Mandatory" and "Discretionary" expungements?</span>
+            <svg class="faq-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </summary>
+          <div class="faq-answer">
+            <p>
+              Under Indiana Code § 35-38-9-2 (misdemeanors) and § 35-38-9-3 (Level 6/Class D felonies without injury), the statute specifies that the court <strong>SHALL</strong> grant the expungement if you meet the statutory prerequisites (waiting period passed, fines paid, no pending charges). The judge has no legal discretion to deny a compliant petition.
+            </p>
+            <p>
+              For higher-level felonies (IC § 35-38-9-4), the statute says the court <strong>MAY</strong> grant the petition. The trial judge weighs evidence of rehabilitation, character letters, and prosecutor objections before making a discretionary ruling.
+            </p>
+          </div>
+        </details>
+
+        <details class="faq-item">
+          <summary class="faq-question">
+            <span>Can traffic infractions, speeding tickets, or driver's license points be expunged?</span>
+            <svg class="faq-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </summary>
+          <div class="faq-answer">
+            <p>
+              <strong>No.</strong> Indiana Code § 35-38-9 only applies to <em>criminal offenses</em> (arrests, misdemeanors, and felonies). Civil traffic infractions (IF cause numbers on MyCase, like standard speeding tickets) are not criminal offenses and cannot be expunged under this law.
+            </p>
+            <p>
+              However, <em>criminal traffic offenses</em>—such as Operating While Intoxicated (OWI/DUI), Driving While Suspended (Class A Misdemeanor), or Reckless Driving—<strong>are</strong> criminal convictions and can be fully expunged once statutory waiting periods are met.
+            </p>
+          </div>
+        </details>
+
+        <details class="faq-item">
+          <summary class="faq-question">
+            <span>Is my personal data or court history ever uploaded to a server or cloud database?</span>
+            <svg class="faq-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </summary>
+          <div class="faq-answer">
+            <p>
+              <strong>Never.</strong> The entire assistant runs 100% locally in your Google Chrome browser. The Chrome extension parses public records directly from your active MyCase session, and all 10 PDF court forms are compiled on your machine using <code>pdf-lib</code>.
+            </p>
+            <p>
+              There are zero external tracking servers, zero databases, and zero analytics scripts capturing your data. Your criminal history, SSN, and personal identifiers remain strictly on your computer.
+            </p>
+          </div>
+        </details>
+
+        <details class="faq-item">
+          <summary class="faq-question">
+            <span>What happens if I accidentally forget to include a case in my petition?</span>
+            <svg class="faq-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </summary>
+          <div class="faq-answer">
+            <p>
+              This is the single most dangerous mistake under Indiana's expungement statute. Under <strong>IC § 35-38-9-9(i)</strong>, you may only file for conviction expungement <strong>once in your lifetime</strong>.
+            </p>
+            <p>
+              If you omit a conviction, you permanently forfeit the right to ever expunge that record in the future. That is why our assistant includes a mandatory 4-point pre-filing audit checklist requiring you to search under prior names and across all 92 Indiana counties before generating your court petition.
+            </p>
+          </div>
+        </details>
+
+        <details class="faq-item">
+          <summary class="faq-question">
+            <span>Can an employer or landlord ask about or discriminate against an expunged record?</span>
+            <svg class="faq-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </summary>
+          <div class="faq-answer">
+            <p>
+              Under <strong>IC § 35-38-9-10</strong>, it is unlawful discrimination for an employer, licensing board, or housing provider to discriminate against an individual based on an expunged record. Furthermore, job applications in Indiana cannot ask about expunged records, and you may legally state that the arrest or conviction never occurred.
+            </p>
+          </div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 7: Public Interest Mission & Creator Letter -->
+  <section class="section" id="mission">
     <div class="container">
       <div class="letter-panel">
         <div class="letter-header">
@@ -799,7 +1036,47 @@ pip install -r requirements.txt</pre>
     </div>
   </footer>
 
-  <script src="app.js?v=4"></script>
+  <!-- Document Details Modal Dialog -->
+  <div id="docModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modalDocTitle">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div>
+          <span id="modalDocCode" class="doc-list-badge" style="display: inline-block; margin-bottom: 0.35rem;">DOC 00-A</span>
+          <h3 id="modalDocTitle">Document Title</h3>
+        </div>
+        <button id="modalCloseBtn" class="modal-close-btn" aria-label="Close dialog">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-meta-grid">
+          <div class="modal-meta-item">
+            <span class="modal-meta-label">Governing Authority</span>
+            <span id="modalDocAuthority" class="modal-meta-val"></span>
+          </div>
+          <div class="modal-meta-item">
+            <span class="modal-meta-label">Filing Recipient</span>
+            <span id="modalDocDest" class="modal-meta-val"></span>
+          </div>
+        </div>
+        <div class="modal-desc-block">
+          <h4>Statutory Function</h4>
+          <p id="modalDocDesc"></p>
+        </div>
+        <div class="modal-desc-block">
+          <h4>Pro Se Guidance &amp; Practice Notes</h4>
+          <p id="modalDocNotes"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating Back to Top Button -->
+  <button id="backToTop" class="back-to-top" aria-label="Scroll back to top" title="Back to top">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="18 15 12 9 6 15"></polyline>
+    </svg>
+  </button>
+
+  <script src="app.js?v=6"></script>
 </body>
 
 </html>

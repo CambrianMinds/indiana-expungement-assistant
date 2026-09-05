@@ -99,15 +99,15 @@ const IndianaExpungement = (() => {
     const str = caseNumberOrType.trim().toUpperCase();
 
     // Try case number format: XXDXX-XXXX-CC-XXXXX
-    const caseNumMatch = str.match(/^\d+D\d+-\d{4}-([A-Z]{2,3})-/);
+    const caseNumMatch = str.match(/^\d+D\d+-\d{4}-([A-Z0-9]{2,3})-/);
     if (caseNumMatch) return caseNumMatch[1];
 
     // Try case type label format: "XX - Description"
-    const labelMatch = str.match(/^([A-Z]{2,3})\s*[-–—]/);
+    const labelMatch = str.match(/^([A-Z0-9]{2,3})\s*[-–—]/);
     if (labelMatch) return labelMatch[1];
 
     // Try bare code
-    const bareMatch = str.match(/^([A-Z]{2,3})$/);
+    const bareMatch = str.match(/^([A-Z0-9]{2,3})$/);
     if (bareMatch) return bareMatch[1];
 
     return null;
@@ -478,4 +478,7 @@ const IndianaExpungement = (() => {
 // Export for content script and sidepanel access
 if (typeof window !== 'undefined') {
   window.IndianaExpungement = IndianaExpungement;
+}
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = IndianaExpungement;
 }

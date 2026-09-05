@@ -208,6 +208,51 @@ def make_court_caption(st, petitioner_name: str, county_name: str, court_name: s
     return tbl
 
 
+def _format_address_line(address: dict) -> str:
+    street = (address.get('street') or '').strip()
+    city = (address.get('city') or '').strip()
+    state = (address.get('state') or '').strip()
+    zip_code = (address.get('zipCode') or address.get('zip') or '').strip()
+    return ', '.join(part for part in [street, city, f"{state} {zip_code}".strip()] if part)
+
+
+def _normalize_address_history_entry(value) -> dict:
+    if isinstance(value, dict):
+        address = {
+            'street': value.get('street') or value.get('streetAddress') or '',
+            'city': value.get('city') or '',
+            'state': value.get('state') or '',
+            'zipCode': value.get('zipCode') or value.get('zip') or '',
+            'fromDate': value.get('fromDate') or value.get('from') or '',
+            'toDate': value.get('toDate') or value.get('to') or '',
+            'line': value.get('line') or ''
+        }
+        address['line'] = address['line'] or _format_address_line(address)
+        return address
+
+    return {
+        'street': str(value or '').strip(),
+        'city': '',
+        'state': '',
+        'zipCode': '',
+        'fromDate': '',
+        'toDate': '',
+        'line': str(value or '').strip()
+    }
+
+
+def _format_residence_dates(address: dict) -> str:
+    start = (address.get('fromDate') or '').strip()
+    end = (address.get('toDate') or '').strip()
+    if start and end:
+        return f"{start} to {end}"
+    if start:
+        return f"{start} to _________"
+    if end:
+        return f"_________ to {end}"
+    return "_________ to _________"
+
+
 def build_case_table(st, cases: list, for_order: bool = False):
     """Build the master case roster table from dynamic case data."""
     data = []
@@ -281,7 +326,7 @@ def _ctx(payload: dict):
         ),
         'phone': raw_pet.get('phone') or '______________________________',
         'email': raw_pet.get('email') or '______________________________',
-        'addresses': raw_pet.get('addresses') or []
+        'addresses': [_normalize_address_history_entry(addr) for addr in (raw_pet.get('addresses') or [])]
     }
     name = pet['fullName']
     name_upper = name.upper()
@@ -539,37 +584,38 @@ def generate_form_2(st, payload):
     story = []
     story.append(make_court_caption(st, name, county, court, court_code))
     story.append(Spacer(1, 10))
-    story.append(Paragraph("<b>NOTICE OF EXCLUSION OF CONFIDENTIAL INFORMATION FROM PUBLIC ACCESS</b>", st['title']))
+    story.append(Paragraph("<b>FORM ACR - NOTICE OF EXCLUSION OF CONFIDENTIAL INFORMATION FROM PUBLIC ACCESS</b>", st['title']))
     story.append(Paragraph("(PURSUANT TO INDIANA RULES ON ACCESS TO COURT RECORDS, RULE 5)", st['subtitle']))
 
     story.append(Paragraph(
         f"Pursuant to the <b>Indiana Rules on Access to Court Records (Rule 5)</b>, Petitioner, <b>{name}</b>, "
-        f"gives notice that the accompanying <i>Confidential Information Sheet (Form ACR)</i> contains confidential "
+        f"gives notice that the accompanying <i>Confidential Information Supplement</i> contains confidential "
         f"identifying information that is excluded from public access under Indiana law, and states as follows:",
         st['body']))
 
     story.append(Paragraph("<b>1. Social Security Number and Driver's License Number:</b>", st['heading']))
     story.append(Paragraph(
-        "The Petitioner's Social Security Number and State Driver's License/Identification Number are excluded "
-        "from public access pursuant to <b>Access to Court Records Rule 5(C)(1)</b> and <b>Indiana Code § 35-38-9-8(b)(4)</b>.",
+        "The Petitioner's complete Social Security Number is excluded from public access pursuant to "
+        "<b>Access to Court Records Rule 5(C)(1)</b>. Social Security Number and Driver's License/Identification "
+        "Number are supplied for court review because <b>Indiana Code § 35-38-9-8(b)(8)(A)-(B)</b> requires them.",
         st['body']))
 
     story.append(Paragraph("<b>2. Complete Date of Birth:</b>", st['heading']))
     story.append(Paragraph(
-        "The Petitioner's complete Date of Birth is excluded from public access pursuant to <b>Access to Court Records "
-        "Rule 5(C)(2)</b> and <b>Indiana Code § 35-38-9-8(b)(2)</b>.",
+        "The Petitioner's complete Date of Birth is supplied for court review because "
+        "<b>Indiana Code § 35-38-9-8(b)(2)</b> requires it.",
         st['body']))
 
     story.append(Paragraph("<b>3. Historical Residential Addresses:</b>", st['heading']))
     story.append(Paragraph(
         "The Petitioner's chronological residential address history from the date of the earliest offense to the present "
-        "is submitted on the separate Confidential Information Sheet in compliance with <b>Access to Court Records Rule 5(B)</b> "
+        "is submitted on the separate Confidential Information Supplement in compliance with <b>Access to Court Records Rule 5(B)</b> "
         "and <b>Indiana Code § 35-38-9-8(b)(3)</b>.",
         st['body']))
 
     story.append(Spacer(1, 6))
     story.append(Paragraph(
-        "A separate, unredacted <b>Confidential Information Sheet (Form ACR)</b> is being filed contemporaneously with this "
+        "A separate, unredacted <b>Confidential Information Supplement</b> is being filed contemporaneously with this "
         "Notice and the Verified Petition for Expungement on light green paper (if filed on paper) or marked as confidential "
         "(if filed via IEFS) in accordance with Access to Court Records Rule 5.",
         st['body']))
@@ -584,15 +630,16 @@ def generate_form_2(st, payload):
 
 
 def generate_form_3(st, payload):
-    """Form 03: Confidential Information Sheet (ACR Form)."""
+    """Form 03: Confidential Information Supplement."""
     name, name_upper, county, court, court_code, cases, pet, addresses = _ctx(payload)
     story = []
     story.append(make_court_caption(st, name, county, court, court_code))
     story.append(Spacer(1, 6))
-    story.append(Paragraph("<b>CONFIDENTIAL INFORMATION SHEET (FORM ACR)</b>", st['title']))
+    story.append(Paragraph("<b>CONFIDENTIAL INFORMATION SUPPLEMENT</b>", st['title']))
     story.append(Paragraph(
-        "<b>[FILED UNDER SEAL / NOT FOR PUBLIC ACCESS]</b><br/>"
-        "CONFIDENTIAL PURSUANT TO INDIANA ACCESS TO COURT RECORDS RULE 5 &amp; IC § 35-38-9-8",
+        "<b>CONFIDENTIAL PER ACCESS TO COURT RECORDS RULE 5</b><br/>"
+        "<b>[NON-PUBLIC ACCESS VERSION / NOT FOR PUBLIC ACCESS]</b><br/>"
+        "Submitted with Form ACR and IC § 35-38-9-8 petition requirements",
         ParagraphStyle('ConfAlert', parent=st['subtitle'], textColor=colors.HexColor('#c53030'))))
 
     story.append(Paragraph("<b>I. PETITIONER PERSONAL IDENTIFIERS:</b>", st['heading']))
@@ -632,21 +679,31 @@ def generate_form_3(st, payload):
 
     res_data = [
         [Paragraph("<b>No.</b>", st['tbl_header']),
-         Paragraph("<b>Physical Street Address, City, State, &amp; ZIP Code</b>", st['tbl_header']),
-         Paragraph("<b>Approximate Dates of Residence</b>", st['tbl_header'])],
+         Paragraph("<b>Street Address</b>", st['tbl_header']),
+         Paragraph("<b>City</b>", st['tbl_header']),
+         Paragraph("<b>State</b>", st['tbl_header']),
+         Paragraph("<b>ZIP</b>", st['tbl_header']),
+         Paragraph("<b>Approx. Dates</b>", st['tbl_header'])],
     ]
 
     # Fill with provided addresses or blank lines
     num_rows = max(5, len(addresses))
     for i in range(num_rows):
-        addr_text = addresses[i] if i < len(addresses) else "____________________________________________________________________"
+        addr = addresses[i] if i < len(addresses) else {}
+        street = addr.get('street') or addr.get('line') or "________________________________"
+        city = addr.get('city') or "________________"
+        state = addr.get('state') or "____"
+        zip_code = addr.get('zipCode') or "__________"
         res_data.append([
             Paragraph(f"<b>{i + 1}</b>", st['tbl_cell_center']),
-            Paragraph(addr_text, st['tbl_cell']),
-            Paragraph("Dates: _________ to _________", st['tbl_cell'])
+            Paragraph(street, st['tbl_cell']),
+            Paragraph(city, st['tbl_cell']),
+            Paragraph(state, st['tbl_cell_center']),
+            Paragraph(zip_code, st['tbl_cell']),
+            Paragraph(_format_residence_dates(addr), st['tbl_cell'])
         ])
 
-    t_res = Table(res_data, colWidths=[24, 330, 150])
+    t_res = Table(res_data, colWidths=[24, 190, 95, 38, 57, 100])
     t_res.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), HEADER_BG),
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
@@ -660,7 +717,7 @@ def generate_form_3(st, payload):
     story.append(Paragraph("<b>AFFIRMATION UNDER PENALTIES FOR PERJURY</b>", st['heading']))
     story.append(Paragraph(
         "I affirm, under the penalties for perjury, that the foregoing representations, personal identifiers, "
-        "and address history provided on this Confidential Information Sheet are true and correct to the best of my knowledge and belief.",
+        "and address history provided on this Confidential Information Supplement are true and correct to the best of my knowledge and belief.",
         st['body']))
     story.append(Spacer(1, 8))
     story.append(Paragraph(
@@ -711,7 +768,7 @@ def generate_form_4(st, payload):
         f"<b>2. Confidential Identifying Information:</b> Pursuant to IC § 35-38-9-8(b) and Access to Court Records Rule 5, "
         f"Petitioner's complete Date of Birth, Social Security Number, State Driver's License Number, and chronological "
         f"residential history from the earliest offense to the present are filed contemporaneously on the separate "
-        f"Confidential Information Sheet (Form ACR) under seal.",
+        f"Confidential Information Supplement under seal.",
         st['body']))
     story.append(Paragraph(
         f"<b>3. Jurisdiction &amp; Venue:</b> Venue and jurisdiction are proper in the {court} pursuant to "

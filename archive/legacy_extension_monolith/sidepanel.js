@@ -13,6 +13,8 @@
   let searchBatches = [];
   let petitionerProfile = null;
   let backendOnline = false;
+  const BACKEND_URLS = ['http://127.0.0.1:8000', 'http://localhost:8000'];
+  let activeBackendUrl = BACKEND_URLS[0];
 
   // Holds the most recent scan result while the parity modal is displayed.
   // Cleared after confirmation or dismissal.
@@ -31,6 +33,22 @@
       $(`#tab-${btn.dataset.tab}`).classList.add('active');
     });
   });
+
+  // ─── Date Utilities ────────────────────────────────────────────────
+  /**
+   * Safely convert a date value (Date object or ISO string) to an ISO string.
+   * Handles the case where chrome.runtime.sendMessage serializes Date objects
+   * to ISO strings, making .toISOString() throw a TypeError.
+   */
+  function safeISOString(dateValue) {
+    if (!dateValue) return null;
+    try {
+      const d = new Date(dateValue);
+      return d instanceof Date && !isNaN(d) ? d.toISOString() : null;
+    } catch (_) {
+      return null;
+    }
+  }
 
   // ─── Scraper Parity Modal ──────────────────────────────────────────
   /**
@@ -333,7 +351,18 @@
         return false;
       }
 
-      const response = await chrome.tabs.sendMessage(tab.id, { action: 'getPageStatus' });
+      // Try messaging the content script; reinject transparently if missing
+      let response = null;
+      try {
+        response = await chrome.tabs.sendMessage(tab.id, { action: 'getPageStatus' });
+      } catch (e) {
+        if (await ensureContentScript(tab.id)) {
+          try {
+            response = await chrome.tabs.sendMessage(tab.id, { action: 'getPageStatus' });
+          } catch (_) { /* fall through */ }
+        }
+      }
+
       if (response?.isSearchResults) {
         statusDot.className = 'status-dot online';
         statusText.textContent = 'MyCase search results detected ✓';
@@ -342,9 +371,13 @@
         statusDot.className = 'status-dot checking';
         statusText.textContent = 'On case summary page — go to search results';
         return false;
-      } else {
+      } else if (response) {
         statusDot.className = 'status-dot checking';
         statusText.textContent = 'On MyCase — navigate to search results';
+        return false;
+      } else {
+        statusDot.className = 'status-dot offline';
+        statusText.textContent = 'Content script not loaded — refresh the MyCase page';
         return false;
       }
     } catch (e) {
@@ -371,6 +404,7 @@
       if (bgResult?.success) {
         online = true;
         details = bgResult.status;
+        activeBackendUrl = bgResult.url || activeBackendUrl;
       }
     } catch (_) {
       // Service worker may be idle or transitioning
@@ -387,6 +421,7 @@
           if (res.ok) {
             online = true;
             details = await res.json();
+            activeBackendUrl = host;
             break;
           }
         } catch (_) {}
@@ -415,6 +450,53 @@
     return backendOnline;
   }
 
+  async function generatePacketViaBackend(payload) {
+    const healthCheck = await checkBackend(false);
+    if (!healthCheck) {
+      throw new Error('Backend offline. Run: python backend/app.py');
+    }
+
+    const targetUrl = activeBackendUrl;
+    const response = await fetch(`${targetUrl}/api/generate-expungement`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Backend error ${response.status}: ${errorText}`);
+    }
+
+    return response.blob();
+  }
+
+  async function downloadPetition(blob, filename) {
+    if (!chrome.downloads?.download) {
+      throw new Error('Chrome downloads permission is unavailable.');
+    }
+
+    const url = URL.createObjectURL(blob);
+
+    return new Promise((resolve, reject) => {
+      chrome.downloads.download({
+        url,
+        filename,
+        saveAs: true
+      }, (downloadId) => {
+        URL.revokeObjectURL(url);
+
+        const lastError = chrome.runtime.lastError;
+        if (lastError) {
+          reject(new Error(lastError.message));
+          return;
+        }
+
+        resolve(downloadId);
+      });
+    });
+  }
+
   // Click on backend status pill to manually refresh / retry
   $('#backendStatus')?.addEventListener('click', () => {
     checkBackend(true);
@@ -426,6 +508,37 @@
     }
   });
 
+  // ─── Helper: check content script is alive on the active MyCase tab ───
+  async function ensureContentScript(tabId) {
+    try {
+      await chrome.tabs.sendMessage(tabId, { action: 'getPageStatus' });
+      return true;
+    } catch (e) {
+      // Content script missing — try to reinject via scripting API
+      try {
+        await chrome.scripting.executeScript({
+          target: { tabId },
+          files: ['eligibility.js', 'content.js']
+        });
+        // Poll until the content script's message listener is ready, or give up after ~3s
+        const maxAttempts = 15;
+        for (let i = 0; i < maxAttempts; i++) {
+          await new Promise(r => setTimeout(r, 200));
+          try {
+            await chrome.tabs.sendMessage(tabId, { action: 'getPageStatus' });
+            return true; // Content script is ready and responding
+          } catch (_) {
+            // Not ready yet — loop will retry
+          }
+        }
+        console.warn(`ensureContentScript: content script did not respond after ${maxAttempts} attempts`);
+        return false;
+      } catch (_) {
+        return false;
+      }
+    }
+  }
+
   // ─── Scan Action (Supports Multi-Page Merge for Maiden/Aliases) ──────
   $('#btnScan').addEventListener('click', async () => {
     const btn = $('#btnScan');
@@ -435,6 +548,17 @@
     try {
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
       if (!tab) throw new Error('No active tab');
+
+      // Verify we're on a MyCase page
+      if (!tab.url?.includes('public.courts.in.gov/mycase')) {
+        throw new Error('Not on a MyCase page — navigate to https://public.courts.in.gov/mycase first');
+      }
+
+      // Ensure content script is loaded (auto-reinjects if necessary)
+      const scriptReady = await ensureContentScript(tab.id);
+      if (!scriptReady) {
+        throw new Error('Could not load the content script — please refresh the MyCase page');
+      }
 
       const response = await chrome.tabs.sendMessage(tab.id, { action: 'analyzeEligibility' });
 
@@ -456,7 +580,12 @@
         throw new Error(response?.error || 'Scan failed');
       }
     } catch (e) {
-      showToast(e.message, 'error');
+      // Friendly message for the common "receiving end does not exist" case
+      if (e.message?.includes('Receiving end does not exist') || e.message?.includes('Could not establish connection')) {
+        showToast('Content script not responding — refresh the MyCase page and try again', 'error', 6000);
+      } else {
+        showToast(e.message, 'error');
+      }
       console.error('[Sidepanel] Scan error:', e);
     } finally {
       btn.disabled = false;
@@ -483,6 +612,15 @@
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
       if (!tab) throw new Error('No active tab');
 
+      if (!tab.url?.includes('public.courts.in.gov/mycase')) {
+        throw new Error('Not on a MyCase page — navigate to https://public.courts.in.gov/mycase first');
+      }
+
+      const scriptReady = await ensureContentScript(tab.id);
+      if (!scriptReady) {
+        throw new Error('Could not load the content script — please refresh the MyCase page');
+      }
+
       const response = await chrome.tabs.sendMessage(tab.id, { action: 'deepScrape' });
 
       if (response?.success) {
@@ -502,7 +640,11 @@
         throw new Error(response?.error || 'Deep scrape failed');
       }
     } catch (e) {
-      showToast(e.message, 'error');
+      if (e.message?.includes('Receiving end does not exist') || e.message?.includes('Could not establish connection')) {
+        showToast('Content script not responding — refresh the MyCase page and try again', 'error', 6000);
+      } else {
+        showToast(e.message, 'error');
+      }
     } finally {
       btn.disabled = false;
       setTimeout(() => { progress.style.display = 'none'; }, 2000);
@@ -1065,13 +1207,106 @@
     }
   }
 
+  function escapeAttr(value) {
+    return escapeHtml(String(value ?? '')).replace(/"/g, '&quot;');
+  }
+
+  function parseAddressEntry(value = '') {
+    if (typeof value === 'object' && value !== null) {
+      return {
+        street: value.street || value.streetAddress || '',
+        city: value.city || '',
+        state: value.state || 'IN',
+        zipCode: value.zipCode || value.zip || '',
+        fromDate: value.fromDate || value.from || '',
+        toDate: value.toDate || value.to || ''
+      };
+    }
+
+    const parsed = {
+      street: '',
+      city: '',
+      state: 'IN',
+      zipCode: '',
+      fromDate: '',
+      toDate: ''
+    };
+    let text = String(value || '').trim();
+    const datesMatch = text.match(/\(([^)]*)\)\s*$/);
+
+    if (datesMatch) {
+      const dates = datesMatch[1].split(/\s*(?:-|to|through)\s*/i).filter(Boolean);
+      parsed.fromDate = dates[0] || datesMatch[1];
+      parsed.toDate = dates[1] || '';
+      text = text.slice(0, datesMatch.index).trim();
+    }
+
+    const stateZipMatch = text.match(/,\s*([A-Za-z]{2})\s+(\d{5}(?:-\d{4})?)\s*$/);
+    if (!stateZipMatch) {
+      parsed.street = text;
+      return parsed;
+    }
+
+    parsed.state = stateZipMatch[1].toUpperCase();
+    parsed.zipCode = stateZipMatch[2];
+
+    const beforeState = text.slice(0, stateZipMatch.index).trim();
+    const cityBreak = beforeState.lastIndexOf(',');
+    if (cityBreak >= 0) {
+      parsed.street = beforeState.slice(0, cityBreak).trim();
+      parsed.city = beforeState.slice(cityBreak + 1).trim();
+    } else {
+      parsed.street = beforeState;
+    }
+
+    return parsed;
+  }
+
+  function getStateOptionsHtml(selectedState = 'IN') {
+    const stateSelect = $('#state');
+    const selected = String(selectedState || 'IN').toUpperCase();
+
+    return Array.from(stateSelect?.options || []).map(option => {
+      const value = option.value;
+      const disabled = option.disabled ? ' disabled' : '';
+      const isSelected = value === selected ? ' selected' : '';
+      return `<option value="${escapeAttr(value)}"${disabled}${isSelected}>${escapeHtml(option.textContent)}</option>`;
+    }).join('');
+  }
+
+  function formatAddressLine(address) {
+    const street = address.street.trim();
+    const city = address.city.trim();
+    const state = address.state.trim();
+    const zip = address.zipCode.trim();
+
+    return [
+      street,
+      city,
+      `${state} ${zip}`.trim()
+    ].filter(Boolean).join(', ');
+  }
+
   function addAddressEntry(value = '') {
+    const address = parseAddressEntry(value);
     const entry = document.createElement('div');
     entry.className = 'address-entry';
     entry.innerHTML = `
-      <input type="text" placeholder="e.g. 100 N Senate Ave, Indianapolis, IN 46204 (2015-2020)" value="${escapeHtml(value)}">
+      <div class="address-fields">
+        <input type="text" class="address-street" placeholder="Street address" value="${escapeAttr(address.street)}" autocomplete="street-address">
+        <div class="address-grid">
+          <input type="text" class="address-city" placeholder="City" value="${escapeAttr(address.city)}" autocomplete="address-level2">
+          <select class="address-state" autocomplete="address-level1">${getStateOptionsHtml(address.state)}</select>
+          <input type="text" class="address-zip" placeholder="ZIP" maxlength="10" value="${escapeAttr(formatZIP(address.zipCode))}" autocomplete="postal-code">
+          <input type="text" class="address-from" placeholder="From" value="${escapeAttr(address.fromDate)}">
+          <input type="text" class="address-to" placeholder="To / Present" value="${escapeAttr(address.toDate)}">
+        </div>
+      </div>
       <button type="button" class="btn-remove" title="Remove">&times;</button>
     `;
+    entry.querySelector('.address-zip')?.addEventListener('input', (e) => {
+      e.target.value = formatZIP(e.target.value);
+    });
     entry.querySelector('.btn-remove').addEventListener('click', () => {
       entry.remove();
     });
@@ -1112,9 +1347,20 @@
     const zip = $('#zipCode').value.trim();
     const fullAddress = `${street}, ${city}, ${state} ${zip}`;
 
-    const addresses = Array.from(addressContainer.querySelectorAll('input'))
-      .map(input => input.value.trim())
-      .filter(v => v.length > 0);
+    const addresses = Array.from(addressContainer.querySelectorAll('.address-entry'))
+      .map(entry => {
+        const address = {
+          street: entry.querySelector('.address-street')?.value.trim() || '',
+          city: entry.querySelector('.address-city')?.value.trim() || '',
+          state: entry.querySelector('.address-state')?.value.trim() || 'IN',
+          zipCode: entry.querySelector('.address-zip')?.value.trim() || '',
+          fromDate: entry.querySelector('.address-from')?.value.trim() || '',
+          toDate: entry.querySelector('.address-to')?.value.trim() || ''
+        };
+        address.line = formatAddressLine(address);
+        return address;
+      })
+      .filter(address => address.line.length > 0 || address.fromDate.length > 0 || address.toDate.length > 0);
 
     petitionerProfile = {
       fullName: $('#fullName').value.trim(),
@@ -1259,7 +1505,7 @@
             statute: c.eligibility.statute,
             charges: c.charges || c.case_type,
             filed: c.filed,
-            dispositionDate: c.eligibility.dispositionDate?.toISOString()?.split('T')[0] || c.filed,
+            dispositionDate: safeISOString(c.eligibility.dispositionDate)?.split('T')[0] || c.filed,
             court: c.court,
             grantType: c.eligibility.grantType
           });
@@ -1284,19 +1530,18 @@
         acknowledgedProSeLiability: $('#ackProSe')?.checked ?? true
       };
 
-      statusText.textContent = 'Generating court documents & warnings...';
+      statusText.textContent = 'Generating court documents & warnings (JS PoC)...';
 
-      const result = await chrome.runtime.sendMessage({
-        action: 'generatePacket',
-        payload
-      });
+      // --- PoC: Use JS PDF Generator ---
+      const pdfBytes = await window.PdfGenerator.generateAppearanceForm(payload);
+      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+      const countyName = payload.county || 'expungement';
+      const petitionerLast = (payload.petitioner?.fullName || 'packet').split(' ').pop();
+      const filename = `${petitionerLast}_${countyName}_Appearance_Form.pdf`;
 
-      if (result?.success) {
-        showToast(`Packet generated: ${result.filename}`, 'success', 6000);
-        statusText.textContent = `✓ Download started: ${result.filename}`;
-      } else {
-        throw new Error(result?.error || 'Generation failed');
-      }
+      await downloadPetition(blob, filename);
+      showToast(`Form 01 generated: ${filename}`, 'success', 6000);
+      statusText.textContent = `✓ Download started: ${filename}`;
     } catch (e) {
       showToast(e.message, 'error');
       statusText.textContent = `✗ ${e.message}`;
@@ -1322,11 +1567,11 @@
 
     setChecklistItem('checkProfile', profileReady);
     setChecklistItem('checkCases', casesReady);
-    setChecklistItem('checkBackendReady', backendOnline);
+    setChecklistItem('checkBackendReady', true); // Overridden for JS PoC
     setChecklistItem('checkAcknowledgments', acksReady);
 
     // Enable generate button only when ALL checks pass including legal acknowledgments
-    $('#btnGenerate').disabled = !(profileReady && casesReady && backendOnline && acksReady);
+    $('#btnGenerate').disabled = !(profileReady && casesReady && acksReady);
   }
 
   function setChecklistItem(id, ready) {
