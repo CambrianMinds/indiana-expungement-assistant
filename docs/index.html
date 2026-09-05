@@ -105,20 +105,12 @@
 
         <div class="hero-trust-bar">
           <div class="trust-item">
-            <span class="trust-num">10</span>
-            <span class="trust-label">Official Pleadings Formatted</span>
-          </div>
-          <div class="trust-item">
-            <span class="trust-num">IC § 35-38-9</span>
-            <span class="trust-label">Statutory Compliance</span>
-          </div>
-          <div class="trust-item">
             <span class="trust-num">100% Private</span>
-            <span class="trust-label">In-Browser Scraping</span>
+            <span class="trust-label">In-Browser Scraping · Zero Cloud Tracking</span>
           </div>
           <div class="trust-item">
-            <span class="trust-num">$0</span>
-            <span class="trust-label">Free Public Service</span>
+            <span class="trust-num">$0 Free</span>
+            <span class="trust-label">Public Interest Self-Help · No Attorney Fees</span>
           </div>
         </div>
       </div>
@@ -126,10 +118,6 @@
       <div class="hero-visual-col">
         <div class="hero-visual-frame">
           <img src="assets/hero.jpg" alt="Indiana Courthouse and Legal Aid Desk" class="hero-photo">
-          <div class="hero-photo-caption">
-            <div><strong>Indiana Second Chance Initiative</strong> · Public Pro Se Document Preparation</div>
-            <div><span>Court-Ready</span></div>
-          </div>
         </div>
       </div>
     </div>
@@ -214,11 +202,14 @@
           <div>
             <div class="step-header">
               <span class="step-num">2</span>
-              <span>Date of Sentence or Arrest</span>
+              <span id="dateStepLabel">Date of Conviction / Sentencing</span>
             </div>
             <div class="form-group">
-              <label for="calcDate" class="form-label">Enter the date your sentence was imposed or arrest occurred:</label>
+              <label for="calcDate" id="calcDateLabel" class="form-label">Enter date of conviction / sentencing (NOT date of arrest):</label>
               <input type="date" id="calcDate" class="form-input-date">
+              <div class="form-hint" id="calcDateHint">
+                <strong>Why Sentencing Date, NOT Arrest Date?</strong> Under Indiana Code § 35-38-9, the statutory waiting clock for criminal convictions begins on the date of <em>conviction and sentencing</em> by the court, NOT when you were arrested. If a case was pending or someone was on warrant for years before sentencing, that pre-sentence time does not count toward the waiting period.
+              </div>
             </div>
           </div>
 
@@ -239,6 +230,10 @@
               <label class="check-item">
                 <input type="checkbox" id="calcCheckConvictions" checked>
                 <span>No new criminal convictions within the applicable statutory waiting period</span>
+              </label>
+              <label class="check-item" id="checkSentenceRow" style="display: none;">
+                <input type="checkbox" id="calcCheckSentence" checked>
+                <span id="checkSentenceText">At least 3 years have passed since completing all terms of sentence (probation, parole, or DOC discharge)</span>
               </label>
             </div>
           </div>

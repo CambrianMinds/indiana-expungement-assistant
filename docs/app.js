@@ -69,6 +69,13 @@ function initEligibilityCalculator() {
   const checkFines = document.getElementById('calcCheckFines');
   const checkPending = document.getElementById('calcCheckPending');
   const checkConvictions = document.getElementById('calcCheckConvictions');
+  const checkSentence = document.getElementById('calcCheckSentence');
+  const checkSentenceRow = document.getElementById('checkSentenceRow');
+  const checkSentenceText = document.getElementById('checkSentenceText');
+
+  const dateStepLabel = document.getElementById('dateStepLabel');
+  const calcDateLabel = document.getElementById('calcDateLabel');
+  const calcDateHint = document.getElementById('calcDateHint');
 
   // Set default date to 6 years ago for immediate illustration
   if (dateInput && !dateInput.value) {
@@ -93,10 +100,45 @@ function initEligibilityCalculator() {
       }
     });
 
+    // Update Date prompt & explanation based on conviction vs arrest
+    if (tierKey === 'tier1') {
+      if (dateStepLabel) dateStepLabel.textContent = 'Date of Dismissal or Arrest';
+      if (calcDateLabel) calcDateLabel.textContent = 'Enter date charges were dismissed (or arrest date if no charges filed):';
+      if (calcDateHint) {
+        calcDateHint.innerHTML = '<strong>Arrest / Dismissal Date:</strong> For non-convictions (dismissals, dropped charges, or acquittals), the 1-year statutory waiting clock runs from the date charges were dismissed or the date of arrest if no charges were filed (whichever is later).';
+      }
+      if (checkSentenceRow) checkSentenceRow.style.display = 'none';
+    } else {
+      if (dateStepLabel) dateStepLabel.textContent = 'Date of Conviction / Sentencing';
+      if (calcDateLabel) calcDateLabel.textContent = 'Enter date judgment of conviction / sentence was entered (NOT arrest date):';
+      
+      const isFelony = tierKey === 'tier3' || tierKey === 'tier4' || tierKey === 'tier5';
+      if (calcDateHint) {
+        if (isFelony) {
+          calcDateHint.innerHTML = '<strong>Sentencing Date, NOT Arrest Date:</strong> Under Indiana Code § 35-38-9, the statutory waiting clock for felony convictions begins on the date of <em>conviction and sentencing</em> by the court, NOT when you were arrested. If a case was pending or someone was on warrant for years before sentencing, that pre-sentence time does not count. In addition, at least 3 years must have passed since you fully completed your sentence (probation, parole, or DOC release).';
+        } else {
+          calcDateHint.innerHTML = '<strong>Sentencing Date, NOT Arrest Date:</strong> Under Indiana Code § 35-38-9, the statutory waiting clock for criminal convictions begins on the date of <em>conviction and sentencing</em> by the court, NOT when you were arrested. If a case took years to go to trial or someone was on warrant before sentencing, that pre-sentence time does not count toward the waiting period.';
+        }
+      }
+
+      if (checkSentenceRow) {
+        if (isFelony) {
+          checkSentenceRow.style.display = 'flex';
+          const sentYears = tierKey === 'tier5' ? 5 : 3;
+          if (checkSentenceText) {
+            checkSentenceText.textContent = `At least ${sentYears} years have passed since completing all terms of sentence (probation, parole, or DOC discharge)`;
+          }
+        } else {
+          checkSentenceRow.style.display = 'none';
+        }
+      }
+    }
+
     const dateVal = dateInput.value;
     const finesPaid = checkFines ? checkFines.checked : true;
     const noPending = checkPending ? checkPending.checked : true;
     const noNewConvictions = checkConvictions ? checkConvictions.checked : true;
+    const sentenceComplete = (checkSentenceRow && checkSentenceRow.style.display !== 'none' && checkSentence) ? checkSentence.checked : true;
 
     let yearsElapsed = 0;
     let daysRemaining = 0;
@@ -133,8 +175,9 @@ function initEligibilityCalculator() {
       statusBadge.className = 'status-badge status-badge-warning';
       statusBadge.innerHTML = '⏳ Waiting Period In Progress';
       headline.textContent = `Eligible in Approximately ${daysRemaining} Days`;
-      explanation.innerHTML = `Under <b>${tier.statute}</b>, you must wait at least <b>${tier.waitingYears} years</b>. Based on the date provided, you have completed <b>${yearsElapsed.toFixed(1)}</b> of the required <b>${tier.waitingYears}</b> years. (Note: The County Prosecutor may give written consent to file early under IC § 35-38-9-9(b)).`;
-    } else if (!finesPaid || !noPending || !noNewConvictions) {
+      const dateTypeStr = tierKey === 'tier1' ? 'dismissal or arrest' : 'sentencing / conviction';
+      explanation.innerHTML = `Under <b>${tier.statute}</b>, you must wait at least <b>${tier.waitingYears} years</b> from the date of ${dateTypeStr}. Based on the date provided, you have completed <b>${yearsElapsed.toFixed(1)}</b> of the required <b>${tier.waitingYears}</b> years. (Note: The County Prosecutor may give written consent to file early under IC § 35-38-9-9(b)).`;
+    } else if (!finesPaid || !noPending || !noNewConvictions || !sentenceComplete) {
       statusBadge.className = 'status-badge status-badge-danger';
       statusBadge.innerHTML = '⚠️ Statutory Prerequisite Required';
       headline.textContent = 'Pre-Filing Requirements Incomplete';
@@ -142,7 +185,8 @@ function initEligibilityCalculator() {
       if (!finesPaid) missing.push('All court costs, fines, and restitution must be paid in full');
       if (!noPending) missing.push('No pending criminal charges in any jurisdiction');
       if (!noNewConvictions) missing.push(`No criminal convictions within the ${tier.waitingYears}-year statutory waiting window`);
-      explanation.innerHTML = `Although the waiting period has elapsed, Indiana law requires that all statutory conditions be met prior to filing:<br>• ${missing.join('<br>• ')}`;
+      if (!sentenceComplete) missing.push('Required statutory time must have elapsed since completing all probation, parole, or DOC sentence terms');
+      explanation.innerHTML = `Although the waiting period has elapsed from your ${tierKey === 'tier1' ? 'arrest/dismissal' : 'sentencing'}, Indiana law requires that all statutory conditions be satisfied prior to filing:<br>• ${missing.join('<br>• ')}`;
     } else {
       // Fully Eligible
       if (tier.grantType.includes('Mandatory')) {
@@ -169,6 +213,7 @@ function initEligibilityCalculator() {
   if (checkFines) checkFines.addEventListener('change', update);
   if (checkPending) checkPending.addEventListener('change', update);
   if (checkConvictions) checkConvictions.addEventListener('change', update);
+  if (checkSentence) checkSentence.addEventListener('change', update);
 
   update();
 }

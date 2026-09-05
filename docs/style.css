@@ -318,9 +318,8 @@ body {
 
 /* Trust Badges Banner */
 .hero-trust-bar {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1.25rem;
+  display: flex;
+  gap: 3rem;
   padding-top: 2rem;
   border-top: 1px solid var(--border-subtle);
 }
@@ -332,13 +331,13 @@ body {
 
 .trust-num {
   font-family: var(--font-serif);
-  font-size: 1.6rem;
+  font-size: 1.5rem;
   font-weight: 700;
   color: var(--color-navy-900);
 }
 
 .trust-label {
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   color: var(--text-muted);
   font-weight: 500;
   line-height: 1.35;
@@ -361,19 +360,18 @@ body {
   object-fit: cover;
 }
 
-.hero-photo-caption {
-  padding: 0.9rem 1.25rem;
-  background-color: #ffffff;
-  border-top: 1px solid var(--border-subtle);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+.form-hint {
+  background-color: #f1f5f9;
+  border-left: 3px solid var(--color-blue-700);
+  padding: 0.75rem 0.95rem;
   font-size: 0.82rem;
-  color: var(--text-muted);
-}
-
-.hero-photo-caption strong {
-  color: var(--color-navy-900);
+  color: var(--text-secondary);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  line-height: 1.55;
+  margin-top: 0.5rem;
+  border-top: 1px solid var(--border-subtle);
+  border-right: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 /* ==========================================================================
