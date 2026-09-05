@@ -173,6 +173,28 @@
         </div>
       </div>
 
+      <!-- Bookmarklet Exporter Helper Card (No Extension Required) -->
+      <div class="bookmarklet-box" id="bookmarkletBox">
+        <div class="bookmarklet-header">
+          <span class="bookmarklet-title">
+            <span>⚡</span>
+            <span>1-Click Bookmarklet Exporter</span>
+          </span>
+          <span style="font-size: 0.65rem; background: #bae6fd; color: #0369a1; padding: 2px 6px; border-radius: 4px; font-weight: 600;">No Install Required</span>
+        </div>
+        <p class="bookmarklet-desc">
+          Drag this button to your browser bookmarks bar. When searching <b>public.courts.in.gov/mycase</b>, click it to extract and deep-scrape your records to a <code>.json</code> file, then upload above!
+        </p>
+        <div class="bookmarklet-actions">
+          <a class="bookmarklet-drag-btn" id="appBookmarkletLink" href="javascript:(function(){const s=document.createElement('script');s.src='https://cambrianminds.github.io/indiana-expungement-assistant/bookmarklet.js?v='+Date.now();document.body.appendChild(s);})();" draggable="true" title="Drag this button to your bookmarks bar">
+            <span>⚖️ Export MyCase Data</span>
+          </a>
+          <button type="button" class="btn-copy-bookmarklet" id="btnCopyAppBookmarklet" title="Copy bookmarklet code to clipboard">
+            📋 Copy Code
+          </button>
+        </div>
+      </div>
+
       <div class="scan-tip-box">
         <span class="tip-icon">💡</span>
         <p><b>Multi-Search Tip:</b> Search MyCase for your maiden name, previous married names, other counties, or aliases, and scan each page. They will automatically accumulate into one lifetime expungement petition.</p>

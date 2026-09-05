@@ -1,0 +1,484 @@
+/**
+ * Indiana Expungement Assistant - Statutory Eligibility Rules Engine
+ * Implements IC § 35-38-9 (Indiana Second Chance Law)
+ * 
+ * This module runs 100% in-browser as part of the content script.
+ * No external network calls - all classification is local.
+ */
+
+const IndianaExpungement = (() => {
+
+  // ─── Indiana Case Type Code Mappings ─────────────────────────────────
+  const CASE_TYPE_MAP = {
+    // Felonies
+    'FA': { level: 'felony', class: 'A', severity: 6 },
+    'FB': { level: 'felony', class: 'B', severity: 5 },
+    'FC': { level: 'felony', class: 'C', severity: 4 },
+    'FD': { level: 'felony', class: 'D', severity: 3 },
+    'F1': { level: 'felony', class: '1', severity: 6 },
+    'F2': { level: 'felony', class: '2', severity: 5 },
+    'F3': { level: 'felony', class: '3', severity: 4 },
+    'F4': { level: 'felony', class: '4', severity: 3 },
+    'F5': { level: 'felony', class: '5', severity: 2 },
+    'F6': { level: 'felony', class: '6', severity: 1 },
+    'DF': { level: 'felony', class: 'D', severity: 3 },  // Legacy alias
+    // Misdemeanors
+    'CM': { level: 'misdemeanor', class: 'A/B/C', severity: 0 },
+    'MA': { level: 'misdemeanor', class: 'A', severity: 0 },
+    'MB': { level: 'misdemeanor', class: 'B', severity: 0 },
+    'MC': { level: 'miscellaneous_criminal', class: null, severity: -1 },
+    // Infractions
+    'IF': { level: 'infraction', class: null, severity: -2 },
+    'IFC': { level: 'infraction', class: 'C', severity: -2 },
+    // Non-criminal (excluded from expungement)
+    'SC': { level: 'civil', class: null, severity: -10 },
+    'CC': { level: 'civil', class: null, severity: -10 },
+    'CT': { level: 'civil', class: null, severity: -10 },
+    'PL': { level: 'civil', class: null, severity: -10 },
+    'MF': { level: 'civil', class: null, severity: -10 },
+    'DR': { level: 'domestic', class: null, severity: -10 },
+    'GU': { level: 'guardianship', class: null, severity: -10 },
+    'JC': { level: 'juvenile', class: null, severity: -10 },
+    'JD': { level: 'juvenile', class: null, severity: -10 },
+    'JS': { level: 'juvenile', class: null, severity: -10 },
+    'JM': { level: 'juvenile', class: null, severity: -10 },
+    'JP': { level: 'juvenile', class: null, severity: -10 },
+    'JT': { level: 'juvenile', class: null, severity: -10 },
+    'AD': { level: 'adoption', class: null, severity: -10 },
+    'ES': { level: 'estate', class: null, severity: -10 },
+    'EU': { level: 'estate', class: null, severity: -10 },
+    'PO': { level: 'protective_order', class: null, severity: -10 },
+    'CP': { level: 'civil_plenary', class: null, severity: -10 },
+    'MI': { level: 'civil', class: null, severity: -10 },
+    'XP': { level: 'expungement', class: null, severity: -10 },
+    'TR': { level: 'civil', class: null, severity: -10 },
+    'OV': { level: 'civil', class: null, severity: -10 },
+  };
+
+  // Offenses that are NOT eligible for expungement under any section
+  const INELIGIBLE_OFFENSES = [
+    // IC § 35-38-9-3(b) exclusions
+    'OFFICIAL MISCONDUCT',
+    'MURDER',
+    'VOLUNTARY MANSLAUGHTER',
+    'INVOLUNTARY MANSLAUGHTER',
+    'RECKLESS HOMICIDE',
+    'HUMAN TRAFFICKING',
+    'CHILD MOLESTING',
+    'CHILD EXPLOITATION',
+    'CHILD SOLICITATION',
+    'RAPE',
+    'CRIMINAL DEVIATE CONDUCT',
+    'CHILD SEDUCTION',
+    'SEXUAL MISCONDUCT WITH A MINOR',
+    'INCEST',
+    'SEX OFFENDER REGISTRY',
+    // IC § 35-38-9-2(b) exclusions (sex offenses, violent offenses resulting in death)
+    'CAUSING DEATH WHEN OPERATING',
+  ];
+
+  // Offenses that suggest bodily injury (affects § 3 eligibility)
+  const BODILY_INJURY_INDICATORS = [
+    'CAUSING SERIOUS BODILY INJURY',
+    'RESULTING IN DEATH',
+    'AGGRAVATED BATTERY',
+    'ATTEMPTED MURDER',
+  ];
+
+  // ─── Core Eligibility Functions ──────────────────────────────────────
+
+  /**
+   * Extract the 2-letter case type code from a case number or case type string.
+   * Examples:
+   *   "49D01-1605-FD-000123" → "FD"
+   *   "FD - Class D Felony" → "FD"
+   *   "CM - Criminal Misdemeanor" → "CM"
+   */
+  function extractCaseTypeCode(caseNumberOrType) {
+    if (!caseNumberOrType) return null;
+    const str = caseNumberOrType.trim().toUpperCase();
+
+    // Try case number format: XXDXX-XXXX-CC-XXXXX
+    const caseNumMatch = str.match(/^\d+D\d+-\d{4}-([A-Z0-9]{2,3})-/);
+    if (caseNumMatch) return caseNumMatch[1];
+
+    // Try case type label format: "XX - Description"
+    const labelMatch = str.match(/^([A-Z0-9]{2,3})\s*[-–—]/);
+    if (labelMatch) return labelMatch[1];
+
+    // Try bare code
+    const bareMatch = str.match(/^([A-Z0-9]{2,3})$/);
+    if (bareMatch) return bareMatch[1];
+
+    return null;
+  }
+
+  /**
+   * Extract the county court code from a case number.
+   * "49D01-1605-FD-000123" → "49D01"
+   */
+  function extractCourtCode(caseNumber) {
+    if (!caseNumber) return null;
+    const match = caseNumber.trim().match(/^(\d+D\d+)/);
+    return match ? match[1] : null;
+  }
+
+  /**
+   * Extract the county FIPS code from a court code.
+   * "49D01" → "49" (Marion County)
+   */
+  function extractCountyCode(courtCode) {
+    if (!courtCode) return null;
+    const match = courtCode.match(/^(\d+)/);
+    return match ? match[1] : null;
+  }
+
+  /**
+   * Parse a date string (MM/DD/YYYY or YYYY-MM-DD) into a Date object.
+   */
+  function parseDate(dateStr) {
+    if (!dateStr) return null;
+    const str = dateStr.trim();
+
+    // MM/DD/YYYY
+    let match = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (match) return new Date(parseInt(match[3]), parseInt(match[1]) - 1, parseInt(match[2]));
+
+    // YYYY-MM-DD
+    match = str.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (match) return new Date(parseInt(match[1]), parseInt(match[2]) - 1, parseInt(match[3]));
+
+    // Try generic Date parse
+    const d = new Date(str);
+    return isNaN(d.getTime()) ? null : d;
+  }
+
+  /**
+   * Extract disposition date from a status string.
+   * "11/27/2007, Decided" → Date(2007, 10, 27)
+   * "12/09/1999, Pending" → Date(1999, 11, 9)
+   */
+  function extractDispositionDate(statusStr) {
+    if (!statusStr) return null;
+    const match = statusStr.match(/(\d{1,2}\/\d{1,2}\/\d{4})/);
+    return match ? parseDate(match[1]) : null;
+  }
+
+  /**
+   * Calculate the number of full years elapsed between a date and today.
+   */
+  function yearsElapsed(fromDate, asOf = new Date()) {
+    if (!fromDate) return 0;
+    let years = asOf.getFullYear() - fromDate.getFullYear();
+    const monthDiff = asOf.getMonth() - fromDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && asOf.getDate() < fromDate.getDate())) {
+      years--;
+    }
+    return Math.max(0, years);
+  }
+
+  /**
+   * Check if a charge description contains an ineligible offense.
+   */
+  function isIneligibleOffense(charges) {
+    if (!charges) return false;
+    const upper = charges.toUpperCase();
+    return INELIGIBLE_OFFENSES.some(offense => upper.includes(offense));
+  }
+
+  /**
+   * Check if a charge description involves bodily injury.
+   */
+  function involveBodilyInjury(charges) {
+    if (!charges) return false;
+    const upper = charges.toUpperCase();
+    return BODILY_INJURY_INDICATORS.some(indicator => upper.includes(indicator));
+  }
+
+  /**
+   * Determine the applicable IC § 35-38-9 section for a given case.
+   * Returns an eligibility assessment object.
+   * 
+   * @param {Object} caseData - Normalized case object
+   * @param {Date}   [asOf]   - Date to calculate eligibility against (default: today)
+   * @returns {Object} Eligibility result
+   */
+  function assessEligibility(caseData, asOf = new Date()) {
+    const typeCode = extractCaseTypeCode(caseData.case_type || caseData.caseNumber);
+    const typeInfo = CASE_TYPE_MAP[typeCode] || null;
+    const dispositionDate = extractDispositionDate(caseData.status) || parseDate(caseData.filed);
+    const elapsed = yearsElapsed(dispositionDate, asOf);
+    const statusUpper = (caseData.status || '').toUpperCase();
+    const isPending = statusUpper.includes('PENDING');
+    const isDecided = statusUpper.includes('DECIDED') || statusUpper.includes('CLOSED') || statusUpper.includes('DISPOSED');
+    const charges = caseData.charges || '';
+
+    const result = {
+      caseNumber: caseData.case_number || caseData.caseNumber,
+      typeCode,
+      typeInfo,
+      dispositionDate,
+      yearsElapsed: elapsed,
+      isPending,
+      charges,
+      eligible: false,
+      statute: null,
+      statuteLabel: null,
+      waitingPeriod: null,
+      waitingPeriodMet: false,
+      reason: '',
+      warnings: [],
+      filingFee: null,
+      grantType: null  // 'mandatory' or 'discretionary'
+    };
+
+    // ── Exclude non-criminal cases ──
+    if (typeInfo && ['civil', 'domestic', 'guardianship', 'juvenile', 'adoption',
+      'estate', 'protective_order', 'civil_plenary', 'expungement'].includes(typeInfo.level)) {
+      result.reason = `Excluded: ${typeInfo.level} case (not a criminal record)`;
+      result.statute = 'N/A';
+      result.statuteLabel = 'Not applicable (non-criminal)';
+      return result;
+    }
+
+    // ── Check for ineligible offenses ──
+    if (isIneligibleOffense(charges)) {
+      result.reason = 'INELIGIBLE: Offense is statutorily excluded from expungement (e.g., sex offense, murder, official misconduct)';
+      result.statute = 'IC § 35-38-9-3(b)';
+      result.statuteLabel = 'Excluded Offense';
+      return result;
+    }
+
+    // ── Pending case warning ──
+    if (isPending) {
+      result.warnings.push('Case status is PENDING - verify current disposition before filing. Pending charges may block eligibility.');
+    }
+
+    // ── Route by case type ──
+
+    // IC § 35-38-9-1: Arrests, non-convictions, infractions
+    if (typeInfo && (typeInfo.level === 'infraction' || typeInfo.level === 'miscellaneous_criminal')) {
+      result.statute = 'IC § 35-38-9-1';
+      result.statuteLabel = 'Arrest/Infraction Expungement (§ 1)';
+      result.waitingPeriod = 1;
+      result.waitingPeriodMet = elapsed >= 1;
+      result.filingFee = 0;
+      result.grantType = 'mandatory';
+      result.eligible = result.waitingPeriodMet;
+      result.reason = result.eligible
+        ? `ELIGIBLE: ${elapsed} years elapsed (≥1 year required). No filing fee. Mandatory grant.`
+        : `NOT YET ELIGIBLE: Only ${elapsed} year(s) elapsed. Must wait at least 1 year from disposition.`;
+      return result;
+    }
+
+    // IC § 35-38-9-2: Misdemeanor convictions
+    if (typeInfo && typeInfo.level === 'misdemeanor') {
+      result.statute = 'IC § 35-38-9-2';
+      result.statuteLabel = 'Misdemeanor Expungement (§ 2)';
+      result.waitingPeriod = 5;
+      result.waitingPeriodMet = elapsed >= 5;
+      result.filingFee = 157;
+      result.grantType = 'mandatory';
+      result.eligible = result.waitingPeriodMet;
+      result.reason = result.eligible
+        ? `ELIGIBLE: ${elapsed} years elapsed (≥5 years required). Filing fee ~$157. Mandatory grant.`
+        : `NOT YET ELIGIBLE: Only ${elapsed} year(s) elapsed. Must wait at least 5 years from conviction.`;
+
+      // Misdemeanors with "Pending" status might actually be non-convictions → § 1
+      if (isPending && !isDecided) {
+        result.warnings.push('Status shows Pending — if never convicted, this may qualify under § 1 (non-conviction) instead of § 2.');
+      }
+      return result;
+    }
+
+    // IC § 35-38-9-3: Class D / Level 6 non-violent felony convictions
+    if (typeInfo && typeInfo.level === 'felony') {
+      // §3 applies to Class D / Level 6 felonies (severity ≤ 3)
+      if (typeInfo.severity <= 3) {
+        result.statute = 'IC § 35-38-9-3';
+        result.statuteLabel = 'Felony Expungement (§ 3)';
+        result.waitingPeriod = 8;
+        result.waitingPeriodMet = elapsed >= 8;
+        result.filingFee = 157;
+        result.grantType = 'mandatory';
+
+        if (involveBodilyInjury(charges)) {
+          result.grantType = 'discretionary';
+          result.warnings.push('Charge may involve bodily injury — court has discretion under § 3(b).');
+        }
+
+        result.eligible = result.waitingPeriodMet;
+        result.reason = result.eligible
+          ? `ELIGIBLE: ${elapsed} years elapsed (≥8 years required). ${result.grantType === 'mandatory' ? 'Mandatory' : 'Discretionary'} grant.`
+          : `NOT YET ELIGIBLE: Only ${elapsed} year(s) elapsed. Must wait at least 8 years from conviction.`;
+        return result;
+      }
+
+      // §4 applies to higher-level felonies (Class A/B/C or Level 1-5) — discretionary
+      result.statute = 'IC § 35-38-9-4';
+      result.statuteLabel = 'Higher Felony Expungement (§ 4 - Discretionary)';
+      result.waitingPeriod = 10;
+      result.waitingPeriodMet = elapsed >= 10;
+      result.filingFee = 157;
+      result.grantType = 'discretionary';
+      result.eligible = result.waitingPeriodMet;
+      result.reason = result.eligible
+        ? `POTENTIALLY ELIGIBLE: ${elapsed} years elapsed (≥10 years required). Court has DISCRETION — not mandatory. Requires showing of rehabilitation.`
+        : `NOT YET ELIGIBLE: Only ${elapsed} year(s) elapsed. Must wait at least 10 years from conviction.`;
+      result.warnings.push('Higher-level felonies require court discretion and are NOT mandatory grants. Petitioner must demonstrate rehabilitation and changed circumstances.');
+      return result;
+    }
+
+    // Fallback: unknown case type
+    result.reason = `Unable to classify case type code "${typeCode}". Manual review recommended.`;
+    result.warnings.push('Unknown case type — please verify classification manually.');
+    return result;
+  }
+
+  /**
+   * Partition cases by county for separate petition filings.
+   * Under IC § 35-38-9-8(a), all cases in the same county must be in one petition.
+   * 
+   * @param {Array} cases - Array of normalized case objects
+   * @returns {Object} Map of countyCode → { courtCode, courtName, cases: [...] }
+   */
+  function partitionByCounty(cases) {
+    const counties = {};
+    for (const c of cases) {
+      const courtCode = extractCourtCode(c.case_number || c.caseNumber);
+      const countyCode = extractCountyCode(courtCode);
+      if (!countyCode) continue;
+
+      if (!counties[countyCode]) {
+        counties[countyCode] = {
+          courtCode: courtCode,
+          courtName: c.court || 'Unknown Court',
+          cases: []
+        };
+      }
+      counties[countyCode].cases.push(c);
+    }
+    return counties;
+  }
+
+  /**
+   * Run full eligibility analysis on an array of cases.
+   * Returns a structured report grouped by county and statute section.
+   * 
+   * @param {Array} cases - Array of normalized case objects
+   * @returns {Object} Full eligibility report
+   */
+  function analyzeAll(cases) {
+    const countyGroups = partitionByCounty(cases);
+    const report = {
+      totalCases: cases.length,
+      counties: {},
+      summary: {
+        eligible: 0,
+        ineligible: 0,
+        excluded: 0,
+        pending: 0,
+        totalFilingFee: 0,
+        byStatute: {}
+      }
+    };
+
+    for (const [countyCode, group] of Object.entries(countyGroups)) {
+      const countyReport = {
+        courtCode: group.courtCode,
+        courtName: group.courtName,
+        cases: [],
+        eligibleCount: 0,
+        sections: {}
+      };
+
+      for (const c of group.cases) {
+        const assessment = assessEligibility(c);
+        countyReport.cases.push({ ...c, eligibility: assessment });
+
+        if (assessment.eligible) {
+          countyReport.eligibleCount++;
+          report.summary.eligible++;
+
+          const sect = assessment.statute || 'Unknown';
+          report.summary.byStatute[sect] = (report.summary.byStatute[sect] || 0) + 1;
+          countyReport.sections[sect] = (countyReport.sections[sect] || 0) + 1;
+
+          // Filing fee: only charged once per petition (highest applicable)
+          if (assessment.filingFee && assessment.filingFee > report.summary.totalFilingFee) {
+            report.summary.totalFilingFee = assessment.filingFee;
+          }
+        } else if (assessment.statute === 'N/A') {
+          report.summary.excluded++;
+        } else {
+          report.summary.ineligible++;
+        }
+
+        if (assessment.isPending) {
+          report.summary.pending++;
+        }
+      }
+
+      report.counties[countyCode] = countyReport;
+    }
+
+    return report;
+  }
+
+  // ─── Indiana County FIPS Code → Name lookup ──────────────────────────
+  const INDIANA_COUNTIES = {
+    '01': 'Adams', '02': 'Allen', '03': 'Bartholomew', '04': 'Benton',
+    '05': 'Blackford', '06': 'Boone', '07': 'Brown', '08': 'Carroll',
+    '09': 'Cass', '10': 'Clark', '11': 'Clay', '12': 'Clinton',
+    '13': 'Crawford', '14': 'Daviess', '15': 'Dearborn', '16': 'Decatur',
+    '17': 'DeKalb', '18': 'Delaware', '19': 'Dubois', '20': 'Elkhart',
+    '21': 'Fayette', '22': 'Floyd', '23': 'Fountain', '24': 'Franklin',
+    '25': 'Fulton', '26': 'Gibson', '27': 'Grant', '28': 'Greene',
+    '29': 'Hamilton', '30': 'Hancock', '31': 'Harrison', '32': 'Hendricks',
+    '33': 'Henry', '34': 'Howard', '35': 'Huntington', '36': 'Jackson',
+    '37': 'Jasper', '38': 'Jay', '39': 'Jefferson', '40': 'Jennings',
+    '41': 'Johnson', '42': 'Knox', '43': 'Kosciusko', '44': 'LaGrange',
+    '45': 'Lake', '46': 'LaPorte', '47': 'Lawrence', '48': 'Madison',
+    '49': 'Marion', '50': 'Marshall', '51': 'Martin', '52': 'Miami',
+    '53': 'Monroe', '54': 'Montgomery', '55': 'Morgan', '56': 'Newton',
+    '57': 'Noble', '58': 'Ohio', '59': 'Orange', '60': 'Owen',
+    '61': 'Parke', '62': 'Perry', '63': 'Pike', '64': 'Porter',
+    '65': 'Posey', '66': 'Pulaski', '67': 'Putnam', '68': 'Randolph',
+    '69': 'Ripley', '70': 'Rush', '71': 'St. Joseph', '72': 'Scott',
+    '73': 'Shelby', '74': 'Spencer', '75': 'Starke', '76': 'Steuben',
+    '77': 'Sullivan', '78': 'Switzerland', '79': 'Tippecanoe', '80': 'Tipton',
+    '81': 'Union', '82': 'Vanderburgh', '83': 'Vermillion', '84': 'Vigo',
+    '85': 'Wabash', '86': 'Warren', '87': 'Warrick', '88': 'Washington',
+    '89': 'Wayne', '90': 'Wells', '91': 'White', '92': 'Whitley'
+  };
+
+  function getCountyName(countyCode) {
+    return INDIANA_COUNTIES[countyCode] || `County ${countyCode}`;
+  }
+
+  // ─── Public API ──────────────────────────────────────────────────────
+  return {
+    CASE_TYPE_MAP,
+    INDIANA_COUNTIES,
+    extractCaseTypeCode,
+    extractCourtCode,
+    extractCountyCode,
+    parseDate,
+    extractDispositionDate,
+    yearsElapsed,
+    isIneligibleOffense,
+    assessEligibility,
+    partitionByCounty,
+    analyzeAll,
+    getCountyName
+  };
+
+})();
+
+// Export for content script and sidepanel access
+if (typeof window !== 'undefined') {
+  window.IndianaExpungement = IndianaExpungement;
+}
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = IndianaExpungement;
+}

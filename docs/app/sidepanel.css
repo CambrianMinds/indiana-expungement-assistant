@@ -2257,3 +2257,77 @@ body {
   color: #0f172a;
 }
 
+/* ── PWA Drag & Drop Upload Zone ── */
+.upload-dropzone {
+  background: var(--bg-surface);
+  border: 2px dashed #3b82f6;
+  border-radius: var(--radius-md);
+  padding: 22px 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: all var(--transition);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  box-shadow: var(--shadow-xs);
+  user-select: none;
+  margin-bottom: 4px;
+}
+
+.upload-dropzone:hover,
+.upload-dropzone.dragover {
+  background: #eff6ff;
+  border-color: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm), 0 0 16px rgba(59, 130, 246, 0.15);
+}
+
+.upload-dropzone-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #eff6ff;
+  color: #2563eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 2px;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.15);
+}
+
+.upload-dropzone-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--color-navy-950);
+}
+
+.upload-dropzone-desc {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  max-width: 280px;
+  line-height: 1.35;
+}
+
+.upload-dropzone-btn {
+  background: #2563eb;
+  color: #ffffff;
+  font-size: 0.76rem;
+  font-weight: 700;
+  padding: 7px 16px;
+  border-radius: var(--radius-pill);
+  border: none;
+  cursor: pointer;
+  margin-top: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 2px 4px rgba(37, 99, 235, 0.25);
+  transition: all var(--transition);
+}
+
+.upload-dropzone-btn:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+}
+

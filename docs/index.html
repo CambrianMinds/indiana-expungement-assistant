@@ -155,6 +155,9 @@
         <a href="#instructions" class="btn btn-outline">
           <span>How to Prepare Your Petition</span>
         </a>
+        <a href="app/app.html" class="btn btn-outline" style="border-color: var(--brand-accent); color: var(--brand-accent);">
+          <span>Launch Web App (No Install Needed)</span>
+        </a>
       </div>
 
       <div class="hero-trust-bar">
@@ -656,25 +659,104 @@
   <section class="section" id="instructions">
     <div class="container">
       <div class="section-header">
-        <span class="section-kicker">Getting Started</span>
-        <h2 class="section-title">Install the Chrome Extension</h2>
+        <span class="section-kicker">3 Easy Methods</span>
+        <h2 class="section-title">How to Prepare Your Expungement Petition</h2>
         <p class="section-lead">
-          This tool is free, open source, and runs entirely in your browser.
-          Follow these steps to get started.
+          Choose the workflow that works best for you. All three methods execute 100% locally in your browser with zero servers, zero tracking, and complete privacy.
         </p>
       </div>
 
       <div class="guide-container">
         <div class="guide-tabs">
-          <button class="guide-tab-btn active" data-tab="tab-chrome">
-            <span>1. Chrome Extension Installation</span>
+          <button class="guide-tab-btn active" data-tab="tab-bookmarklet">
+            <span>⚡ 1. 1-Click Bookmarklet (Recommended · Any Browser)</span>
           </button>
-          <button class="guide-tab-btn" data-tab="tab-usage">
-            <span>2. How to Scan &amp; Generate Packet</span>
+          <button class="guide-tab-btn" data-tab="tab-chrome">
+            <span>🧩 2. Chrome Extension (Sidepanel)</span>
+          </button>
+          <button class="guide-tab-btn" data-tab="tab-offline">
+            <span>📁 3. Saved HTML / JSON Upload</span>
           </button>
         </div>
 
-        <div class="guide-pane active" id="tab-chrome">
+        <!-- Tab 1: Bookmarklet (Recommended) -->
+        <div class="guide-pane active" id="tab-bookmarklet">
+          <div class="bookmarklet-hero-card">
+            <div class="bookmarklet-hero-header">
+              <div>
+                <h3 style="font-family: var(--font-serif); font-size: 1.25rem; color: var(--text-primary); margin-bottom: 0.3rem;">
+                  Instant In-Browser Record Exporter
+                </h3>
+                <p style="font-size: 0.88rem; color: var(--text-secondary); margin: 0;">
+                  Works in <b>any browser</b> (Chrome, Edge, Safari, Firefox, Opera, Brave). No extension installation needed.
+                </p>
+              </div>
+              <span class="bookmarklet-tag-recommended">★ Recommended &bull; Zero Install</span>
+            </div>
+
+            <!-- Draggable Bookmarklet Button Area -->
+            <div class="bookmarklet-drag-area">
+              <span class="bookmarklet-drag-hint">👇 Drag this blue button directly onto your browser's Bookmarks bar:</span>
+              <a class="bookmarklet-pill-btn" href="javascript:(function(){const s=document.createElement('script');s.src='https://cambrianminds.github.io/indiana-expungement-assistant/bookmarklet.js?v='+Date.now();document.body.appendChild(s);})();" draggable="true" title="Drag this button to your bookmarks bar">
+                <span>⚖️ Export MyCase Data</span>
+              </a>
+              <div class="bookmarklet-btn-group">
+                <button type="button" class="btn btn-outline btn-bookmarklet-copy" data-copy-code="javascript:(function(){const s=document.createElement('script');s.src='https://cambrianminds.github.io/indiana-expungement-assistant/bookmarklet.js?v='+Date.now();document.body.appendChild(s);})();">
+                  📋 Copy Bookmarklet Code
+                </button>
+                <a href="app/app.html" class="btn btn-primary" style="padding: 0.55rem 1.1rem; font-size: 0.82rem;">
+                  Launch Web App ↗
+                </a>
+              </div>
+              <p style="font-size: 0.78rem; color: var(--text-muted); margin: 0;">
+                <em>(Tip: If your bookmarks bar is hidden, press <kbd>Ctrl+Shift+B</kbd> on Windows or <kbd>Cmd+Shift+B</kbd> on Mac)</em>
+              </p>
+            </div>
+
+            <!-- 4-Step Interactive Visual Guide -->
+            <div>
+              <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.75rem;">
+                Step-by-Step Walkthrough
+              </h4>
+              <div class="interactive-demo-grid">
+                <div class="interactive-demo-step">
+                  <span class="interactive-step-badge">1</span>
+                  <div class="interactive-step-title">Drag Bookmarklet</div>
+                  <div class="interactive-step-desc">
+                    Drag the <b>⚖️ Export MyCase Data</b> button above onto your browser bookmarks toolbar.
+                  </div>
+                </div>
+
+                <div class="interactive-demo-step">
+                  <span class="interactive-step-badge">2</span>
+                  <div class="interactive-step-title">Search on MyCase</div>
+                  <div class="interactive-step-desc">
+                    Go to <a href="https://public.courts.in.gov/mycase" target="_blank" rel="noopener noreferrer">public.courts.in.gov/mycase</a> and search your full name and prior aliases across Indiana counties.
+                  </div>
+                </div>
+
+                <div class="interactive-demo-step">
+                  <span class="interactive-step-badge">3</span>
+                  <div class="interactive-step-title">1-Click Export</div>
+                  <div class="interactive-step-desc">
+                    Click the bookmarklet from your bar. A secure overlay will scan cases, fetch deep CCS docket details, and download <code>mycase-expungement-data.json</code>.
+                  </div>
+                </div>
+
+                <div class="interactive-demo-step">
+                  <span class="interactive-step-badge">4</span>
+                  <div class="interactive-step-title">Generate Packet</div>
+                  <div class="interactive-step-desc">
+                    Open the <a href="app/app.html">Assistant Web App</a>, upload the JSON file, and instantly download all 10 court filings.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 2: Chrome Extension -->
+        <div class="guide-pane" id="tab-chrome">
           <ul class="guide-steps">
             <li class="guide-step">
               <span class="guide-step-num">1</span>
@@ -706,47 +788,41 @@
                   downloaded project. The scales icon will appear in your Chrome toolbar.</p>
               </div>
             </li>
+
+            <li class="guide-step">
+              <span class="guide-step-num">4</span>
+              <div class="guide-step-body">
+                <h4>Scan Side-by-Side &amp; Generate Filings</h4>
+                <p>Navigate to <code>public.courts.in.gov/mycase</code>, click the extension icon to open the side panel, and click <b>Scan Page &amp; Check Eligibility</b> to analyze your cases and generate your court packet directly.</p>
+              </div>
+            </li>
           </ul>
         </div>
 
-        <div class="guide-pane" id="tab-usage">
+        <!-- Tab 3: Offline HTML / JSON Upload -->
+        <div class="guide-pane" id="tab-offline">
           <ul class="guide-steps">
             <li class="guide-step">
               <span class="guide-step-num">1</span>
               <div class="guide-step-body">
-                <h4>Search All Counties on Indiana MyCase</h4>
-                <p>Navigate to <code>public.courts.in.gov/mycase</code> and search for your records under your full
-                  legal name, maiden names, and aliases across all 92 Indiana counties.</p>
+                <h4>Save MyCase Search Page (HTML)</h4>
+                <p>On <code>public.courts.in.gov/mycase</code>, after searching your name, right-click anywhere on the page and select <b>"Save Page As..."</b> (Save as <b>Webpage, HTML Only</b> or <code>.htm</code>/<code>.html</code>).</p>
               </div>
             </li>
 
             <li class="guide-step">
               <span class="guide-step-num">2</span>
               <div class="guide-step-body">
-                <h4>Scan Page &amp; Review Statutory Eligibility</h4>
-                <p>Open the extension side panel and click <b>Scan Page &amp; Check Eligibility</b>. The rules engine
-                  instantly categorizes your cases under IC § 35-38-9 and calculates required waiting periods.</p>
+                <h4>Launch the Web App &amp; Upload</h4>
+                <p>Open the <a href="app/app.html">Expungement Assistant Web App</a>, click <b>"Upload Saved HTML or JSON File"</b> on the Scan tab, and select your saved file.</p>
               </div>
             </li>
 
             <li class="guide-step">
               <span class="guide-step-num">3</span>
               <div class="guide-step-body">
-                <h4>Enter Profile &amp; Generate Court Packet</h4>
-                <p>Fill in your petitioner information on the Profile tab, review the mandatory One-Shot statutory
-                  acknowledgments, and click <b>Generate Complete Petition Packet</b> to download your court-ready PDF
-                  filings immediately.</p>
-              </div>
-            </li>
-
-            <li class="guide-step">
-              <span class="guide-step-num">4</span>
-              <div class="guide-step-body">
-                <h4>Consult the Service Directory, Sign &amp; File</h4>
-                <p>Use the extension's built-in <b>Filing &amp; Service Address Directory</b> to look up exact statutory
-                  addresses for your County Clerk, Prosecuting Attorney, Indiana State Police, BMV, and County Sheriff.
-                  Sign your petition under penalty of perjury, file the originals with the Clerk, and serve required
-                  copies.</p>
+                <h4>Confirm Parity &amp; Compile Documents</h4>
+                <p>The client-side engine will extract all cause numbers, assess waiting periods under IC § 35-38-9, and compile your 10 court filings right in your browser with 100% offline privacy.</p>
               </div>
             </li>
           </ul>
