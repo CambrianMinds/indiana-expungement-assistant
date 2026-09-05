@@ -1777,6 +1777,22 @@ select.is-invalid {
   border: 1px solid transparent;
 }
 
+.btn svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.btn-sm svg {
+  width: 14px;
+  height: 14px;
+}
+
+.btn-lg svg {
+  width: 20px;
+  height: 20px;
+}
+
 .btn-primary {
   background-color: var(--color-navy-950);
   color: #ffffff;
