@@ -8,7 +8,7 @@ import { showToast, updateChecklist } from './ui.js';
   const addressContainer = $('#addressHistory');
 
   // Load saved profile
-  async function loadProfile() {
+  export async function loadProfile() {
     try {
       const result = await chrome?.runtime?.sendMessage?.({ action: 'loadPetitionerProfile' });
       if (result?.profile) {
@@ -84,7 +84,7 @@ import { showToast, updateChecklist } from './ui.js';
   }
 
   // Set up real-time mask formatters and toggle buttons
-  function setupInputFormatting() {
+  export function setupInputFormatting() {
     const ssnInput = $('#ssn');
     const dlInput = $('#driverLicense');
     const phoneInput = $('#phone');

@@ -12,17 +12,17 @@
   ],
   "host_permissions": [
     "https://public.courts.in.gov/*",
-    "http://127.0.0.1:8000/*",
-    "http://localhost:8000/*",
-    "http://127.0.0.1/*",
-    "http://localhost/*"
+    "https://mycase.in.gov/*"
   ],
   "background": {
     "service_worker": "background.js"
   },
   "content_scripts": [
     {
-      "matches": ["https://public.courts.in.gov/mycase/*"],
+      "matches": [
+        "https://public.courts.in.gov/mycase/*",
+        "https://mycase.in.gov/*"
+      ],
       "js": ["eligibility.js", "content.js"],
       "run_at": "document_idle"
     }

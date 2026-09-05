@@ -6,7 +6,7 @@ import { generateAppearanceForm } from './pdf-generator.js';
 
 
   // ─── Engine Health & Readiness ──────────────────────────────────────
-  async function checkBackend(showFeedback = false) {
+  export async function checkBackend(showFeedback = false) {
     const statusEl = $('#backendStatus');
     if (!statusEl) return true;
     const dot = statusEl.querySelector('.status-dot');
@@ -27,7 +27,7 @@ import { generateAppearanceForm } from './pdf-generator.js';
   }
 
 
-  async function downloadPetition(blob, filename) {
+  export async function downloadPetition(blob, filename) {
     if (!chrome.downloads?.download) {
       throw new Error('Chrome downloads permission is unavailable.');
     }
