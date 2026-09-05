@@ -243,12 +243,13 @@ const MyCaseScraper = (() => {
     if (!caseToken) return null;
 
     try {
-      const url = `https://public.courts.in.gov/mycase/Case/CaseSummary?CaseToken=${encodeURIComponent(caseToken)}`;
+      const url = `https://public.courts.in.gov/mycase/Case/CaseSummary?SRCT=&CaseToken=${encodeURIComponent(caseToken)}&_=${Date.now()}`;
       const response = await fetch(url, {
         method: 'GET',
         credentials: 'same-origin',
         headers: {
-          'Accept': 'text/html, application/xhtml+xml',
+          'Accept': 'application/json, text/javascript, */*; q=0.01',
+          'Content-Type': 'application/json',
           'X-Requested-With': 'XMLHttpRequest'
         }
       });
@@ -258,8 +259,9 @@ const MyCaseScraper = (() => {
         return null;
       }
 
-      const html = await response.text();
-      return parseCCSHtml(html);
+      const json = await response.json();
+      if (json.InvalidToken || json.CaseNotFound || json.AccessDenied) return null;
+      return parseCCSJson(json);
     } catch (e) {
       console.warn(`[Expungement] CCS fetch error for ${caseToken}:`, e);
       return null;
@@ -267,13 +269,10 @@ const MyCaseScraper = (() => {
   }
 
   /**
-   * Parse CCS HTML to extract detailed charge information, disposition details,
-   * arresting agency, financial summary, and sentence information.
+   * Parse CCS JSON response to extract detailed charge information, disposition details,
+   * financial summary, and docket entries from the MyCase API.
    */
-  function parseCCSHtml(html) {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(html, 'text/html');
-
+  function parseCCSJson(json) {
     const ccsData = {
       charges: [],
       docketEntries: [],
@@ -282,51 +281,107 @@ const MyCaseScraper = (() => {
       sentenceDetails: null
     };
 
-    // Extract charges from the charge/count table
-    const chargeRows = doc.querySelectorAll('.case-charges-table tr, table.charges tr');
-    chargeRows.forEach(row => {
-      const cells = row.querySelectorAll('td');
-      if (cells.length >= 3) {
+    // Extract charges from the JSON Charges array
+    if (Array.isArray(json.Charges)) {
+      json.Charges.forEach(charge => {
+        let offense = charge.OffenseDescription || '';
+
+        // For old converted cases, OffenseDescription is the useless placeholder
+        // "SEE CCS ENTRY FOR OFFENSE DESCRIPTION". The real offense text is buried
+        // in the CCS Events array inside CaseEvent.Comment fields like:
+        //   "COUNT 1 75/55 SPEED X I  (RJO? N) | JTS Minute Entry Date: ..."
+        if (offense.toUpperCase().includes('SEE CCS ENTRY') && Array.isArray(json.Events)) {
+          const chargeNum = charge.ChargeNumber || '01';
+
+          // First pass: look for a COUNT comment matching this charge number
+          for (const evt of json.Events) {
+            if (evt.CaseEvent && evt.CaseEvent.Comment) {
+              const comment = evt.CaseEvent.Comment;
+              const pat = new RegExp('COUNT\\s*' + chargeNum + '\\s+(.+?)(?:\\s*\\(RJO|\\s*\\||$)', 'i');
+              const m = comment.match(pat);
+              if (m) {
+                offense = m[1].trim();
+                break;
+              }
+            }
+          }
+
+          // Second pass: if still placeholder, try any COUNT pattern
+          if (offense.toUpperCase().includes('SEE CCS ENTRY')) {
+            for (const evt of json.Events) {
+              if (evt.CaseEvent && evt.CaseEvent.Comment) {
+                const comment = evt.CaseEvent.Comment;
+                const m = comment.match(/COUNT\s*\d+\s+(.+?)(?:\s*\(RJO|\s*\||$)/i);
+                if (m) {
+                  offense = m[1].trim();
+                  break;
+                }
+              }
+            }
+          }
+
+          // Third pass: use the first non-calendar event comment as a description
+          if (offense.toUpperCase().includes('SEE CCS ENTRY')) {
+            for (const evt of json.Events) {
+              if (evt.CaseEvent && evt.CaseEvent.Comment) {
+                const comment = evt.CaseEvent.Comment;
+                if (!comment.includes('Calendar:') && !comment.includes('ALL FILINGS')) {
+                  const clean = comment.split('|')[0].replace(/\(RJO\?\s*\w\)/g, '').trim();
+                  if (clean.length > 5 && clean.length < 200) {
+                    offense = clean;
+                    break;
+                  }
+                }
+              }
+            }
+          }
+        }
+
         ccsData.charges.push({
-          count: cells[0]?.textContent?.trim() || '',
-          offense: cells[1]?.textContent?.trim() || '',
-          statute: cells[2]?.textContent?.trim() || '',
-          level: cells[3]?.textContent?.trim() || '',
-          disposition: cells[4]?.textContent?.trim() || ''
+          count: charge.ChargeNumber || '',
+          offense: offense,
+          statute: charge.OffenseStatute || '',
+          level: charge.OffenseDegree || '',
+          disposition: ''
         });
-      }
-    });
-
-    // Extract docket / CCS entries
-    const docketRows = doc.querySelectorAll('.od-ccs-entry, .ccs-entry, .docket-entry');
-    docketRows.forEach(row => {
-      const dateEl = row.querySelector('.ccs-date, .entry-date');
-      const textEl = row.querySelector('.ccs-text, .entry-text');
-      if (dateEl && textEl) {
-        ccsData.docketEntries.push({
-          date: dateEl.textContent.trim(),
-          text: textEl.textContent.trim()
-        });
-      }
-    });
-
-    // Extract financial summary
-    const financialEl = doc.querySelector('.financial-summary, .case-financial');
-    if (financialEl) {
-      const totalOwed = financialEl.querySelector('.total-owed, .amount-owed');
-      const totalPaid = financialEl.querySelector('.total-paid, .amount-paid');
-      ccsData.financialSummary = {
-        owed: totalOwed ? totalOwed.textContent.trim() : 'N/A',
-        paid: totalPaid ? totalPaid.textContent.trim() : 'N/A'
-      };
+      });
     }
 
-    // Try to find arresting agency in docket entries
-    for (const entry of ccsData.docketEntries) {
-      const text = entry.text.toUpperCase();
-      if (text.includes('ARRESTING AGENCY') || text.includes('ARRESTED BY')) {
-        ccsData.arrestingAgency = entry.text;
-        break;
+    // Extract disposition info from disposition events
+    if (Array.isArray(json.Events)) {
+      json.Events.forEach(evt => {
+        if (evt.DispEvent && Array.isArray(evt.DispEvent.Charges)) {
+          evt.DispEvent.Charges.forEach(dc => {
+            const match = ccsData.charges.find(c => c.count === dc.ChargeNumber);
+            if (match && dc.DispositionType) {
+              match.disposition = dc.DispositionType;
+            }
+          });
+        }
+      });
+    }
+
+    // Extract docket entries from events
+    if (Array.isArray(json.Events)) {
+      json.Events.forEach(evt => {
+        ccsData.docketEntries.push({
+          date: evt.EventDate || '',
+          type: evt.EventType || '',
+          description: evt.Description || '',
+          text: evt.CaseEvent ? evt.CaseEvent.Comment || '' : ''
+        });
+      });
+    }
+
+    // Extract financial summary from the defendant party
+    if (Array.isArray(json.Parties)) {
+      const defendant = json.Parties.find(p => p.BaseConnKey === 'DF');
+      if (defendant && defendant.FeeSummary) {
+        ccsData.financialSummary = {
+          balance: defendant.FeeSummary.Balance || 'N/A',
+          asOf: defendant.FeeSummary.AsOf || '',
+          categories: defendant.FeeSummary.Categories || []
+        };
       }
     }
 
