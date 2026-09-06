@@ -264,6 +264,8 @@
 
         const fullCaseType = caseSubType ? `${caseType}, ${caseSubType}` : caseType;
         const fullStatus = statusDate ? `${statusDate}, ${status}` : status;
+        const dispMatch = (statusDate || fullStatus).match(/^(\d{1,2}\/\d{1,2}\/\d{4})/);
+        const dispositionDate = dispMatch ? dispMatch[1] : (statusDate || '');
 
         return {
           index: index + 1,
@@ -273,6 +275,7 @@
           case_type: fullCaseType,
           filed: fileDate,
           status: fullStatus,
+          dispositionDate: dispositionDate,
           charges: cleanCharges(charges),
           parties: parties,
           attorneys: attorneys,
@@ -308,6 +311,7 @@
           parties: '',
           attorneys: '',
           caseToken: '',
+          dispositionDate: '',
           _source: 'dom'
         };
 
@@ -329,6 +333,11 @@
             case 'attorneys': caseData.attorneys = valueText; break;
           }
         });
+
+        if (caseData.status) {
+          const dispMatch = caseData.status.match(/^(\d{1,2}\/\d{1,2}\/\d{4})/);
+          if (dispMatch) caseData.dispositionDate = dispMatch[1];
+        }
 
         if (!caseData.filed) {
           const rightCol = row.querySelector('.result-col-right .small[data-bind*="FileDate"]');
@@ -384,7 +393,8 @@
       docketEntries: [],
       financialSummary: null,
       arrestingAgency: null,
-      sentenceDetails: null
+      sentenceDetails: null,
+      dispositionDate: ''
     };
 
     // Extract charges from the JSON Charges array
@@ -456,13 +466,19 @@
     // Extract disposition info from disposition events
     if (Array.isArray(json.Events)) {
       json.Events.forEach(evt => {
-        if (evt.DispEvent && Array.isArray(evt.DispEvent.Charges)) {
-          evt.DispEvent.Charges.forEach(dc => {
-            const match = ccsData.charges.find(c => c.count === dc.ChargeNumber);
-            if (match && dc.DispositionType) {
-              match.disposition = dc.DispositionType;
-            }
-          });
+        if (evt.DispEvent) {
+          if (evt.EventDate && !ccsData.dispositionDate) {
+            ccsData.dispositionDate = evt.EventDate;
+          }
+          if (Array.isArray(evt.DispEvent.Charges)) {
+            evt.DispEvent.Charges.forEach(dc => {
+              const match = ccsData.charges.find(c => c.count === dc.ChargeNumber);
+              if (match) {
+                if (dc.DispositionType) match.disposition = dc.DispositionType;
+                if (evt.EventDate && !match.dispositionDate) match.dispositionDate = evt.EventDate;
+              }
+            });
+          }
         }
       });
     }
@@ -585,6 +601,10 @@
           if (c.caseToken) {
             c.ccs = await fetchCCS(c.caseToken);
             
+            if (c.ccs && c.ccs.dispositionDate && !c.dispositionDate) {
+              c.dispositionDate = c.ccs.dispositionDate;
+            }
+
             // Clean up the main charges string if we found better data
             if (c.ccs && Array.isArray(c.ccs.charges) && c.ccs.charges.length > 0) {
               if (!c.charges || c.charges.toUpperCase().includes('SEE CCS ENTRY')) {

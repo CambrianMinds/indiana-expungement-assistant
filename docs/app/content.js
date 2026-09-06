@@ -111,6 +111,8 @@ const MyCaseScraper = (() => {
     const fullStatus = statusDate
       ? `${statusDate}, ${status}`
       : status;
+    const dispMatch = (statusDate || fullStatus).match(/^(\d{1,2}\/\d{1,2}\/\d{4})/);
+    const dispositionDate = dispMatch ? dispMatch[1] : (statusDate || '');
 
     return {
       index: index + 1,
@@ -120,6 +122,7 @@ const MyCaseScraper = (() => {
       case_type: fullCaseType,
       filed: fileDate,
       status: fullStatus,
+      dispositionDate: dispositionDate,
       charges: cleanCharges(charges),
       parties: parties,
       attorneys: attorneys,
@@ -154,6 +157,7 @@ const MyCaseScraper = (() => {
           parties: '',
           attorneys: '',
           caseToken: '',
+          dispositionDate: '',
           _source: 'dom'
         };
 
@@ -176,6 +180,11 @@ const MyCaseScraper = (() => {
             case 'attorneys': caseData.attorneys = valueText; break;
           }
         });
+
+        if (caseData.status) {
+          const dispMatch = caseData.status.match(/^(\d{1,2}\/\d{1,2}\/\d{4})/);
+          if (dispMatch) caseData.dispositionDate = dispMatch[1];
+        }
 
         // If details weren't expanded, try to get filed date from the right column
         if (!caseData.filed) {
@@ -278,7 +287,8 @@ const MyCaseScraper = (() => {
       docketEntries: [],
       financialSummary: null,
       arrestingAgency: null,
-      sentenceDetails: null
+      sentenceDetails: null,
+      dispositionDate: ''
     };
 
     // Extract charges from the JSON Charges array
@@ -350,13 +360,19 @@ const MyCaseScraper = (() => {
     // Extract disposition info from disposition events
     if (Array.isArray(json.Events)) {
       json.Events.forEach(evt => {
-        if (evt.DispEvent && Array.isArray(evt.DispEvent.Charges)) {
-          evt.DispEvent.Charges.forEach(dc => {
-            const match = ccsData.charges.find(c => c.count === dc.ChargeNumber);
-            if (match && dc.DispositionType) {
-              match.disposition = dc.DispositionType;
-            }
-          });
+        if (evt.DispEvent) {
+          if (evt.EventDate && !ccsData.dispositionDate) {
+            ccsData.dispositionDate = evt.EventDate;
+          }
+          if (Array.isArray(evt.DispEvent.Charges)) {
+            evt.DispEvent.Charges.forEach(dc => {
+              const match = ccsData.charges.find(c => c.count === dc.ChargeNumber);
+              if (match) {
+                if (dc.DispositionType) match.disposition = dc.DispositionType;
+                if (evt.EventDate && !match.dispositionDate) match.dispositionDate = evt.EventDate;
+              }
+            });
+          }
         }
       });
     }
@@ -404,7 +420,8 @@ const MyCaseScraper = (() => {
         if (onProgress) onProgress(i + 1, cases.length, c.case_number);
 
         const ccs = await fetchCCS(c.caseToken);
-        enriched.push({ ...c, ccs });
+        const dispositionDate = c.dispositionDate || ccs?.dispositionDate || '';
+        enriched.push({ ...c, dispositionDate, ccs });
 
         // Natural delay: 800–1500ms between requests (mimics human pace)
         if (i < cases.length - 1) {
