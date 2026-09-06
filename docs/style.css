@@ -2295,11 +2295,11 @@ body {
    ========================================================================== */
 .bookmarklet-hero-card {
   background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-surface-subtle) 100%);
-  border: 2px solid var(--color-blue-600);
+  border: 2px solid var(--border-medium);
   border-radius: var(--radius-md);
   padding: 2rem;
   margin-bottom: 2rem;
-  box-shadow: var(--shadow-md), 0 0 20px rgba(37, 99, 235, 0.1);
+  box-shadow: var(--shadow-md);
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
@@ -2314,7 +2314,7 @@ body {
 }
 
 .bookmarklet-tag-recommended {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: linear-gradient(135deg, var(--color-gold-500) 0%, var(--color-gold-400) 100%);
   color: #ffffff;
   font-size: 0.76rem;
   font-weight: 800;
@@ -2328,8 +2328,8 @@ body {
 }
 
 .bookmarklet-drag-area {
-  background: var(--color-surface);
-  border: 2px dashed var(--color-blue-600);
+  background: var(--color-surface-subtle);
+  border: 2px dashed var(--border-medium);
   border-radius: var(--radius-md);
   padding: 1.75rem;
   display: flex;
@@ -2342,16 +2342,16 @@ body {
 }
 
 .bookmarklet-drag-area:hover {
-  background: var(--color-blue-50);
-  border-color: var(--color-blue-700);
+  background: var(--color-gold-50);
+  border-color: var(--color-gold-500);
 }
 
 [data-theme="dark"] .bookmarklet-drag-area:hover {
-  background: rgba(37, 99, 235, 0.12);
+  background: rgba(180, 83, 9, 0.1);
 }
 
 .bookmarklet-pill-btn {
-  background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+  background: linear-gradient(135deg, var(--color-navy-900) 0%, var(--color-navy-800) 100%);
   color: #ffffff !important;
   font-size: 1.05rem;
   font-weight: 700;
@@ -2362,15 +2362,16 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 0.65rem;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 12px rgba(10, 17, 40, 0.35);
+  border: 1px solid var(--color-gold-400);
   transition: all var(--transition);
   user-select: none;
 }
 
 .bookmarklet-pill-btn:hover {
   transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.45);
+  box-shadow: 0 8px 20px rgba(10, 17, 40, 0.45);
+  border-color: var(--color-gold-300, #fcd34d);
 }
 
 .bookmarklet-pill-btn:active {
